@@ -3,15 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3002",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "convert": "tsx scripts/wp-to-mdx.ts",
+    "ai-facelift": "tsx scripts/ai-facelift.ts",
+    "scout": "tsx scripts/content-scout.ts",
+    "fill-translations": "tsx scripts/fill-translations.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.81.0",
+    "@types/turndown": "^5.0.6",
+    "@types/xml2js": "^0.4.14",
+    "date-fns": "^4.1.0",
+    "gray-matter": "^4.0.3",
     "next": "16.2.2",
+    "next-mdx-remote": "^6.0.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "rss-parser": "^3.13.0",
+    "turndown": "^7.2.2",
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -21,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

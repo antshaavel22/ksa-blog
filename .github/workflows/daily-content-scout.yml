@@ -1,0 +1,65 @@
+name: Daily Content Scout
+
+on:
+  schedule:
+    - cron: '0 5 * * *'   # 7:00 AM Tallinn time (UTC+2) every day
+  workflow_dispatch:        # Allow manual trigger from GitHub UI
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run content scout
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npm run scout -- --limit 1 --trilingual
+
+      - name: Check for new drafts
+        id: check
+        run: |
+          if git diff --quiet HEAD content/drafts/; then
+            echo "has_drafts=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_drafts=true" >> $GITHUB_OUTPUT
+            NEW_FILES=$(git status --short content/drafts/ | awk '{print $2}' | tr '\n' ', ')
+            echo "new_files=$NEW_FILES" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create pull request with new drafts
+        if: steps.check.outputs.has_drafts == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "draft: AI content scout $(date +'%Y-%m-%d')"
+          branch: "drafts/scout-${{ github.run_number }}"
+          title: "📝 New draft posts — $(date +'%d.%m.%Y')"
+          body: |
+            ## Daily Content Scout Results
+
+            New draft post(s) generated from today's top eye health articles.
+
+            **Files:** ${{ steps.check.outputs.new_files }}
+
+            ### Editor checklist before merging:
+            - [ ] Read the post — does it sound like KSA?
+            - [ ] Check medical claims (if `medicalReview: true`)
+            - [ ] Add/replace `featuredImage` URL
+            - [ ] Change `status: "draft"` to remove the line (or delete it)
+            - [ ] Move file from `content/drafts/` to `content/posts/`
+            - [ ] Merge PR → Vercel auto-deploys
+
+            > Generated with Claude Haiku · KSA Content Scout
+          labels: "draft,content"
+          delete-branch: true

@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env.local
+
+# local Claude Code config
+.claude/
+
+# script state files
+.fill-translations-progress.json
+.scout-seen.json
