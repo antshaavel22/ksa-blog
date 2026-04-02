@@ -3,11 +3,11 @@
  * Daily content pipeline: monitors top eye health blogs → generates KSA blog post → saves draft.
  *
  * Usage:
- *   npm run scout                    # Generate 1 draft from today's top article
- *   npm run scout -- --limit 3       # Generate up to 3 drafts
- *   npm run scout -- --dry-run       # Preview without saving
- *   npm run scout -- --lang ru       # Generate in Russian instead of Estonian
- *   npm run scout -- --source aav    # Only use allaboutvision.com
+ *   npm run scout                        # Generate 1 draft from today's top article
+ *   npm run scout -- --limit 3           # Generate up to 3 drafts
+ *   npm run scout -- --dry-run           # Preview without saving
+ *   npm run scout -- --lang ru           # Generate in Russian instead of Estonian
+ *   npm run scout -- --source healio     # Only use Healio Ophthalmology
  */
 
 import fs from "fs";
@@ -45,33 +45,27 @@ const SOURCE_FILTER = (() => { const i = args.indexOf("--source"); return i >= 0
 
 const SOURCES = [
   {
-    id: "aav",
-    name: "All About Vision",
-    url: "https://www.allaboutvision.com/rss.xml",
+    id: "healio",
+    name: "Healio Ophthalmology",
+    url: "https://www.healio.com/sws/feed/news/ophthalmology",
     weight: 3,  // highest priority
   },
   {
-    id: "aao",
-    name: "American Academy of Ophthalmology",
-    url: "https://www.aao.org/rss/newsroom",
-    weight: 2,
-  },
-  {
-    id: "healio",
-    name: "Healio Ophthalmology",
-    url: "https://www.healio.com/rss/ophthalmology",
+    id: "sciencedaily",
+    name: "ScienceDaily Eye Care",
+    url: "https://www.sciencedaily.com/rss/health_medicine/eye_care.xml",
     weight: 2,
   },
   {
     id: "reviewofopt",
     name: "Review of Ophthalmology",
     url: "https://www.reviewofophthalmology.com/rss/news",
-    weight: 1,
+    weight: 2,
   },
   {
-    id: "brightfocus",
-    name: "BrightFocus Foundation",
-    url: "https://www.brightfocus.org/rss.xml",
+    id: "pubmed",
+    name: "PubMed Eye Surgery",
+    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1nknZFGxGrAc-YoJVhCRvUr1TmO-nQV7NZrScOFEL3VVMdRbF4/?limit=20&utm_campaign=pubmed-2&fc=20240101000000",
     weight: 1,
   },
 ];
