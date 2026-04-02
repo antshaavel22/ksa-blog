@@ -29,6 +29,8 @@ export interface PostMeta {
   llmSearchQueries?: string[];
   seoTitle?: string;
   seoExcerpt?: string;
+  hideDate?: boolean;
+  hideAuthor?: boolean;
 }
 
 export interface Post extends PostMeta {

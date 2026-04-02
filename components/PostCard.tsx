@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PostMeta } from "@/lib/posts";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { BLOG_CONFIG } from "@/lib/config";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 
@@ -56,12 +57,14 @@ export default function PostCard({ post }: PostCardProps) {
           </p>
         )}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#f0eeea]">
-          <span className="text-xs text-[#9a9a9a]">{dateFormatted}</span>
+          {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted
+            ? <span className="text-xs text-[#9a9a9a]">{dateFormatted}</span>
+            : <span />}
           <div className="flex items-center gap-3">
             {post.excerpt && (
               <span className="text-xs text-[#9a9a9a]">{readingTime(post.excerpt)}</span>
             )}
-            {post.author && (
+            {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
               <span className="text-xs text-[#9a9a9a]">{post.author}</span>
             )}
           </div>

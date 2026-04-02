@@ -7,6 +7,7 @@ import BlogContactForm from "@/components/BlogContactForm";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
+import { BLOG_CONFIG } from "@/lib/config";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -190,8 +191,10 @@ export default async function PostPage({ params }: PageProps) {
             </h1>
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-3 text-sm text-[#9a9a9a]">
-                {dateFormatted && <span>{dateFormatted}</span>}
-                {post.author && (
+                {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted && (
+                  <span>{dateFormatted}</span>
+                )}
+                {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
                   <>
                     <span>·</span>
                     <span>{authorName}</span>
