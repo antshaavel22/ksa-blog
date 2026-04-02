@@ -5,5 +5,5 @@
  */
 export const BLOG_CONFIG = {
   showDate: true,    // set false to hide date everywhere
-  showAuthor: true,  // set false to hide author everywhere
+  showAuthor: false,  // set false to hide author everywhere
 };

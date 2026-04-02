@@ -11,6 +11,10 @@ interface DraftMeta {
   excerpt: string;
   lang: string;
   date: string;
+  status?: string; // "draft" | "medical_review"
+  assignedTo?: string; // "silvia" | "jana" | "ants"
+  deadline?: string; // "YYYY-MM-DD"
+  medicalReview?: boolean;
 }
 
 interface PostResult {
@@ -112,10 +116,33 @@ function DailyGreeting() {
 
 // ─── Draft Editor ─────────────────────────────────────────────────────────────
 
-function DraftEditor({ draft, onBack, onPublished }: {
+const WEB3FORMS_KEY = "10f4c27e-17d4-4a75-b4e5-20fc162d1564";
+
+const ASSIGNEE_EMAILS: Record<string, string> = {
+  silvia: "haavelants@me.com", // placeholder
+  jana: "haavelants@me.com",   // placeholder
+  ants: "haavelants@me.com",
+};
+
+const ASSIGNEE_LABELS: Record<string, string> = {
+  silvia: "Silvia Johanna Haavel",
+  jana: "Jana",
+  ants: "Dr. Ants Haavel",
+};
+
+async function sendEmail(to: string, subject: string, message: string) {
+  await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ access_key: WEB3FORMS_KEY, subject, message, email: to }),
+  });
+}
+
+function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   draft: DraftMeta;
   onBack: () => void;
   onPublished: () => void;
+  isPublished?: boolean;
 }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -131,10 +158,25 @@ function DraftEditor({ draft, onBack, onPublished }: {
   const [publishedSlug, setPublishedSlug] = useState("");
   const [error, setError] = useState("");
 
+  // Review panel state
+  const [langChecked, setLangChecked] = useState(false);
+  const [needsMedical, setNeedsMedical] = useState<"yes" | "no" | null>(null);
+  const [medicalSent, setMedicalSent] = useState(false);
+  const [sendingMedical, setSendingMedical] = useState(false);
+
+  // Assignment state
+  const [assignedTo, setAssignedTo] = useState(draft.assignedTo ?? "");
+  const [deadline, setDeadline] = useState(draft.deadline ?? "");
+  const [notifying, setNotifying] = useState(false);
+  const [notified, setNotified] = useState(false);
+
   useEffect(() => {
     setLoaded(false); setError(""); setPublished(false); setSaved(false);
-    fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`)
-      .then(r => r.json())
+    const endpoint = isPublished
+      ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
+      : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+    fetch(endpoint)
+      .then(r => r.ok ? r.json() : fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`).then(r2 => r2.json()))
       .then((d: { content?: string; error?: string }) => {
         if (d.error) { setError(d.error); return; }
         const raw = d.content ?? "";
@@ -151,14 +193,27 @@ function DraftEditor({ draft, onBack, onPublished }: {
       .catch(e => setError((e as Error).message));
   }, [draft.path]);
 
-  async function save() {
-    setSaving(true); setSaved(false);
+  function buildFm(extraMedical?: boolean) {
     let fm = setFmField(frontmatter, "title", title);
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
-    const content = buildMdx(fm, body);
+    if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
+    if (deadline) fm = setFmField(fm, "deadline", deadline);
+    if (extraMedical) {
+      fm = setFmField(fm, "medicalReview", "true");
+      fm = setFmField(fm, "status", "medical_review");
+    }
+    return fm;
+  }
+
+  async function save() {
+    setSaving(true); setSaved(false);
+    const content = buildMdx(buildFm(), body);
     try {
-      const res = await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
+      const endpoint = isPublished
+        ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
+        : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+      const res = await fetch(endpoint, {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
@@ -170,12 +225,9 @@ function DraftEditor({ draft, onBack, onPublished }: {
   async function publish() {
     setPublishing(true); setError("");
     // Save first
-    let fm = setFmField(frontmatter, "title", title);
-    fm = setFmField(fm, "featuredImage", featuredImage);
-    fm = setFmField(fm, "date", postDate);
     await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: buildMdx(fm, body) }),
+      body: JSON.stringify({ content: buildMdx(buildFm(), body) }),
     });
     // Then publish
     const res = await fetch("/api/admin/publish", {
@@ -186,6 +238,40 @@ function DraftEditor({ draft, onBack, onPublished }: {
     if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
     else { setError(d.error ?? "Midagi läks valesti"); }
     setPublishing(false);
+  }
+
+  async function sendToMedicalReview() {
+    setSendingMedical(true);
+    // Save draft with medicalReview flag first
+    const fm = buildFm(true);
+    await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: buildMdx(fm, body) }),
+    });
+    setFrontmatter(fm);
+    // Send email
+    await sendEmail(
+      "haavelants@me.com",
+      `Arsti kontroll vajalik: ${title}`,
+      `Tere, Dr. Haavel!\n\nPostitus vajab arsti ülevaadet enne avaldamist.\n\nPealkiri: ${title}\nKeel: ${draft.lang.toUpperCase()}\nLink: https://blog.ksa.ee/admin\n\n— KSA Blog Admin`
+    );
+    setSendingMedical(false);
+    setMedicalSent(true);
+  }
+
+  async function notifyAssignee() {
+    if (!assignedTo) return;
+    setNotifying(true);
+    const email = ASSIGNEE_EMAILS[assignedTo];
+    const name = ASSIGNEE_LABELS[assignedTo];
+    await sendEmail(
+      email,
+      `KSA Blogi ülesanne: ${title}`,
+      `Tere, ${name}!\n\nSulle on määratud ülesanne KSA blogis.\n\nPostitus: ${title}\nKeel: ${draft.lang.toUpperCase()}${deadline ? `\nTähtaeg: ${deadline}` : ""}\nLink: https://blog.ksa.ee/admin\n\n— KSA Blog Admin`
+    );
+    setNotifying(false);
+    setNotified(true);
+    setTimeout(() => setNotified(false), 3000);
   }
 
   // ── Success screen ────────────────────────────────────────────────────────
@@ -373,26 +459,143 @@ function DraftEditor({ draft, onBack, onPublished }: {
         onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
       />
 
+      {/* Review Panel — shown only for drafts */}
+      {!isPublished && (
+        <div style={{
+          background: "white", border: "1.5px solid #e6e6e6", borderRadius: 18,
+          padding: "20px 22px", marginTop: 24, marginBottom: 8,
+        }}>
+          <p style={{ margin: "0 0 14px", fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>
+            Kvaliteedikontroll
+          </p>
+
+          {/* Language check */}
+          <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#1a1a1a", cursor: "pointer", marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={langChecked}
+              onChange={e => setLangChecked(e.target.checked)}
+              style={{ width: 18, height: 18, cursor: "pointer" }}
+            />
+            ✓ Keelekontroll tehtud
+          </label>
+
+          {/* Medical review */}
+          <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600, color: "#5a6b6c" }}>
+            Kas arsti kontroll on vajalik?
+          </p>
+          <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+            {(["yes", "no"] as const).map(v => (
+              <label key={v} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  name="medicalReview"
+                  value={v}
+                  checked={needsMedical === v}
+                  onChange={() => setNeedsMedical(v)}
+                  style={{ width: 16, height: 16, cursor: "pointer" }}
+                />
+                {v === "yes" ? "Jah" : "Ei"}
+              </label>
+            ))}
+          </div>
+
+          {/* Conditional action buttons */}
+          {medicalSent ? (
+            <div style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 12, padding: "12px 16px", fontSize: 14, color: "#7a5800", fontWeight: 600 }}>
+              🏥 Saadetud Dr. Haaveli lauale ✓
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 10 }}>
+              {langChecked && needsMedical === "no" && (
+                <button onClick={publish} disabled={publishing} style={{
+                  padding: "11px 28px", border: "none", borderRadius: 12,
+                  background: publishing ? "#c5dfa0" : "#87be23", color: "white",
+                  fontSize: 15, fontWeight: 800, cursor: publishing ? "not-allowed" : "pointer",
+                }}>
+                  {publishing ? "Avaldan…" : "✓ Avalda"}
+                </button>
+              )}
+              {langChecked && needsMedical === "yes" && (
+                <button onClick={sendToMedicalReview} disabled={sendingMedical} style={{
+                  padding: "11px 28px", border: "none", borderRadius: 12,
+                  background: sendingMedical ? "#ffe082" : "#f59e0b", color: "white",
+                  fontSize: 15, fontWeight: 800, cursor: sendingMedical ? "not-allowed" : "pointer",
+                }}>
+                  {sendingMedical ? "Saadan…" : "🏥 Suuna arsti lauale"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Sticky action bar */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
         background: "white", borderTop: "1px solid #e6e6e6",
         padding: "14px 24px", display: "flex", alignItems: "center",
-        justifyContent: "flex-end", gap: 12, zIndex: 100,
+        justifyContent: "space-between", gap: 12, zIndex: 100,
         boxShadow: "0 -4px 20px rgba(0,0,0,0.06)",
       }}>
-        {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
-        <button onClick={save} disabled={saving} style={{
-          padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
-          background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
-          color: "#5a6b6c",
-        }}>{saving ? "Salvestab…" : "Salvesta"}</button>
-        <button onClick={publish} disabled={publishing} style={{
-          padding: "11px 28px", border: "none", borderRadius: 12,
-          background: publishing ? "#c5dfa0" : "#87be23", color: "white",
-          fontSize: 15, fontWeight: 800, cursor: publishing ? "not-allowed" : "pointer",
-          letterSpacing: "0.01em",
-        }}>{publishing ? "Avaldan…" : "✓ Avalda"}</button>
+        {/* Left: assignment */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>Vastutaja:</span>
+          <select
+            value={assignedTo}
+            onChange={e => setAssignedTo(e.target.value)}
+            style={{
+              padding: "7px 12px", border: "1.5px solid #e6e6e6", borderRadius: 10,
+              fontSize: 13, background: "white", color: "#1a1a1a", outline: "none", cursor: "pointer",
+            }}
+          >
+            <option value="">— vali —</option>
+            <option value="silvia">Silvia Johanna Haavel</option>
+            <option value="jana">Jana</option>
+            <option value="ants">Dr. Ants Haavel</option>
+          </select>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>Tähtaeg:</span>
+          <input
+            type="date"
+            value={deadline}
+            onChange={e => setDeadline(e.target.value)}
+            style={{
+              padding: "7px 12px", border: "1.5px solid #e6e6e6", borderRadius: 10,
+              fontSize: 13, background: "white", color: "#1a1a1a", outline: "none", cursor: "pointer",
+            }}
+          />
+          {assignedTo && (
+            <button onClick={notifyAssignee} disabled={notifying} style={{
+              padding: "7px 14px", border: "1.5px solid #e6e6e6", borderRadius: 10,
+              background: "white", fontSize: 13, fontWeight: 700, cursor: notifying ? "not-allowed" : "pointer",
+              color: notified ? "#3d6b00" : "#5a6b6c",
+            }}>
+              {notified ? "✓ Teavitatud" : notifying ? "Saadan…" : "Teavita"}
+            </button>
+          )}
+        </div>
+
+        {/* Right: save / publish */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
+          <button onClick={save} disabled={saving} style={{
+            padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
+            background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
+            color: "#5a6b6c",
+          }}>{saving ? "Salvestab…" : "Salvesta"}</button>
+          {isPublished ? (
+            <span style={{ fontSize: 13, color: "#9a9a9a", fontStyle: "italic" }}>
+              Avaldatud post — muudatused ilmuvad 60 sek jooksul
+            </span>
+          ) : (
+            <button onClick={publish} disabled={publishing} style={{
+              padding: "11px 28px", border: "none", borderRadius: 12,
+              background: publishing ? "#c5dfa0" : "#87be23", color: "white",
+              fontSize: 15, fontWeight: 800, cursor: publishing ? "not-allowed" : "pointer",
+              letterSpacing: "0.01em",
+            }}>{publishing ? "Avaldan…" : "✓ Avalda"}</button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -478,15 +681,151 @@ function DraftsTab() {
           >
             <LangBadge lang={draft.lang} />
             <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3,
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {draft.title || "(pealkiri puudub)"}
+                </p>
+                {draft.status === "medical_review" && (
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 8,
+                    background: "#fff3e0", color: "#e65100", border: "1px solid #ffcc80", flexShrink: 0 }}>
+                    🏥 Arsti laud
+                  </span>
+                )}
+                {draft.deadline && draft.deadline < new Date().toISOString().split("T")[0] && (
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 8,
+                    background: "#ffebee", color: "#c62828", border: "1px solid #ef9a9a", flexShrink: 0 }}>
+                    ⚠ Tähtaeg ületatud
+                  </span>
+                )}
+                {draft.deadline && draft.deadline >= new Date().toISOString().split("T")[0] && (
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 8,
+                    background: "#f5f5f5", color: "#666", border: "1px solid #ddd", flexShrink: 0 }}>
+                    📅 {draft.deadline}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a", overflow: "hidden",
+                  textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                  {draft.excerpt}
+                </p>
+                {draft.assignedTo && (
+                  <span style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5",
+                    padding: "1px 7px", borderRadius: 6, flexShrink: 0, whiteSpace: "nowrap" }}>
+                    {ASSIGNEE_LABELS[draft.assignedTo] ?? draft.assignedTo}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ color: "#87be23", fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Published Posts Tab ──────────────────────────────────────────────────────
+
+function PublishedTab() {
+  const [posts, setPosts] = useState<DraftMeta[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [langFilter, setLangFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<DraftMeta | null>(null);
+
+  const loadPosts = useCallback(() => {
+    setLoading(true); setFailed(false);
+    fetch("/api/admin/posts")
+      .then(r => { if (!r.ok) throw new Error("not ok"); return r.json(); })
+      .then((d: { posts?: DraftMeta[] }) => { setPosts(d.posts ?? []); })
+      .catch(() => setFailed(true))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
+
+  const filtered = posts.filter(p => {
+    if (langFilter !== "all" && p.lang !== langFilter) return false;
+    if (search.trim()) return p.title.toLowerCase().includes(search.toLowerCase());
+    return true;
+  });
+
+  if (selected) {
+    return <DraftEditor draft={selected} onBack={() => setSelected(null)} onPublished={loadPosts} isPublished={true} />;
+  }
+
+  return (
+    <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 60px" }}>
+      {/* Filter bar */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+        {(["all", "et", "ru", "en"] as const).map(l => (
+          <button key={l} onClick={() => setLangFilter(l)} style={{
+            padding: "8px 18px", borderRadius: 24, border: "2px solid",
+            borderColor: langFilter === l ? "#87be23" : "#e6e6e6",
+            background: langFilter === l ? "#87be23" : "white",
+            color: langFilter === l ? "white" : "#5a6b6c",
+            fontSize: 14, fontWeight: 700, cursor: "pointer",
+          }}>
+            {l === "all" ? `Kõik (${posts.length})` : `${l.toUpperCase()} (${posts.filter(p => p.lang === l).length})`}
+          </button>
+        ))}
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="🔍 Otsi pealkirja..."
+          style={{
+            flex: 1, minWidth: 180, padding: "8px 14px", border: "2px solid #e6e6e6",
+            borderRadius: 24, fontSize: 14, outline: "none", background: "white",
+          }}
+        />
+      </div>
+
+      {loading && <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>Laen postitusi…</div>}
+
+      {!loading && failed && (
+        <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🔌</div>
+          Avaldatud postituste laadimine vajab serveripoolset tuge
+        </div>
+      )}
+
+      {!loading && !failed && filtered.length === 0 && (
+        <div style={{ textAlign: "center", padding: "60px 0" }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
+          <p style={{ color: "#9a9a9a", fontSize: 15 }}>
+            {posts.length === 0 ? "Avaldatud postitusi ei leitud." : "Otsing ei andnud tulemusi."}
+          </p>
+        </div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {filtered.map(post => (
+          <div key={post.path} style={{
+            background: "white", border: "2px solid #f0f0ec", borderRadius: 18,
+            padding: "18px 20px", display: "flex", alignItems: "center", gap: 16,
+            cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#87be23"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(135,190,35,0.12)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#f0f0ec"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
+            onClick={() => setSelected(post)}
+          >
+            <LangBadge lang={post.lang} />
+            <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ margin: "0 0 3px", fontSize: 15, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3,
                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {draft.title || "(pealkiri puudub)"}
+                {post.title || "(pealkiri puudub)"}
               </p>
               <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a", overflow: "hidden",
                 textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {draft.excerpt}
+                {post.excerpt}
               </p>
             </div>
+            <span style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5",
+              padding: "2px 8px", borderRadius: 6, flexShrink: 0 }}>
+              {post.date}
+            </span>
             <div style={{ color: "#87be23", fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
           </div>
         ))}
@@ -854,7 +1193,7 @@ function HelpTab() {
 // ─── Root Admin Page ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "write" | "help">("drafts");
+  const [tab, setTab] = useState<"drafts" | "published" | "write" | "help">("drafts");
 
   async function logout() {
     await fetch("/api/admin/logout");
@@ -888,6 +1227,7 @@ export default function AdminPage() {
         <div style={{ display: "flex", flex: 1, paddingLeft: 8 }}>
           {([
             { id: "drafts", label: "📋 Mustandid" },
+            { id: "published", label: "✏️ Avaldatud" },
             { id: "write", label: "✍️ Kirjuta uus" },
             { id: "help", label: "❓ Juhend" },
           ] as const).map(t => (
@@ -913,7 +1253,7 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : tab === "write" ? <WriteTab /> : <HelpTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : <HelpTab />}
     </div>
   );
 }
