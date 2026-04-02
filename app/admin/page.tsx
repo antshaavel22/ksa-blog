@@ -730,10 +730,131 @@ function WriteTab() {
   );
 }
 
+// ─── Help Tab ─────────────────────────────────────────────────────────────────
+
+function HelpTab() {
+  const s = {
+    h2: { fontSize: 18, fontWeight: 800, color: "#1a1a1a", margin: "32px 0 10px", paddingBottom: 8, borderBottom: "1px solid #f0f0ec" } as React.CSSProperties,
+    h3: { fontSize: 14, fontWeight: 700, color: "#1a1a1a", margin: "20px 0 6px" } as React.CSSProperties,
+    p: { fontSize: 14, color: "#5a6b6c", lineHeight: 1.7, margin: "0 0 10px" } as React.CSSProperties,
+    tip: { background: "#f4fae8", border: "1px solid #d4e8a8", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#3a5a10", margin: "10px 0" } as React.CSSProperties,
+    table: { width: "100%", borderCollapse: "collapse" as const, fontSize: 13, margin: "10px 0" },
+    th: { textAlign: "left" as const, padding: "8px 12px", background: "#f5f3ee", fontWeight: 700, color: "#5a6b6c", borderRadius: 0 },
+    td: { padding: "8px 12px", borderBottom: "1px solid #f0f0ec", color: "#1a1a1a", verticalAlign: "top" as const },
+    code: { background: "#f0f0ec", borderRadius: 4, padding: "1px 6px", fontFamily: "monospace", fontSize: 12, color: "#1a1a1a" } as React.CSSProperties,
+  };
+
+  return (
+    <div style={{ maxWidth: 680, margin: "0 auto", padding: "8px 20px 80px" }}>
+
+      {/* Intro */}
+      <div style={{ background: "linear-gradient(135deg,#f4fae8,#edf7f0)", borderRadius: 16, padding: "20px 24px", margin: "24px 0 0" }}>
+        <p style={{ margin: 0, fontSize: 15, color: "#3a5a10", lineHeight: 1.6 }}>
+          <strong>KSA Blogi toimetajad:</strong> Silvia Johanna Haavel (ET) · Jana (RU, EN)<br />
+          <strong>Aadress:</strong> blog.ksa.ee/admin &nbsp;·&nbsp; <strong>Parool:</strong> küsi Antsult
+        </p>
+      </div>
+
+      {/* Section 1 */}
+      <h2 style={s.h2}>1. Mustandi avaldamine</h2>
+      <p style={s.p}>Iga hommikul kell 7 genereerib süsteem automaatselt uue mustandi. Need ilmuvad <strong>Mustandid</strong> vahekaardil.</p>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["1", "Vali keelefilter", "ET · RU · EN"],
+            ["2", "Klõpsa mustandil", "Avaneb redaktor"],
+            ["3", "Kontrolli pealkiri, kuupäev, pilt, tekst", "Paranda vajadusel"],
+            ["4", "Salvesta", "Jätab mustandiks"],
+            ["5", "✓ Avalda", "Ilmub kohe blogis"],
+          ].map(([n, action, result]) => (
+            <tr key={n}>
+              <td style={{ ...s.td, width: 28, fontWeight: 800, color: "#87be23" }}>{n}</td>
+              <td style={{ ...s.td, fontWeight: 600 }}>{action}</td>
+              <td style={{ ...s.td, color: "#9a9a9a" }}>{result}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={s.tip}>
+        💡 <strong>Ajastamine:</strong> märgi tulevane kuupäev — postitus ilmub automaatselt sellel päeval.<br />
+        💡 <strong>Tagasiajastamine:</strong> märgi möödunud kuupäev — postitus ilmub ajaloos õiges kohas.
+      </div>
+
+      {/* Section 2 */}
+      <h2 style={s.h2}>2. Uue postituse kirjutamine</h2>
+      <p style={s.p}>Klõpsa vahekaardil <strong>Kirjuta uus</strong>. Vali sisu allikas:</p>
+      <table style={s.table}>
+        <thead>
+          <tr>
+            <th style={s.th}>Viis</th>
+            <th style={s.th}>Millal kasutada</th>
+          </tr>
+        </thead>
+        <tbody>
+          {[
+            ["Kirjuta ise", "Tead täpselt mida tahad öelda"],
+            ["Kleebi URL", "Leidsid hea artikli — süsteem loeb & kirjutab KSA vaatenurgast"],
+            ["Laadi fail", "Sul on olemasolev tekst (Word, PDF)"],
+          ].map(([v, k]) => (
+            <tr key={v}>
+              <td style={{ ...s.td, fontWeight: 600, whiteSpace: "nowrap" }}>{v}</td>
+              <td style={s.td}>{k}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style={s.p}>Seejärel kirjuta lühikokkuvõte, vali keeled (ET / RU / EN — saab kõik 3 korraga) → <strong>Genereeri</strong>. ~30 sekundit ja mustand on valmis.</p>
+
+      {/* Section 3 */}
+      <h2 style={s.h2}>3. Pilt ja video</h2>
+      <h3 style={s.h3}>Pilt</h3>
+      <p style={s.p}>Kleebi pildi URL <strong>Pildiaadress</strong> lahtrisse. KSA pildid leiab: <span style={s.code}>ksa.ee/wp-content/uploads/…</span></p>
+      <h3 style={s.h3}>YouTube video</h3>
+      <p style={s.p}>Kleebi YouTube link redaktori ülaosas olevasse lahtrisse → <strong>Lisa video</strong>. Video ilmub teksti sisse.</p>
+
+      {/* Section 4 */}
+      <h2 style={s.h2}>4. Nipid</h2>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["Postitus vajab arsti kinnitust", "Lisa märge tekstis + teavita Antsu"],
+            ["Viga avaldatud postituses", "Teavita Antsu — ta parandab faili otse"],
+            ["Mustand on halb", "Kustuta mustand → kirjuta uus"],
+            ["Taha postitus ajutiselt peita", "Muuda kuupäev tulevikku — kaob avalikust vaatest"],
+          ].map(([olukord, lahendus]) => (
+            <tr key={olukord}>
+              <td style={{ ...s.td, fontWeight: 600, width: "45%" }}>{olukord}</td>
+              <td style={s.td}>{lahendus}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Section 5 */}
+      <h2 style={s.h2}>5. Mida süsteem teeb automaatselt</h2>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["Iga päev kell 7", "Otsib uued silmatervise uudised → genereerib mustandi"],
+            ["Iga avaldamine", "Sitemap uueneb, Schema JSON-LD lisatakse automaatselt"],
+            ["Tuleviku kuupäev", "Postitus ilmub õigel päeval ilma sinupoolse tegevuseta"],
+          ].map(([trigger, action]) => (
+            <tr key={trigger}>
+              <td style={{ ...s.td, fontWeight: 600, whiteSpace: "nowrap", width: "38%" }}>{trigger}</td>
+              <td style={s.td}>{action}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+    </div>
+  );
+}
+
 // ─── Root Admin Page ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "write">("drafts");
+  const [tab, setTab] = useState<"drafts" | "write" | "help">("drafts");
 
   async function logout() {
     await fetch("/api/admin/logout");
@@ -768,6 +889,7 @@ export default function AdminPage() {
           {([
             { id: "drafts", label: "📋 Mustandid" },
             { id: "write", label: "✍️ Kirjuta uus" },
+            { id: "help", label: "❓ Juhend" },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               padding: "0 20px", border: "none",
@@ -791,7 +913,7 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : <WriteTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "write" ? <WriteTab /> : <HelpTab />}
     </div>
   );
 }
