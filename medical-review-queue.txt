@@ -1,403 +1,223 @@
-%d0%b2%d0%be%d0%b7%d0%bd%d0%b8%d0%ba%d0%b0%d0%b5%d1%82-%d0%bb%d0%b8-%d1%81%d0%b2%d0%b5%d1%82%d0%be%d1%87%d1%83%d0%b2%d1%81%d1%82%d0%b2%d0%b8%d1%82%d0%b5%d0%bb%d1%8c%d0%bd%d0%be%d1%81%d1%82%d1%8c.mdx
-%d0%b2%d0%be%d0%b7%d0%bd%d0%b8%d0%ba%d0%b0%d0%b5%d1%82-%d0%bb%d0%b8-%d1%81%d0%b2%d0%b5%d1%82%d0%be%d1%87%d1%83%d0%b2%d1%81%d1%82%d0%b2%d0%b8%d1%82%d0%b5%d0%bb%d1%8c%d0%bd%d0%be%d1%81%d1%82%d1%8c 2.mdx
-%d0%b2%d0%be%d0%b7%d0%b2%d1%80%d0%b0%d1%89%d0%b5%d0%bd%d0%b8%d0%b5-%d0%bd%d0%b0-%d0%ba%d0%be%d0%b2%d0%b5%d1%80-%d1%87%d0%b5%d1%80%d0%b5%d0%b7-7-%d0%b4%d0%bd%d0%b5%d0%b9-%d0%bf%d0%be%d1%87%d0%b5%d0%bc 2.mdx
-%d0%b4%d0%bd%d0%b5%d0%b2%d0%bd%d0%b8%d0%ba-%d0%b3%d0%bb%d0%b0%d0%b7%d0%bd%d0%be%d0%b9-%d0%be%d0%bf%d0%b5%d1%80%d0%b0%d1%86%d0%b8%d0%b8-%d0%ba%d0%b0%d0%ba-%d1%8f-%d0%b2%d0%be%d1%81%d1%81%d1%82%d0%b0 2.mdx
 %d0%b2%d0%be%d0%b7%d0%b2%d1%80%d0%b0%d1%89%d0%b5%d0%bd%d0%b8%d0%b5-%d0%bd%d0%b0-%d0%ba%d0%be%d0%b2%d0%b5%d1%80-%d1%87%d0%b5%d1%80%d0%b5%d0%b7-7-%d0%b4%d0%bd%d0%b5%d0%b9-%d0%bf%d0%be%d1%87%d0%b5%d0%bc.mdx
-%d0%b4%d0%bd%d0%b5%d0%b2%d0%bd%d0%b8%d0%ba-%d0%b3%d0%bb%d0%b0%d0%b7%d0%bd%d0%be%d0%b9-%d0%be%d0%bf%d0%b5%d1%80%d0%b0%d1%86%d0%b8%d0%b8-%d0%ba%d0%b0%d0%ba-%d1%8f-%d0%b2%d0%be%d1%81%d1%81%d1%82%d0%b0.mdx
-%d0%ba%d1%80%d0%b8%d1%87%d0%b0%d1%82-%d0%bb%d0%b8-%d1%82%d0%b2%d0%be%d0%b8-%d0%b3%d0%bb%d0%b0%d0%b7%d0%b0-%d1%85%d0%b2%d0%b0%d1%82%d0%b8%d1%82-%d1%8d%d0%ba%d1%80%d0%b0%d0%bd%d0%be%d0%b2 2.mdx
+%d0%b2%d0%be%d0%b7%d0%bd%d0%b8%d0%ba%d0%b0%d0%b5%d1%82-%d0%bb%d0%b8-%d1%81%d0%b2%d0%b5%d1%82%d0%be%d1%87%d1%83%d0%b2%d1%81%d1%82%d0%b2%d0%b8%d1%82%d0%b5%d0%bb%d1%8c%d0%bd%d0%be%d1%81%d1%82%d1%8c.mdx
 %d0%ba%d1%80%d0%b8%d1%87%d0%b0%d1%82-%d0%bb%d0%b8-%d1%82%d0%b2%d0%be%d0%b8-%d0%b3%d0%bb%d0%b0%d0%b7%d0%b0-%d1%85%d0%b2%d0%b0%d1%82%d0%b8%d1%82-%d1%8d%d0%ba%d1%80%d0%b0%d0%bd%d0%be%d0%b2.mdx
 %d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d0%b0%d1%8f-%d0%bf%d1%80%d0%be%d1%86%d0%b5%d0%b4%d1%83%d1%80%d0%b0-%d0%ba%d0%b0%d0%ba-%d0%b2%d0%be%d1%81%d1%81%d1%82%d0%b0%d0%bd%d0%be%d0%b2%d0%b8%d1%82%d1%8c.mdx
-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d0%b0%d1%8f-%d0%bf%d1%80%d0%be%d1%86%d0%b5%d0%b4%d1%83%d1%80%d0%b0-%d0%ba%d0%b0%d0%ba-%d0%b2%d0%be%d1%81%d1%81%d1%82%d0%b0%d0%bd%d0%be%d0%b2%d0%b8%d1%82%d1%8c 2.mdx
 %d0%be%d1%81%d0%bd%d0%be%d0%b2%d0%b0%d1%82%d0%b5%d0%bb%d1%8c-ksa-%d0%b8-%d0%be%d1%84%d1%82%d0%b0%d0%bb%d1%8c%d0%bc%d0%be%d0%bb%d0%be%d0%b3-%d0%b4%d0%be%d0%ba%d1%82%d0%be%d1%80-%d1%85%d0%b0%d0%b0%d0%b2.mdx
-%d0%be%d1%81%d0%bd%d0%be%d0%b2%d0%b0%d1%82%d0%b5%d0%bb%d1%8c-ksa-%d0%b8-%d0%be%d1%84%d1%82%d0%b0%d0%bb%d1%8c%d0%bc%d0%be%d0%bb%d0%be%d0%b3-%d0%b4%d0%be%d0%ba%d1%82%d0%be%d1%80-%d1%85%d0%b0%d0%b0%d0%b2 2.mdx
-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d0%b2%d1%81%d1%91-%d0%b1%d0%be%d0%bb%d1%8c%d1%88%d0%b5-%d0%b3%d0%b5%d0%b9%d0%bc%d0%b5%d1%80%d0%be%d0%b2-%d0%be%d1%82%d0%ba%d0%b0%d0%b7%d1%8b%d0%b2%d0%b0%d1%8e.mdx
 %d0%bf%d1%80%d0%b5%d0%bf%d0%b0%d1%80%d0%b0%d1%82%d1%8b-%d0%b4%d0%bb%d1%8f-%d1%81%d0%bd%d0%b8%d0%b6%d0%b5%d0%bd%d0%b8%d1%8f-%d0%b2%d0%b5%d1%81%d0%b0-%d0%b8-%d0%b7%d1%80%d0%b5%d0%bd%d0%b8%d0%b5-%d1%87.mdx
-%d0%bf%d1%80%d0%b5%d0%bf%d0%b0%d1%80%d0%b0%d1%82%d1%8b-%d0%b4%d0%bb%d1%8f-%d1%81%d0%bd%d0%b8%d0%b6%d0%b5%d0%bd%d0%b8%d1%8f-%d0%b2%d0%b5%d1%81%d0%b0-%d0%b8-%d0%b7%d1%80%d0%b5%d0%bd%d0%b8%d0%b5-%d1%87 2.mdx
 %d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-59-%d0%bb%d1%8e%d0%b4%d0%b5%d0%b9-%d0%b2-%d0%be%d1%87%d0%ba%d0%b0%d1%85-%d0%b5%d0%b6%d0%b5%d0%b4%d0%bd%d0%b5%d0%b2%d0%bd%d0%be-%d0%b8%d1%81%d0%bf%d1%8b%d1%82%d1%8b.mdx
-%d1%85%d0%be%d1%80%d0%be%d1%88%d0%b5%d0%b5-%d0%b7%d1%80%d0%b5%d0%bd%d0%b8%d0%b5-%d0%be%d1%81%d0%bd%d0%be%d0%b2%d0%b0-%d0%b0%d0%ba%d1%82%d0%b8%d0%b2%d0%bd%d0%be%d0%b9-%d0%b8-%d1%81%d1%87 2.mdx
-%d1%85%d0%be%d1%80%d0%be%d1%88%d0%b5%d0%b5-%d0%b7%d1%80%d0%b5%d0%bd%d0%b8%d0%b5-%d0%be%d1%81%d0%bd%d0%be%d0%b2%d0%b0-%d0%b0%d0%ba%d1%82%d0%b8%d0%b2%d0%bd%d0%be%d0%b9-%d0%b8-%d1%81%d1%87.mdx
 %d1%87%d1%82%d0%be-%d0%be%d0%b7%d0%bd%d0%b0%d1%87%d0%b0%d0%b5%d1%82-%d1%86%d0%b8%d0%bb%d0%b8%d0%bd%d0%b4%d1%80-%d0%b2-%d0%be%d1%87%d0%ba%d0%b0%d1%85-%d0%b8-%d0%ba%d0%b0%d0%ba-%d1%86.mdx
-%d1%8d%d0%ba%d1%80%d0%b0%d0%bd%d0%bd%d0%be%d0%b5-%d0%b2%d1%80%d0%b5%d0%bc%d1%8f-%d0%b8-%d0%b3%d0%bb%d0%b0%d0%b7%d0%b0-%d1%87%d1%82%d0%be-%d0%bd%d0%b0-%d1%81%d0%b0%d0%bc%d0%be%d0%bc-%d0%b4%d0%b5%d0%bb 2.mdx
 10-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d0%b0%d1%8f-%d0%ba%d0%be%d1%80%d1%80%d0%b5%d0%ba%d1%86%d0%b8%d1%8f-%d0%b7%d1%80%d0%b5.mdx
-%d1%8d%d0%bf%d0%b8%d0%b4%d0%b5%d0%bc%d0%b8%d1%8f-%d0%b1%d0%bb%d0%b8%d0%b7%d0%be%d1%80%d1%83%d0%ba%d0%be%d1%81%d1%82%d0%b8-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d0%bf%d0%be%d0%bb%d0%be%d0%b2%d0%b8 2.mdx
-%d1%8d%d0%ba%d1%80%d0%b0%d0%bd%d0%bd%d0%be%d0%b5-%d0%b2%d1%80%d0%b5%d0%bc%d1%8f-%d0%b8-%d0%b3%d0%bb%d0%b0%d0%b7%d0%b0-%d1%87%d1%82%d0%be-%d0%bd%d0%b0-%d1%81%d0%b0%d0%bc%d0%be%d0%bc-%d0%b4%d0%b5%d0%bb.mdx
-10-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d0%b0%d1%8f-%d0%ba%d0%be%d1%80%d1%80%d0%b5%d0%ba%d1%86%d0%b8%d1%8f-%d0%b7%d1%80%d0%b5 2.mdx
 %d1%8d%d0%bf%d0%b8%d0%b4%d0%b5%d0%bc%d0%b8%d1%8f-%d0%b1%d0%bb%d0%b8%d0%b7%d0%be%d1%80%d1%83%d0%ba%d0%be%d1%81%d1%82%d0%b8-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d0%bf%d0%be%d0%bb%d0%be%d0%b2%d0%b8.mdx
+%d1%8d%d0%ba%d1%80%d0%b0%d0%bd%d0%bd%d0%be%d0%b5-%d0%b2%d1%80%d0%b5%d0%bc%d1%8f-%d0%b8-%d0%b3%d0%bb%d0%b0%d0%b7%d0%b0-%d1%87%d1%82%d0%be-%d0%bd%d0%b0-%d1%81%d0%b0%d0%bc%d0%be%d0%bc-%d0%b4%d0%b5%d0%bb.mdx
 10-arendavat-ideed-ja-tegevust-taastumisnadalaks.mdx
-10-arendavat-ideed-ja-tegevust-taastumisnadalaks 2.mdx
-10-pohjust-miks-silmade-laserprotseduur-voiks-sinu-jaoks-oige-valik-olla.mdx
-10-reasons-why-laser-eye-surgery-might-be-the-right-choice-for-you.mdx
 10-supertoitu-mida-saate-oma-retseptides-ja-menuudes-kasutada.mdx
 10-suvist-fakti-flow-2-0-laserprotseduuri-kohta.mdx
+10-igapaevast-harjumust-mis-voivad-kahjustada-silmanagemist.mdx
 11-toitu-mis-voivad-alandada-glaukoomi-riski.mdx
-11-toitu-mis-voivad-alandada-glaukoomi-riski 2.mdx
-15-kusimust-silmade-laserprotseduuri-kohta.mdx
-15-1-pohjust-miks-krobistada-sellerit.mdx
-15-1-pohjust-miks-krobistada-sellerit 2.mdx
-15-kusimust-silmade-laserprotseduuri-kohta 2.mdx
 15-%d1%81%d0%b0%d0%bc%d1%8b%d1%85-%d1%87%d0%b0%d1%81%d1%82%d1%8b%d1%85-%d0%b2%d0%be%d0%bf%d1%80%d0%be%d1%81%d0%be%d0%b2-%d0%be-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d0%be%d0%b9-%d0%ba%d0%be%d1%80%d1%80.mdx
+15-1-pohjust-miks-krobistada-sellerit.mdx
 16-fakti-ksa-kohta-mida-sa-toenaoliselt-varem-ei-teadnud.mdx
-16-fakti-ksa-kohta-mida-sa-toenaoliselt-varem-ei-teadnud 2.mdx
-15-most-frequently-asked-questions-about-laser-eye-procedures.mdx
-15-most-frequently-asked-questions-about-laser-eye-procedures 2.mdx
 20-levinumat-tahelepanekut-inimestelt-kes-on-alkoholist-loobunud.mdx
-3-olulist-pohjust-miks-2024-aastal-vabaneda-luhinagelikkusest 2.mdx
+15-most-frequently-asked-questions-about-laser-eye-procedures.mdx
+15-kusimust-silmade-laserprotseduuri-kohta.mdx
+2026-04-01-zrenie-posle-flow3-chto-ozhidat.mdx
 3-olulist-pohjust-miks-2024-aastal-vabaneda-luhinagelikkusest.mdx
-5-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%b2%d1%8b%d0%b1%d1%80%d0%b0%d1%82%d1%8c-%d0%be%d0%bd%d0%bb%d0%b0%d0%b9%d0%bd-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d1%86%d0%b8%d1%8e-ksa-silm 2.mdx
-4-viisi-kuidas-alandada-katarakti-tekkimise-riski 2.mdx
-4-viisi-kuidas-alandada-katarakti-tekkimise-riski.mdx
-40ndates-eluaastates-hakkavad-meie-koigi-silmad-vananema 2.mdx
 40ndates-eluaastates-hakkavad-meie-koigi-silmad-vananema.mdx
-5-%d1%81%d0%b0%d0%bc%d1%8b%d1%85-%d0%b2%d0%b0%d0%b6%d0%bd%d1%8b%d1%85-%d0%b2%d0%be%d0%bf%d1%80%d0%be%d1%81%d0%be%d0%b2-%d0%b8-%d0%be%d1%82%d0%b2%d0%b5%d1%82%d0%be%d0%b2-%d0%be-%d1%82%d0%be%d0%bc 2.mdx
-5-%d1%81%d0%b0%d0%bc%d1%8b%d1%85-%d0%b2%d0%b0%d0%b6%d0%bd%d1%8b%d1%85-%d0%b2%d0%be%d0%bf%d1%80%d0%be%d1%81%d0%be%d0%b2-%d0%b8-%d0%be%d1%82%d0%b2%d0%b5%d1%82%d0%be%d0%b2-%d0%be-%d1%82%d0%be%d0%bc.mdx
+4-viisi-kuidas-alandada-katarakti-tekkimise-riski.mdx
 5-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%b2%d1%8b%d0%b1%d1%80%d0%b0%d1%82%d1%8c-%d0%be%d0%bd%d0%bb%d0%b0%d0%b9%d0%bd-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d1%86%d0%b8%d1%8e-ksa-silm.mdx
-5-koige-olulisemat-kusimustvastust-prillidest-vabanemiseks 2.mdx
+5-%d1%81%d0%b0%d0%bc%d1%8b%d1%85-%d0%b2%d0%b0%d0%b6%d0%bd%d1%8b%d1%85-%d0%b2%d0%be%d0%bf%d1%80%d0%be%d1%81%d0%be%d0%b2-%d0%b8-%d0%be%d1%82%d0%b2%d0%b5%d1%82%d0%be%d0%b2-%d0%be-%d1%82%d0%be%d0%bc.mdx
 5-koige-olulisemat-kusimustvastust-prillidest-vabanemiseks.mdx
-5-kusimust-flow-2-0-laserprotseduurist-taastumise-kohta 2.mdx
 5-kusimust-flow-2-0-laserprotseduurist-taastumise-kohta.mdx
-5-pohjust-miks-tulla-ksa-silmakeskuse-online-konsultatsioonile 2.mdx
-5-pohjust-miks-tulla-ksa-silmakeskuse-online-konsultatsioonile.mdx
-5-reasons-to-join-ksa-silmakeskus-online-consultation.mdx
-5-toitu-mis-aitavad-kulmetushaiguste-vastu 2.mdx
-5-ullatavat-fakti-mida-silmaarstid-sulle-ei-raagi 2.mdx
-5-surprising-facts-your-eye-doctor-wont-tell-you.mdx
+5-pohjust-miks-inimesed-prillidest-vabanevad.mdx
 5-toitu-mis-aitavad-kulmetushaiguste-vastu.mdx
-5-ullatavat-fakti-mida-silmaarstid-sulle-ei-raagi.mdx
-6-lihtsat-harjutust-silmavaevuste-leevendamiseks.mdx
+5-surprising-facts-your-eye-doctor-wont-tell-you.mdx
+7-%d0%bd%d0%b5%d0%b7%d0%b0%d0%bc%d0%b5%d1%82%d0%bd%d1%8b%d1%85-%d0%bf%d1%80%d0%b8%d0%b2%d1%8b%d1%87%d0%b5%d0%ba-%d0%ba%d0%be%d1%82%d0%be%d1%80%d1%8b%d0%b5-%d0%bc%d0%be%d0%b3%d1%83%d1%82-%d0%b8%d1%81.mdx
 50-eesti-elanikonnast-on-ulekaalulised-ja-see-pohjustab-tulevikus-paljudele-neist-vaegnagemist.mdx
-7-%d0%bd%d0%b5%d0%b7%d0%b0%d0%bc%d0%b5%d1%82%d0%bd%d1%8b%d1%85-%d0%bf%d1%80%d0%b8%d0%b2%d1%8b%d1%87%d0%b5%d0%ba-%d0%ba%d0%be%d1%82%d0%be%d1%80%d1%8b%d0%b5-%d0%bc%d0%be%d0%b3%d1%83%d1%82-%d0%b8%d1%81 2.mdx
+6-lihtsat-harjutust-silmavaevuste-leevendamiseks.mdx
 7-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d1%81%d1%82%d0%be%d0%b8%d1%82-%d1%81%d0%b4%d0%b5%d0%bb%d0%b0%d1%82%d1%8c-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d1%83%d1%8e.mdx
-7-%d0%bf%d1%80%d0%b8%d1%87%d0%b8%d0%bd-%d0%bf%d0%be%d1%87%d0%b5%d0%bc%d1%83-%d1%81%d1%82%d0%be%d0%b8%d1%82-%d1%81%d0%b4%d0%b5%d0%bb%d0%b0%d1%82%d1%8c-%d0%bb%d0%b0%d0%b7%d0%b5%d1%80%d0%bd%d1%83%d1%8e 2.mdx
-7-levinumat-muuti-laserprotseduuride-kohta 2.mdx
-7-pohjust-miks-inimesed-peaks-lehmapiima-valtima 2.mdx
 7-pohjust-miks-inimesed-peaks-lehmapiima-valtima.mdx
-7-levinumat-muuti-laserprotseduuride-kohta.mdx
 7-pohjust-miks-teha-silmade-laserprotseduur-talvel.mdx
-7-salakavalat-harjumust-mis-voivad-rikkuda-sinu-silmanagemist 2.mdx
-7-salakavalat-harjumust-mis-voivad-rikkuda-sinu-silmanagemist.mdx
-7-reasons-to-have-your-laser-eye-procedure-in-winter.mdx
-7-pohjust-miks-teha-silmade-laserprotseduur-talvel 2.mdx
+7-levinumat-muuti-laserprotseduuride-kohta.mdx
 a-vitamiini-eelised-heale-nagemisele.mdx
 aastaks-2050-voib-pool-maailma-elanikkonnast-olla-luhinagelik.mdx
-allergiliste-silmade-kohta 2.mdx
 ambluoopia-ja-huperoopia-uhe-mundi-kaks-kulge.mdx
 allergiliste-silmade-kohta.mdx
-appi-kas-mu-kontaktlaats-on-silma-ara-kadunud 2.mdx
-appi-kas-mu-kontaktlaats-on-silma-ara-kadunud.mdx
 atsidoos.mdx
-atsidoos 2.mdx
-ave-jogibert-elu-on-ilma-prillide-ja-kontaktlaatsedeta-oluliselt-vabam 2.mdx
+appi-kas-mu-kontaktlaats-on-silma-ara-kadunud.mdx
 ave-jogibert-elu-on-ilma-prillide-ja-kontaktlaatsedeta-oluliselt-vabam.mdx
-baruto-astus-mma-voistlustulle-vaid-nadal-parast-silmade-laseroperatsiooni-2 2.mdx
+baruto-astus-mma-voistlustulle-vaid-nadal-parast-silmade-laseroperatsiooni.mdx
 baruto-astus-mma-voistlustulle-vaid-nadal-parast-silmade-laseroperatsiooni-2.mdx
-baruto-astus-mma-voistlustulle-vaid-nadal-parast-silmade-laseroperatsiooni 2.mdx
-dr-joseph-mercola-arutleb-vaktsiinidest 2.mdx
 dr-joseph-mercola-arutleb-vaktsiinidest.mdx
-eelised-klaasivabalt-sporditegemisel.mdx
-ekraaniaeg-silmade-tervis 2.mdx
-eelised-klaasivabalt-sporditegemisel 2.mdx
-ema-toitumine-ja-lapse-aju 2.mdx
-ekraaniaeg-silmade-tervis.mdx
-ema-toitumine-ja-lapse-aju.mdx
-ettevaatust-telefonide-oisel-ajal-kasutamine-voib-pohjustada-tosiseid-nagemise-kahjustusi 2.mdx
 epidemiya-blizorukosti-pochemu-nashe-zrenie-padaet.mdx
-ettevaatust-mobiiltelefoni-kasutamine-ohtul-voi-oosel-voib-pohjustada-tosiseid-nagemishaireid.mdx
-ettevaatust-mobiiltelefoni-kasutamine-ohtul-voi-oosel-voib-pohjustada-tosiseid-nagemishaireid 2.mdx
-flow-on-loikamiseta-operatsioon-mida-see-tahendab.mdx
+ema-toitumine-ja-lapse-aju.mdx
+eelised-klaasivabalt-sporditegemisel.mdx
 ettevaatust-telefonide-oisel-ajal-kasutamine-voib-pohjustada-tosiseid-nagemise-kahjustusi.mdx
+ettevaatust-mobiiltelefoni-kasutamine-ohtul-voi-oosel-voib-pohjustada-tosiseid-nagemishaireid.mdx
 flow-2-0-laserprotseduur-kas-edumeelseim-tehnoloogia-silmamaailmas.mdx
-halvad-harjumused-mis-vananevad-teie-silmi 2.mdx
-glaukoomi-ennetamine-dieediga 2.mdx
 glaukoomi-ennetamine-dieediga.mdx
-halvad-harjumused-mis-vananevad-teie-silmi.mdx
-halvatud-patsiendid-suhtlevad-oma-opilasi-kontrollides 2.mdx
+flow-on-loikamiseta-operatsioon-mida-see-tahendab.mdx
 halvatud-patsiendid-suhtlevad-oma-opilasi-kontrollides.mdx
-hea-tervise-suur-saladus-c-vitamiin 2.mdx
+halvad-harjumused-mis-vananevad-teie-silmi.mdx
+hea-nagemine-oluline-aktiivseks-ja-onnelikuks-eluks.mdx
 hea-tervise-suur-saladus-c-vitamiin.mdx
-hoidu-diabeedist-ja-sailita-parim-nagemine 2.mdx
-hoiatusmargid-et-teie-lapsel-voib-olla-nagemisprobleeme 2.mdx
-hoiatusmargid-et-teie-lapsel-voib-olla-nagemisprobleeme.mdx
 hoidu-diabeedist-ja-sailita-parim-nagemine.mdx
 hupotees-luhinagelikkust-pohjustavad-rafineeritud-susivesikud-mitte-liigne-lugemine.mdx
-insult-topeltnagemine-ja-kuidas-hoiduda 2.mdx
+hoiatusmargid-et-teie-lapsel-voib-olla-nagemisprobleeme.mdx
 insult-topeltnagemine-ja-kuidas-hoiduda.mdx
-jooga-silmadele-ehk-kuidas-parandada-silmanagemist-loomulikul-teel 2.mdx
-jooga-silmadele-ehk-kuidas-parandada-silmanagemist-loomulikul-teel.mdx
-juhtmevaba-tehnoloogia-oht-aju-tervisele 2.mdx
 juhtmevaba-tehnoloogia-oht-aju-tervisele.mdx
 kaheksa-marki-mis-viitavad-laste-nagemisprobleemidele.mdx
-kalaoli-kasulikkus-kusimuse-all 2.mdx
-kaheksa-marki-mis-viitavad-laste-nagemisprobleemidele 2.mdx
-karastusjookide-kurb-anatoomia 2.mdx
-kalaoli-kasulikkus-kusimuse-all.mdx
+jooga-silmadele-ehk-kuidas-parandada-silmanagemist-loomulikul-teel.mdx
 karastusjookide-kurb-anatoomia.mdx
+kalaoli-kasulikkus-kusimuse-all.mdx
 kannattaako-silmien-lasertoimenpidetta-tehda-kesalla.mdx
-kas-enne-lapse-saamist-voib-silmaoppi-teha 2.mdx
-kas-0-klaasiga-prillide-kandmine-kahjustab-nagemist 2.mdx
-kas-enne-lapse-saamist-voib-silmaoppi-teha.mdx
 kas-0-klaasiga-prillide-kandmine-kahjustab-nagemist.mdx
-kas-enne-sunnitust-tohib-silmaoppi-teha 2.mdx
-kas-kontaktlaatsed-voivad-silmad-ara-rikkuda 2.mdx
-kas-enne-sunnitust-tohib-silmaoppi-teha.mdx
+kas-enne-lapse-saamist-voib-silmaoppi-teha.mdx
 kas-kontaktlaatsed-voivad-silmad-ara-rikkuda.mdx
-kas-krooniline-paikesekreemi-kasutamine-voib-viia-luhinagelikkuse-tekkimiseni 2.mdx
-kas-luhinagelikkusest-on-saamas-epideemia.mdx
-kas-maski-kandmine-voib-suvendada-silmaprobleeme 2.mdx
-kas-luhinagelikkusest-on-saamas-epideemia 2.mdx
-kas-krooniline-paikesekreemi-kasutamine-voib-viia-luhinagelikkuse-tekkimiseni.mdx
+kas-enne-sunnitust-tohib-silmaoppi-teha.mdx
 kas-parast-laserprotseduuri-esineb-silmade-valgustundlikkust-1.mdx
-kas-parast-laserprotseduuri-esineb-silmade-valgustundlikkust-1 2.mdx
-kas-maski-kandmine-voib-suvendada-silmaprobleeme.mdx
+kas-luhinagelikkusest-on-saamas-epideemia.mdx
+kas-krooniline-paikesekreemi-kasutamine-voib-viia-luhinagelikkuse-tekkimiseni.mdx
 kas-oues-olemine-toob-hea-nagemise.mdx
-kas-oues-olemine-toob-hea-nagemise 2.mdx
+kas-maski-kandmine-voib-suvendada-silmaprobleeme.mdx
 kas-ravimid-voivad-nagemisprobleeme-tekitada.mdx
-kas-ravimid-voivad-nagemisprobleeme-tekitada 2.mdx
 kas-silmarohku-saab-alandada-vaid-toitumisega.mdx
 kas-parast-laserprotseduuri-esineb-silmade-valgustundlikkust.mdx
-kas-silmarohku-saab-alandada-vaid-toitumisega 2.mdx
-kas-sinu-2021-aasta-lubaduste-hulka-kuulub-prillidest-vabanemine 2.mdx
 kas-sinu-2021-aasta-lubaduste-hulka-kuulub-prillidest-vabanemine.mdx
-kas-su-silmad-karjuvad-aitab-ekraanidest 2.mdx
-kas-suvel-on-voimalik-silmaoperatsiooni-teha 2.mdx
-kas-taimne-toit-voib-silmavarvi-muuta.mdx
-kas-taimne-toit-voib-silmavarvi-muuta 2.mdx
-kas-teadsid-10-ponevat-fakti-silma-laserprotseduuri-kohta 2.mdx
-kas-suvel-on-voimalik-silmaoperatsiooni-teha.mdx
-kas-teadsid-10-ponevat-fakti-silma-laserprotseduuri-kohta.mdx
 kas-teie-silmad-sugelevad-loe-edasi-et-teada-saada-kuidas-ennast-aidata.mdx
-kas-teie-silmad-sugelevad-loe-edasi-et-teada-saada-kuidas-ennast-aidata 2.mdx
-katarakti-ennetamine-hea-toidu-abil 2.mdx
-katarakti-ennetamine-hea-toidu-abil.mdx
+kas-suvel-on-voimalik-silmaoperatsiooni-teha.mdx
+kas-taimne-toit-voib-silmavarvi-muuta.mdx
+kas-teadsid-10-ponevat-fakti-silma-laserprotseduuri-kohta.mdx
 keha-lodvestav-hingamine-voib-paasta-kuivad-silmad.mdx
+katarakti-ennetamine-hea-toidu-abil.mdx
+kelly-nevolihhin-hea-ja-selge-nagemine-peaks-olema-loomulik-osa-elust.mdx
+kirurgid-saastavad-teismeliste-nagemist-teedrajava-laserkirurgia-abil.mdx
 kiirtest-saa-kohe-ja-kodust-lahkumata-teada-kui-suure-toenaosusega-sobid-silmade-laserprotseduuriks.mdx
-keskkute-voib-kaasa-tuua-silmapoletiku 2.mdx
-kirurgid-saastavad-teismeliste-nagemist-teedrajava-laserkirurgia-abil 2.mdx
 keskkute-voib-kaasa-tuua-silmapoletiku.mdx
 kes-tuntud-eesti-sportlastest-on-ksas-prillidest-vabanenud.mdx
-kirurgid-saastavad-teismeliste-nagemist-teedrajava-laserkirurgia-abil.mdx
-koige-populaarsemad-kusimused-flow-2-0-silmauuringu-kohta 2.mdx
+koik-mida-peaksid-teadma-lapse-silmanagemisest-beebist-teismeeani.mdx
 koige-populaarsemad-kusimused-flow-2-0-silmauuringu-kohta.mdx
-kontaktlaatsede-kandjatel-voib-olla-rohkem-kaebusi-arvutinagemisega 2.mdx
 kontaktlaatsede-kandjatel-voib-olla-rohkem-kaebusi-arvutinagemisega.mdx
-kookosoli-kas-parim-looduslik-silmade-niisutaja.mdx
-kookosoli-kas-parim-looduslik-silmade-niisutaja 2.mdx
-kookosoli-toestatud-positiivsed-toimed 2.mdx
+kontaktlaatsed-prillid-voi-lasersilmaprotseduur.mdx
 kookosoli-toestatud-positiivsed-toimed.mdx
+kontaktlaatsede-sobitamine-on-nagu-mugavate-kingade-ostmine.mdx
+kookosoli-kas-parim-looduslik-silmade-niisutaja.mdx
 ksa-founder-and-eye-surgeon-dr-haavel-never-do-more-to-the-eye-than-truly-necessary.mdx
-ksa-founder-and-eye-surgeon-dr-haavel-never-do-more-to-the-eye-than-truly-necessary 2.mdx
-ksa-silmakeskus-avas-laste-nagemisuuringute-programmi.mdx
-ksa-silmakeskus-avas-laste-nagemisuuringute-programmi 2.mdx
 ksa-silmakeskus-ja-terviseraadio-laste-silmanagemine.mdx
-ksa-silmakeskus-ja-terviseraadio-laste-silmanagemine 2.mdx
-ksa-silmakeskuse-uus-mikroskoop-tostab-silmauuringute-taset 2.mdx
+ksa-silmakeskus-avas-laste-nagemisuuringute-programmi.mdx
 kuhu-poorduda-kui-silmaga-on-mure-voi-trauma.mdx
 ksa-silmakeskuse-uus-mikroskoop-tostab-silmauuringute-taset.mdx
-kuhu-poorduda-kui-silmaga-on-mure-voi-trauma 2.mdx
-kuhu-poorduda-silmamurede-korral.mdx
-kuhu-poorduda-silmamurede-korral 2.mdx
-kui-kiiresti-taastuvad-inimesed-flow-protseduurist 2.mdx
-kui-hasti-naed-varve 2.mdx
-kui-hasti-naed-varve.mdx
-kui-fookus-on-paigast-ara-ehk-kuidas-luhinagelikkus-elu-mojutab 2.mdx
 kui-fookus-on-paigast-ara-ehk-kuidas-luhinagelikkus-elu-mojutab.mdx
-kui-kiiresti-taastuvad-inimesed-flow-protseduurist.mdx
-kui-korras-sinu-lapse-nagemine-tegelikult-on 2.mdx
 kui-korras-sinu-lapse-nagemine-tegelikult-on.mdx
-kuidas-kaitsta-silmi-digiseadmetest-kiirguva-sinise-valguse-eest 2.mdx
-kuidas-hoida-lapse-silmi-ulepingutusest-tulenevate-nagemishairete-eest 2.mdx
+kui-kiiresti-taastuvad-inimesed-flow-protseduurist.mdx
+kui-hasti-naed-varve.mdx
 kui-unistad-selgest-nagemisest-kellele-on-laserkirurgia-ja-mis-on-piirangud.mdx
-kuidas-hoida-lapse-silmi-ulepingutusest-tulenevate-nagemishairete-eest.mdx
-kui-unistad-selgest-nagemisest-kellele-on-laserkirurgia-ja-mis-on-piirangud 2.mdx
 kuidas-kaitsta-silmi-digiseadmetest-kiirguva-sinise-valguse-eest.mdx
+kuidas-hoida-lapse-silmi-ulepingutusest-tulenevate-nagemishairete-eest.mdx
+kuidas-muudab-silmade-laserprotseduur-naiste-elu-paremaks.mdx
 kuidas-mojutab-kaugope-laste-ja-noorte-nagemist.mdx
-kuidas-mojutab-kaugope-laste-ja-noorte-nagemist 2.mdx
 kuidas-mojub-silmadele-kloorivesi.mdx
-kuidas-mojub-silmadele-kloorivesi 2.mdx
 kuidas-sailitada-hea-nagemine-lihtsa-toitumisega.mdx
-kuidas-sailitada-hea-nagemine-lihtsa-toitumisega 2.mdx
-kunstlik-vorkkest-suudab-taastada-pimedate-nagemise 2.mdx
 kunstlik-vorkkest-suudab-taastada-pimedate-nagemise.mdx
 lahendus-kuivsilmsusele.mdx
-lapsed-vajavad-immuunsuse-kujunemiseks-mikroobe-mitte-antibiootikume 2.mdx
-laser-procedure-how-to-recover-as-quickly-as-possible-what-does-the-length-of-the-recovery-time-actually-indicate.mdx
-laser-procedure-how-to-recover-as-quickly-as-possible-what-does-the-length-of-the-recovery-time-actually-indicate 2.mdx
 lapsed-vajavad-immuunsuse-kujunemiseks-mikroobe-mitte-antibiootikume.mdx
+laser-procedure-how-to-recover-as-quickly-as-possible-what-does-the-length-of-the-recovery-time-actually-indicate.mdx
 laser-silmaoperatsioon-ei-pruugi-sobida-koigile.mdx
-laste-kaitumis-ja-nagemishaired-on-sageli-seotud 2.mdx
-laste-kaitumis-ja-nagemishaired-on-sageli-seotud.mdx
-lasik-i-riskid-ja-tusistused.mdx
-laserkirurgia-20-aastat-kogemust.mdx
-lastespordi-kaitseprillid 2.mdx
 lastespordi-kaitseprillid.mdx
-lastearst-paul-thomas-gripivaktsiinist 2.mdx
+lasik-i-riskid-ja-tusistused.mdx
+laste-kaitumis-ja-nagemishaired-on-sageli-seotud.mdx
 lastearst-paul-thomas-gripivaktsiinist.mdx
 lihtne-lahendus-silmade-stressi-vahendamiseks.mdx
 led-valgus-voib-ohustada-tervist.mdx
-led-valgus-voib-ohustada-tervist 2.mdx
-lihtne-lahendus-silmade-stressi-vahendamiseks 2.mdx
-lisa-nagemisele-veel-40-kilomeetrit.mdx
-lisa-nagemisele-veel-40-kilomeetrit 2.mdx
+loomake-kes-elab-meie-koigi-ripsmetel.mdx
 looduslik-uv-kaitse-olid-mis-kaitsevad-nahka-paikese-eest.mdx
 lohe-soomine-vajab-ettevaatust.mdx
-looduslik-uv-kaitse-olid-mis-kaitsevad-nahka-paikese-eest 2.mdx
-loomake-kes-elab-meie-koigi-ripsmetel 2.mdx
-lohe-soomine-vajab-ettevaatust 2.mdx
-luhinagelikkus-levib-epideemiana-miks-meie-silmad-halvenevad.mdx
-luhinagelikkus-levib-epideemiana-miks-meie-silmad-halvenevad 2.mdx
-loomake-kes-elab-meie-koigi-ripsmetel.mdx
-luhinagelikkuse-epideemia 2.mdx
-luhinagelikkuse-epideemia.mdx
-madal-d-vitamiinitase-veres-toob-prillid 2.mdx
+lisa-nagemisele-veel-40-kilomeetrit.mdx
 madal-d-vitamiinitase-veres-toob-prillid.mdx
-marek-strandberg-piimatooted-ei-ole-tervisetooted 2.mdx
 marek-strandberg-piimatooted-ei-ole-tervisetooted.mdx
-maria-magdaleena-kirjutab-kuidas-harjuda-selge-silmanagemisega.mdx
+maria-magdaleena-kirjutab-laserid-minu-silmades-laske-kaia.mdx
 maria-magdaleena-kirjutab-kuidas-mitte-toolilt-kukkuda-kui-robot-sulle-ohku-silma-puhub.mdx
-mida-korgem-on-teie-haridus-seda-toenaolisemalt-olete-luhinagelik 2.mdx
-mida-kliendid-koige-rohkem-kusivad.mdx
-mida-korgem-on-teie-haridus-seda-toenaolisemalt-olete-luhinagelik.mdx
 mida-naitab-taastumisaja-pikkus.mdx
-mida-naitab-taastumisaja-pikkus 2.mdx
+mida-korgem-on-teie-haridus-seda-toenaolisemalt-olete-luhinagelik.mdx
+mida-kliendid-koige-rohkem-kusivad.mdx
 mida-oodata-laserprotseduurieelsest-silmauuringust-kui-alles-kaalud-oma-voimalusi.mdx
-mida-peab-teadma-reisimise-ja-silmade-laserprotseduuri-kohta.mdx
-mida-oodata-laserprotseduurieelsest-silmauuringust-kui-alles-kaalud-oma-voimalusi 2.mdx
-mida-peab-teadma-reisimise-ja-silmade-laserprotseduuri-kohta 2.mdx
-mida-pead-teadma-kui-teed-silmade-laserprotseduuri-40-vanuses 2.mdx
-mida-tahendab-silinderklaas-prillidel-ja-kuidas-silinder-nagemist-mojutab.mdx
 mida-pead-teadma-kui-teed-silmade-laserprotseduuri-40-vanuses.mdx
-mida-tahendab-silinderklaas-prillidel-ja-kuidas-silinder-nagemist-mojutab 2.mdx
-mida-utlevad-silmad-sinu-vaimse-tervise-kohta.mdx
-miks-59-protsenti-prillikandjaid-on-frustreeritud-2 2.mdx
-mida-tasub-suua-heaks-nagemiseks-ja-silmahaiguste-ennetamiseks 2.mdx
-mida-tasub-suua-heaks-nagemiseks-ja-silmahaiguste-ennetamiseks.mdx
-mida-utlevad-silmad-sinu-vaimse-tervise-kohta 2.mdx
-miks-ei-tohi-kontaktlaatsedega-ujuda 2.mdx
-miks-80-inimestest-kannatab-magneesiumipuuduse-all.mdx
-miks-59-protsenti-prillikandjaid-on-frustreeritud-2.mdx
-miks-ei-tohi-otse-paikesesse-vaadata 2.mdx
+mida-tahendab-silinderklaas-prillidel-ja-kuidas-silinder-nagemist-mojutab.mdx
 miks-ei-tohi-kontaktlaatsedega-ujuda.mdx
-miks-me-nutame 2.mdx
-miks-ei-tohi-otse-paikesesse-vaadata.mdx
+miks-80-inimestest-kannatab-magneesiumipuuduse-all.mdx
+mida-utlevad-silmad-sinu-vaimse-tervise-kohta.mdx
+mida-tasub-suua-heaks-nagemiseks-ja-silmahaiguste-ennetamiseks.mdx
 miks-mu-silmad-on-valgustundlikud.mdx
-miks-on-protseduurijargne-kontroll-oluline 2.mdx
 miks-mu-silm-tombleb.mdx
-miks-mu-silmad-on-valgustundlikud 2.mdx
-miks-mu-silm-tombleb 2.mdx
-miks-on-protseduurijargne-kontroll-oluline.mdx
-miks-pikaajalised-kontaktlaatsede-kandjad-otsustavad-teha-flow-laserprotseduuri 2.mdx
-miks-pikaajalised-kontaktlaatsede-kandjad-otsustavad-teha-flow-laserprotseduuri.mdx
-miks-teha-silmade-laserprotseduur-just-kevadel 2.mdx
-miks-tekib-silmades-rahm 2.mdx
+miks-ei-tohi-otse-paikesesse-vaadata.mdx
+miks-teha-silmade-laserprotseduur-just-kevadel.mdx
 miks-tekib-silmades-rahm.mdx
-miks-tekib-silmapoletik-ning-kuidas-seda-ennetada 2.mdx
+miks-pikaajalised-kontaktlaatsede-kandjad-otsustavad-teha-flow-laserprotseduuri.mdx
+miks-on-protseduurijargne-kontroll-oluline.mdx
+milia-koiki-naonaha-valgeid-vistrikuid-ei-saa-liigitada-akneks.mdx
+miks-valivad-sportlased-just-flow-2-0-laserprotseduuri.mdx
 miks-uha-rohkem-gamereid-loobub-prillidest.mdx
 miks-tekib-silmapoletik-ning-kuidas-seda-ennetada.mdx
-miks-uha-rohkem-gamereid-loobub-prillidest 2.mdx
-milia-mitte-koik-naonahal-esinevad-valged-punnid-pole-akne 2.mdx
-millal-on-parim-aeg-silmaopi-tegemiseks.mdx
-milia-koiki-naonaha-valgeid-vistrikuid-ei-saa-liigitada-akneks.mdx
 milia-mitte-koik-naonahal-esinevad-valged-punnid-pole-akne.mdx
-miks-valivad-sportlased-just-flow-2-0-laserprotseduuri.mdx
-milline-on-ksa-klientide-nagemine-10-aastat-parast-laserprotseduuri 2.mdx
-mis-juhtub-kui-laseri-tootamise-ajal-ringi-vaadata.mdx
-milline-on-nagemine-aastaid-parast-laserprotseduuri.mdx
-millist-nagemist-voib-parast-protseduuri-oodata.mdx
-milline-on-ksa-klientide-nagemine-10-aastat-parast-laserprotseduuri.mdx
-millist-nagemist-voib-parast-protseduuri-oodata 2.mdx
+millal-on-parim-aeg-silmaopi-tegemiseks.mdx
 mis-juhtub-silmanagemisega-parast-paev-otsa-arvutiekraani-vaatamist.mdx
 mis-maarab-laserprotseduuri-hinna.mdx
-mis-on-holjumid.mdx
-mis-on-holjumid 2.mdx
+millist-nagemist-voib-parast-protseduuri-oodata.mdx
+milline-on-nagemine-aastaid-parast-laserprotseduuri.mdx
+mis-juhtub-kui-laseri-tootamise-ajal-ringi-vaadata.mdx
 mis-on-arvuti-vaatamise-sundroom.mdx
-mis-on-arvuti-vaatamise-sundroom 2.mdx
-missugused-kaabused-mu-silme-ees-ujuvad.mdx
-missugused-kaabused-mu-silme-ees-ujuvad 2.mdx
-mis-pohjustab-topeltnagemist 2.mdx
+mis-on-holjumid.mdx
 mis-pohjustab-topeltnagemist.mdx
 motosportlane-keity-meier-nagemine-on-nii-suur-osa-elust.mdx
+missugused-kaabused-mu-silme-ees-ujuvad.mdx
 mustikate-13-kasulikku-omadust-millest-lihtsalt-ei-saa-mooda-vaadata.mdx
-muut-voi-tegelikkus-kas-pimedas-lugemine-kahjustab-silmi 2.mdx
 myopia-epidemic-why-our-eyesight-is-deteriorating.mdx
-nadal-parast-flow-2-0-laserprotseduuri-mida-tohib-ja-mida-ei-tohi.mdx
-myopia-epidemic-why-our-eyesight-is-deteriorating 2.mdx
 muut-voi-tegelikkus-kas-pimedas-lugemine-kahjustab-silmi.mdx
+nadal-parast-flow-2-0-laserprotseduuri-mida-tohib-ja-mida-ei-tohi.mdx
 odraiva-tulikas-paise-silmalaus.mdx
 oues-viibimine-vahendab-laste-luhinagelikkuse-riski.mdx
-oues-viibimine-vahendab-laste-luhinagelikkuse-riski 2.mdx
-ozempicu-moju-nagemisele.mdx
-piparmunt-pommitab-15-tervisele-kasuliku-omadusega 2.mdx
-piparmunt-pommitab-15-tervisele-kasuliku-omadusega.mdx
+pahklid-suure-rasvasisaldusega-tervislik-toit.mdx
 prillid-kontaktla-a-tsed-vo-i-silma-laserprotseduur-mida-valida.mdx
-prillid-laatsed-voi-silmaoperatsioon 2.mdx
+piparmunt-pommitab-15-tervisele-kasuliku-omadusega.mdx
 prillid-laatsed-voi-silmaoperatsioon.mdx
 probiootikumid-voivad-ravida-kuni-80-l-lastel-pahkliallergiaid.mdx
-professionaalne-kickpoksija-andi-uustalu-tunnen-lopuks-et-olen-tervik 2.mdx
+professionaalne-kickpoksija-andi-uustalu-tunnen-lopuks-et-olen-tervik.mdx
 pteruugium-tiibkile-mis-ohustab-purjetajate-ja-surfarite-silmi.mdx
-pteruugium-tiibkile-mis-ohustab-purjetajate-ja-surfarite-silmi 2.mdx
-punane-silm 2.mdx
 punane-silm.mdx
-puust-ja-punaseks-mis-erinevus-on-loikega-ja-loiketa-silmaopil.mdx
-rasedus-ja-silmanagemine-millele-erilist-tahelepanu-poorata 2.mdx
 rasedus-ja-silmanagemine-millele-erilist-tahelepanu-poorata.mdx
+puust-ja-punaseks-mis-erinevus-on-loikega-ja-loiketa-silmaopil.mdx
 reisimine-kontaktlaatsede-voi-prillidega.mdx
-reisimine-kontaktlaatsede-voi-prillidega 2.mdx
-retseptinadal-suussulav-korvitsakook 2.mdx
 rohelised-lehtkoogiviljad-vahendavad-glaukoomi-riski.mdx
-rohelised-lehtkoogiviljad-vahendavad-glaukoomi-riski 2.mdx
 seentel-on-hammastav-voime-parandada-inimeste-ja-meie-planeedi-tervist.mdx
-silmad-sugelevad-loe-kuidas-saad-abi.mdx
 screen-time-and-your-eyes-what-science-really-says.mdx
-silmade-laserloikus-ei-sobi-koigile-loe-millised-on-vastunaidustused 2.mdx
-silmade-konvergentsi-norkus 2.mdx
 silmade-konvergentsi-norkus.mdx
+silmad-sugelevad-loe-kuidas-saad-abi.mdx
 silmade-laserloikus-ei-sobi-koigile-loe-millised-on-vastunaidustused.mdx
-silmade-laserprotseduur-enne-sunnitust 2.mdx
 silmade-laserprotseduur-enne-sunnitust.mdx
-silmadele-ohtlikud-vahtpeod 2.mdx
 silmadele-ohtlikud-vahtpeod.mdx
-sinine-valgus-mis-see-on-ja-kuidas-oma-silmi-kaitsta 2.mdx
 sinine-valgus-mis-see-on-ja-kuidas-oma-silmi-kaitsta.mdx
-soovitused-flow-2-0-laserprotseduuri-edukaks-labimiseks.mdx
+spordi-nautimiseks-peavad-silmad-olema-sama-vormis-kui-keha.mdx
 soovid-hea-valja-naha-ja-kauem-elada.mdx
-soovid-hea-valja-naha-ja-kauem-elada 2.mdx
-staarprillikandjad-nr-10-johnny-depp.mdx
-staarprillikandjad-nr-10-johnny-depp 2.mdx
-suur-kontaktlaatsede-abc-mida-iga-laatsekandja-peaks-lugema 2.mdx
-suveks-prillivabaks-30-sekundiga-ja-puutevabalt-kuidas-see-kaib 2.mdx
+soovitused-flow-2-0-laserprotseduuri-edukaks-labimiseks.mdx
 suur-kontaktlaatsede-abc-mida-iga-laatsekandja-peaks-lugema.mdx
+staarprillikandjad-nr-10-johnny-depp.mdx
 suveks-prillivabaks-30-sekundiga-ja-puutevabalt-kuidas-see-kaib.mdx
-taipoksija-edvin-erik-kibus-sel-aastal-algab-uus-klaasideta-ajastu 2.mdx
-tahtis-teada-silmade-laserprotseduur-ja-meikimine.mdx
 tagasi-matil-7-paevaga-kuidas-sportlased-valivad-vabaduse-2.mdx
-tahtis-teada-silmade-laserprotseduur-ja-meikimine 2.mdx
+tahtis-teada-silmade-laserprotseduur-ja-meikimine.mdx
 taipoksija-edvin-erik-kibus-sel-aastal-algab-uus-klaasideta-ajastu.mdx
 talv-on-hea-aeg-nagemise-parandamiseks.mdx
-talv-on-hea-aeg-nagemise-parandamiseks 2.mdx
-tantsutreener-tatjana-ozdoba-nii-suur-muutus-on-lihtsalt-inspireeriv.mdx
-teadusuuring-kinnitab-suur-osa-vahkkasvajatest-on-seotud-elustiiliga 2.mdx
 teadusuuring-kinnitab-suur-osa-vahkkasvajatest-on-seotud-elustiiliga.mdx
 televiisori-ja-digiekraanide-vaatamine-pohjustab-lastel-silmavorkkesta-veresoonte-ahenemist.mdx
-the-myopia-epidemic-why-half-the-world-is-losing-clear-vision-and-how-to-protect-your-eye-health 2.mdx
 the-myopia-epidemic-why-half-the-world-is-losing-clear-vision-and-how-to-protect-your-eye-health.mdx
-toit-mis-teeb-silmadele-head.mdx
-toit-mis-teeb-silmadele-head 2.mdx
-too-arvutiga-ja-silmade-laserprotseduur-mida-tasub-teada 2.mdx
 too-arvutiga-ja-silmade-laserprotseduur-mida-tasub-teada.mdx
+toit-mis-teeb-silmadele-head.mdx
 tugevdage-oma-tervist-z-vitamiiniga.mdx
-tumedad-silmaalused-pohjused-ja-leevendus 2.mdx
 unekvaliteedil-ja-silmade-tervisel-on-konkreetne-seos.mdx
-uus-laser-ksas-15-sekundiga-miinusprillidest-vabaks 2.mdx
-unekvaliteedil-ja-silmade-tervisel-on-konkreetne-seos 2.mdx
-vaata-ja-vordle-nagemisteravust.mdx
-vaata-ja-vordle-nagemisteravust 2.mdx
-uus-laser-ksas-15-sekundiga-miinusprillidest-vabaks.mdx
+tumedad-silmaalused-pohjused-ja-leevendus.mdx
 vaid-kaks-nadalat-kosmoses-pohjustab-muutusi-silmades.mdx
-vaid-kaks-nadalat-kosmoses-pohjustab-muutusi-silmades 2.mdx
-vastame-otse-ja-ausalt-kas-laserprotseduuri-on-motet-karta.mdx
-vorkkest-voib-naidata-suuremat-insuldi-riski 2.mdx
-vastame-otse-ja-ausalt-kas-laserprotseduuri-on-motet-karta 2.mdx
+vaata-ja-vordle-nagemisteravust.mdx
+uus-laser-ksas-15-sekundiga-miinusprillidest-vabaks.mdx
 vorkkest-voib-naidata-suuremat-insuldi-riski.mdx
-weight-loss-medication-and-vision-what-ozempic-could-mean-for-eye-health 2.mdx
+vastame-otse-ja-ausalt-kas-laserprotseduuri-on-motet-karta.mdx
+valjo-kutt-kui-fookus-on-paigas-pole-saavutustel-piire.mdx
 what-does-cylinder-mean-on-your-glasses-and-how-does-it-affect-vision.mdx
 weight-loss-medication-and-vision-what-ozempic-could-mean-for-eye-health.mdx
-what-does-cylinder-mean-on-your-glasses-and-how-does-it-affect-vision 2.mdx
