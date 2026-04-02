@@ -3,7 +3,9 @@ import { getCategoryLabel, CATEGORY_LABELS, toSlug } from "@/lib/categories";
 import PostCard from "@/components/PostCard";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import SearchInput from "@/components/SearchInput";
 import Link from "next/link";
+import { Suspense } from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,23 +17,33 @@ export const metadata: Metadata = {
 const POSTS_PER_PAGE = 12;
 
 interface PageProps {
-  searchParams: Promise<{ kategooria?: string; leht?: string; keel?: string }>;
+  searchParams: Promise<{ kategooria?: string; leht?: string; keel?: string; otsing?: string }>;
 }
 
 export default async function BlogIndexPage({ searchParams }: PageProps) {
-  const { kategooria, leht, keel } = await searchParams;
+  const { kategooria, leht, keel, otsing } = await searchParams;
   const page = parseInt(leht ?? "1", 10);
   const lang = keel ?? "et";
+  const query = otsing?.trim().toLowerCase() ?? "";
   const allPosts = getAllPosts();
   const categories = getAllCategories();
 
   const langFiltered = allPosts.filter((p) => p.lang === lang);
 
-  const filtered = kategooria
+  const categoryFiltered = kategooria
     ? langFiltered.filter((p) =>
         p.categories.some((c) => toSlug(c) === kategooria)
       )
     : langFiltered;
+
+  const filtered = query
+    ? categoryFiltered.filter((p) =>
+        p.title.toLowerCase().includes(query) ||
+        p.excerpt?.toLowerCase().includes(query) ||
+        p.categories.some((c) => c.toLowerCase().includes(query)) ||
+        p.tags?.some((t) => t.toLowerCase().includes(query))
+      )
+    : categoryFiltered;
 
   const total = filtered.length;
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
@@ -86,7 +98,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* Category filters */}
+        {/* Category filters + Search */}
         <section className="border-b border-[#e6e6e6] bg-white py-3">
           <div className="max-w-[1200px] mx-auto px-6 flex gap-2 items-center overflow-x-auto scrollbar-hide pb-0.5">
             <Link
@@ -128,6 +140,13 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                   </span>
                 </Link>
               ))}
+
+            {/* Search — pushed to the right on desktop, inline on mobile */}
+            <div className="flex-shrink-0 ml-auto">
+              <Suspense>
+                <SearchInput lang={lang} kategooria={kategooria} />
+              </Suspense>
+            </div>
           </div>
         </section>
 

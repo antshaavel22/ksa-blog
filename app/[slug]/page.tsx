@@ -8,6 +8,7 @@ import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
 import { BLOG_CONFIG } from "@/lib/config";
+import { getAuthorByKey } from "@/lib/authors";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -45,15 +46,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// Map internal author keys → display names for Schema
-const AUTHOR_NAMES: Record<string, string> = {
-  antsh: "Dr. Ants Haavel",
-  silvia: "Silvia Johanna Haavel",
-  yana: "Yana Grechits",
-  maigret: "Maigret Moru",
-  ndhaldur: "KSA Silmakeskus",
-};
-
 export default async function PostPage({ params }: PageProps) {
   const { slug } = await params;
   const post = getPostBySlug(slug);
@@ -66,7 +58,8 @@ export default async function PostPage({ params }: PageProps) {
     : "";
 
   const canonicalUrl = `https://blog.ksa.ee/${slug}`;
-  const authorName = AUTHOR_NAMES[post.author] ?? post.author ?? "KSA Silmakeskus";
+  const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
+  const authorName = authorProfile?.displayName ?? post.author ?? "KSA Silmakeskus";
 
   // ── Schema JSON-LD ──────────────────────────────────────────────────────────
   const schemaGraph: object[] = [
@@ -197,7 +190,16 @@ export default async function PostPage({ params }: PageProps) {
                 {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
                   <>
                     <span>·</span>
-                    <span>{authorName}</span>
+                    {authorProfile ? (
+                      <Link
+                        href={`/autor/${authorProfile.slug}`}
+                        className="hover:text-[#87be23] transition-colors"
+                      >
+                        {authorName}
+                      </Link>
+                    ) : (
+                      <span>{authorName}</span>
+                    )}
                   </>
                 )}
                 {post.content && (

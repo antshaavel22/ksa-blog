@@ -3,6 +3,7 @@ import Image from "next/image";
 import { PostMeta } from "@/lib/posts";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
 import { BLOG_CONFIG } from "@/lib/config";
+import { getAuthorByKey } from "@/lib/authors";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 
@@ -25,6 +26,8 @@ export default function PostCard({ post }: PostCardProps) {
   const primaryCategory = primaryCategoryRaw
     ? getCategoryLabel(toSlug(primaryCategoryRaw), (post.lang as "et" | "ru" | "en") ?? "et")
     : "";
+  const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
+  const authorDisplayName = authorProfile?.displayName ?? post.author ?? "";
 
   return (
     <Link
@@ -65,7 +68,7 @@ export default function PostCard({ post }: PostCardProps) {
               <span className="text-xs text-[#9a9a9a]">{readingTime(post.excerpt)}</span>
             )}
             {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
-              <span className="text-xs text-[#9a9a9a]">{post.author}</span>
+              <span className="text-xs text-[#9a9a9a]">{authorDisplayName}</span>
             )}
           </div>
         </div>
