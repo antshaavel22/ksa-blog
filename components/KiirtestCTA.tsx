@@ -59,25 +59,34 @@ export default function KiirtestCTA({ ctaType, lang = "et" }: KiirtestCTAProps) 
     );
   }
 
-  // kiirtest-inline: prominent embed
+  // kiirtest-inline: prominent full-width CTA card
   return (
-    <div className="my-10 rounded-2xl overflow-hidden border border-[#e6e6e6] bg-white shadow-sm">
-      <div className="p-6 pb-4 border-b border-[#e6e6e6]">
-        <span className="text-xs font-medium uppercase tracking-wide text-[#87be23]">
-          Tasuta kiirtest · 60 sekundit
+    <div className="my-10 rounded-2xl border-2 border-[#87be23] bg-gradient-to-br from-[#f9f9f7] to-white shadow-sm overflow-hidden">
+      <div className="p-7 sm:p-8">
+        <span className="inline-block text-xs font-semibold uppercase tracking-widest text-white bg-[#87be23] px-3 py-1 rounded-full mb-4">
+          {lang === "ru" ? "Бесплатно · 60 секунд" : lang === "en" ? "Free · 60 seconds" : "Tasuta · 60 sekundit"}
         </span>
-        <h3 className="text-xl font-semibold text-[#1a1a1a] mt-1 mb-1">
+        <h3 className="text-2xl sm:text-3xl font-semibold text-[#1a1a1a] mb-2 leading-tight">
           {copy.headline}
         </h3>
-        <p className="text-sm text-[#5a6b6c]">{copy.sub}</p>
+        <p className="text-[#5a6b6c] mb-6 text-base leading-relaxed max-w-md">
+          {copy.sub}
+        </p>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#87be23] text-white font-semibold text-base hover:bg-[#74a31e] active:scale-95 transition-all shadow-md hover:shadow-lg"
+        >
+          {lang === "ru" ? "Пройти тест" : lang === "en" ? "Take the test" : "Tee kiirtest"}
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+        <p className="mt-3 text-xs text-[#9a9a9a]">
+          {lang === "ru" ? "Без обязательств — только честный ответ о вашем зрении." : lang === "en" ? "No commitment — just an honest answer about your vision." : "Ilma kohustuseta — aus vastus sinu nägemise kohta."}
+        </p>
       </div>
-      <iframe
-        src={url}
-        className="w-full border-0"
-        style={{ height: "580px" }}
-        title="KSA Kiirtest"
-        loading="lazy"
-      />
     </div>
   );
 }
