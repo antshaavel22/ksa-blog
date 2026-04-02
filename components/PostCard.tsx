@@ -5,6 +5,12 @@ import { getCategoryLabel, toSlug } from "@/lib/categories";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 
+function readingTime(excerpt: string): string {
+  const words = excerpt.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.round(words / 200));
+  return `${mins} min`;
+}
+
 interface PostCardProps {
   post: PostMeta;
 }
@@ -51,9 +57,14 @@ export default function PostCard({ post }: PostCardProps) {
         )}
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#f0eeea]">
           <span className="text-xs text-[#9a9a9a]">{dateFormatted}</span>
-          {post.author && (
-            <span className="text-xs text-[#9a9a9a]">{post.author}</span>
-          )}
+          <div className="flex items-center gap-3">
+            {post.excerpt && (
+              <span className="text-xs text-[#9a9a9a]">{readingTime(post.excerpt)}</span>
+            )}
+            {post.author && (
+              <span className="text-xs text-[#9a9a9a]">{post.author}</span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

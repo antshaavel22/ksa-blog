@@ -6,6 +6,7 @@ import BlogBookingCTA from "@/components/BlogBookingCTA";
 import BlogContactForm from "@/components/BlogContactForm";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
+import ShareButton from "@/components/ShareButton";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -46,7 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // Map internal author keys → display names for Schema
 const AUTHOR_NAMES: Record<string, string> = {
   antsh: "Dr. Ants Haavel",
-  silvia: "Silvia Haavel",
+  silvia: "Silvia Johanna Haavel",
   yana: "Yana Grechits",
   maigret: "Maigret Moru",
   ndhaldur: "KSA Silmakeskus",
@@ -187,14 +188,23 @@ export default async function PostPage({ params }: PageProps) {
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1a1a1a] leading-tight mb-4">
               {post.title}
             </h1>
-            <div className="flex items-center gap-3 text-sm text-[#9a9a9a]">
-              {dateFormatted && <span>{dateFormatted}</span>}
-              {post.author && (
-                <>
-                  <span>·</span>
-                  <span>{authorName}</span>
-                </>
-              )}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3 text-sm text-[#9a9a9a]">
+                {dateFormatted && <span>{dateFormatted}</span>}
+                {post.author && (
+                  <>
+                    <span>·</span>
+                    <span>{authorName}</span>
+                  </>
+                )}
+                {post.content && (
+                  <>
+                    <span>·</span>
+                    <span>{Math.max(1, Math.round(post.content.trim().split(/\s+/).length / 200))} min</span>
+                  </>
+                )}
+              </div>
+              <ShareButton title={post.title} url={canonicalUrl} />
             </div>
           </header>
 

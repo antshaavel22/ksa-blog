@@ -54,14 +54,18 @@ CTA URLs:
 - RU: https://ksa-kiirtest-lp.vercel.app/ru.html
 - EN: https://ksa-kiirtest-lp.vercel.app/en.html
 
-## Authors
+## Authors & Editors
 ```
 antsh    → Dr. Ants Haavel
-silvia   → Silvia Haavel
+silvia   → Silvia Johanna Haavel — ET editor
 yana     → Yana Grechits
 maigret  → Maigret Moru
 ndhaldur → KSA Silmakeskus
 ```
+
+## Blog Editors
+- **Silvia Johanna Haavel** — ET content editor
+- **Jana** — RU and EN content editor
 
 ## Tracking & SEO
 - **GTM:** GTM-KCZVRJ8 — wired in `app/layout.tsx`, fires on every page
