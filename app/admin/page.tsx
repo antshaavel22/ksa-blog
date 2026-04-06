@@ -161,6 +161,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [unpublishing, setUnpublishing] = useState(false);
   const [unpublished, setUnpublished] = useState(false);
   const [error, setError] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -209,6 +211,21 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       fm = setFmField(fm, "status", "medical_review");
     }
     return fm;
+  }
+
+  async function syncImage() {
+    if (!featuredImage) return;
+    setSyncing(true); setSyncResult(null);
+    try {
+      const res = await fetch("/api/admin/sync-images", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filePath: draft.path, featuredImage }),
+      });
+      const d = await res.json() as { synced?: string[]; sistersFound?: number };
+      setSyncResult({ synced: d.synced?.length ?? 0, sisters: d.sistersFound ?? 0 });
+      setTimeout(() => setSyncResult(null), 5000);
+    } finally { setSyncing(false); }
   }
 
   async function save() {
@@ -448,8 +465,29 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
           />
           {featuredImage && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={featuredImage} alt="" style={{ marginTop: 8, width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={featuredImage} alt="" style={{ marginTop: 8, width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <button
+                type="button"
+                onClick={syncImage}
+                disabled={syncing}
+                style={{
+                  marginTop: 8, padding: "6px 14px", borderRadius: 8, border: "1.5px solid #e6e6e6",
+                  background: syncing ? "#f0f0ec" : "white", color: "#5a6b6c", fontSize: 12, fontWeight: 600,
+                  cursor: syncing ? "wait" : "pointer", fontFamily: "inherit",
+                }}
+              >
+                {syncing ? "Sünkroonin..." : "Sünkrooni pilt sõsarartiklitele"}
+              </button>
+              {syncResult && (
+                <p style={{ margin: "4px 0 0", fontSize: 11, color: syncResult.synced > 0 ? "#3d6b00" : "#9a9a9a" }}>
+                  {syncResult.sisters === 0
+                    ? "Sõsarartikleid ei leitud"
+                    : `${syncResult.synced}/${syncResult.sisters} sõsarartiklit uuendatud`}
+                </p>
+              )}
+            </>
           )}
         </div>
 
