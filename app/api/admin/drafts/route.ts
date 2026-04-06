@@ -32,6 +32,7 @@ async function listDraftsDev(): Promise<DraftMeta[]> {
 
   const dirs = [
     { dir: path.join(cwd, "content/drafts"), prefix: "content/drafts" },
+    { dir: path.join(cwd, "content/drafts/et"), prefix: "content/drafts/et" },
     { dir: path.join(cwd, "content/drafts/ru"), prefix: "content/drafts/ru" },
     { dir: path.join(cwd, "content/drafts/en"), prefix: "content/drafts/en" },
   ];
@@ -74,7 +75,7 @@ async function listDraftsProd(): Promise<DraftMeta[]> {
     throw new Error("GITHUB_TOKEN and GITHUB_REPO must be set in production");
   }
 
-  const paths = ["content/drafts", "content/drafts/ru", "content/drafts/en"];
+  const paths = ["content/drafts", "content/drafts/et", "content/drafts/ru", "content/drafts/en"];
   const drafts: DraftMeta[] = [];
 
   for (const dirPath of paths) {
