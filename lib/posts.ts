@@ -63,14 +63,16 @@ export function getAllPosts(lang?: PostLang): PostMeta[] {
 
 export function getPostBySlug(slug: string): Post | null {
   const files = getAllFiles();
-  const filename = files.find((f) => f.replace(/\.mdx?$/, "") === slug);
-  if (!filename) return null;
-
-  const filePath = path.join(postsDirectory, filename);
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(raw);
-
-  return { ...(data as PostMeta), content };
+  for (const filename of files) {
+    const filePath = path.join(postsDirectory, filename);
+    const raw = fs.readFileSync(filePath, "utf-8");
+    const { data, content } = matter(raw);
+    const post = data as PostMeta;
+    if (filename.replace(/\.mdx?$/, "") === slug || post.slug === slug) {
+      return { ...post, content };
+    }
+  }
+  return null;
 }
 
 export function getPostsByCategory(category: string, lang?: PostLang): PostMeta[] {

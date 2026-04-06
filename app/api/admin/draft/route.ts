@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
-async function readDraftDev(filePath: string): Promise<string> {
+// ── Read: always filesystem (files bundled with Vercel deployment) ────────────
+
+async function readDraft(filePath: string): Promise<string> {
   const fs = await import("fs");
   const path = await import("path");
   const abs = path.join(process.cwd(), filePath);
   if (!fs.existsSync(abs)) throw new Error("File not found: " + filePath);
   return fs.readFileSync(abs, "utf-8");
 }
+
+// ── Write: filesystem in dev, GitHub API in prod (Vercel fs is read-only) ────
 
 async function writeDraftDev(filePath: string, content: string): Promise<void> {
   const fs = await import("fs");
@@ -16,32 +20,14 @@ async function writeDraftDev(filePath: string, content: string): Promise<void> {
   fs.writeFileSync(abs, content, "utf-8");
 }
 
-async function readDraftProd(filePath: string): Promise<string> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
-  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-    },
-  });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-  const data = await res.json() as { content: string; encoding: string };
-  return Buffer.from(data.content, "base64").toString("utf-8");
-}
-
 async function writeDraftProd(filePath: string, content: string): Promise<void> {
   const token = process.env.GITHUB_TOKEN!;
   const repo = process.env.GITHUB_REPO!;
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
-  // Get current SHA
+  // Get current SHA if file exists on GitHub
   const getRes = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-    },
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
   });
 
   let sha: string | undefined;
@@ -76,17 +62,13 @@ export async function GET(req: NextRequest) {
   if (!filePath) {
     return NextResponse.json({ error: "path is required" }, { status: 400 });
   }
-
-  // Security: only allow paths inside content/drafts
   if (!filePath.startsWith("content/drafts/")) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }
 
   try {
-    const content =
-      process.env.NODE_ENV === "production"
-        ? await readDraftProd(filePath)
-        : await readDraftDev(filePath);
+    // Always use filesystem — files are bundled with the Vercel deployment
+    const content = await readDraft(filePath);
     return NextResponse.json({ content });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
@@ -98,7 +80,6 @@ export async function PUT(req: NextRequest) {
   if (!filePath) {
     return NextResponse.json({ error: "path is required" }, { status: 400 });
   }
-
   if (!filePath.startsWith("content/drafts/")) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   }

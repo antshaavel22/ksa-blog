@@ -7,6 +7,7 @@ interface PostMeta {
   excerpt: string;
   lang: string;
   date: string;
+  slug: string;
 }
 
 function parseFrontmatterField(fm: string, key: string): string {
@@ -24,7 +25,7 @@ function parseFrontmatterField(fm: string, key: string): string {
   return val.replace(/^["']|["']$/g, "");
 }
 
-async function listPostsDev(): Promise<PostMeta[]> {
+async function listPosts(): Promise<PostMeta[]> {
   const fs = await import("fs");
   const path = await import("path");
   const dir = path.join(process.cwd(), "content/posts");
@@ -36,53 +37,35 @@ async function listPostsDev(): Promise<PostMeta[]> {
     .reverse(); // newest first
 
   const posts: PostMeta[] = [];
-  for (const filename of files.slice(0, 200)) { // limit to 200
+  for (const filename of files) {
     const filePath = path.join(dir, filename);
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    if (!fmMatch) continue;
-    const fm = fmMatch[1];
-    posts.push({
-      filename,
-      path: `content/posts/${filename}`,
-      title: parseFrontmatterField(fm, "title") || filename.replace(/\.mdx?$/, ""),
-      excerpt: parseFrontmatterField(fm, "excerpt").slice(0, 120),
-      lang: parseFrontmatterField(fm, "lang") || "et",
-      date: parseFrontmatterField(fm, "date") || "",
-    });
+    if (fs.statSync(filePath).isDirectory()) continue;
+    try {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+      if (!fmMatch) continue;
+      const fm = fmMatch[1];
+      const slugFromFm = parseFrontmatterField(fm, "slug");
+      posts.push({
+        filename,
+        path: `content/posts/${filename}`,
+        title: parseFrontmatterField(fm, "title") || filename.replace(/\.mdx?$/, ""),
+        excerpt: parseFrontmatterField(fm, "excerpt").slice(0, 120),
+        lang: parseFrontmatterField(fm, "lang") || "et",
+        date: parseFrontmatterField(fm, "date") || "",
+        slug: slugFromFm || filename.replace(/\.mdx?$/, ""),
+      });
+    } catch {
+      // Skip unreadable files
+    }
   }
   return posts;
 }
 
-async function listPostsProd(): Promise<PostMeta[]> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
-  const url = `https://api.github.com/repos/${repo}/contents/content/posts?per_page=200`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-  const files = await res.json() as { name: string; path: string }[];
-  return files
-    .filter((f) => f.name.endsWith(".mdx") || f.name.endsWith(".md"))
-    .sort((a, b) => b.name.localeCompare(a.name))
-    .slice(0, 200)
-    .map((f) => ({
-      filename: f.name,
-      path: f.path,
-      title: f.name.replace(/\.mdx?$/, "").replace(/-/g, " "),
-      excerpt: "",
-      lang: "et",
-      date: "",
-    }));
-}
-
 export async function GET() {
   try {
-    const posts =
-      process.env.NODE_ENV === "production"
-        ? await listPostsProd()
-        : await listPostsDev();
+    // Always use filesystem — content/posts/ is bundled with the Vercel deployment.
+    const posts = await listPosts();
     return NextResponse.json({ posts });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

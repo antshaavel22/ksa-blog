@@ -11,6 +11,7 @@ interface DraftMeta {
   excerpt: string;
   lang: string;
   date: string;
+  slug?: string;
   status?: string; // "draft" | "medical_review"
   assignedTo?: string; // "silvia" | "jana" | "ants"
   deadline?: string; // "YYYY-MM-DD"
@@ -149,6 +150,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [frontmatter, setFrontmatter] = useState("");
   const [featuredImage, setFeaturedImage] = useState("");
   const [postDate, setPostDate] = useState("");
+  const [postSlug, setPostSlug] = useState("");
   const [youtubeInput, setYoutubeInput] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -156,6 +158,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
   const [publishedSlug, setPublishedSlug] = useState("");
+  const [unpublishing, setUnpublishing] = useState(false);
+  const [unpublished, setUnpublished] = useState(false);
   const [error, setError] = useState("");
 
   // Review panel state
@@ -186,6 +190,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setTitle(getFmField(parsed.frontmatter, "title"));
           setFeaturedImage(getFmField(parsed.frontmatter, "featuredImage"));
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
+          setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -234,10 +239,23 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: draft.path }),
     });
-    const d = await res.json() as { ok?: boolean; slug?: string; error?: string };
+    const d = await res.json() as { ok?: boolean; slug?: string; needsRedeploy?: boolean; error?: string };
     if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
     else { setError(d.error ?? "Midagi läks valesti"); }
     setPublishing(false);
+  }
+
+  async function unpublish() {
+    if (!confirm(`Kas oled kindel, et soovid postituse "${title}" eemaldada avalikust vaatest?\nPostitus liigub tagasi mustandite alla.`)) return;
+    setUnpublishing(true); setError("");
+    const res = await fetch("/api/admin/unpublish", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: draft.path }),
+    });
+    const d = await res.json() as { ok?: boolean; draftPath?: string; error?: string };
+    if (d.ok) { setUnpublished(true); setTimeout(() => { onBack(); }, 1800); }
+    else { setError(d.error ?? "Eemaldamine ebaõnnestus"); }
+    setUnpublishing(false);
   }
 
   async function sendToMedicalReview() {
@@ -274,17 +292,35 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     setTimeout(() => setNotified(false), 3000);
   }
 
+  // ── Unpublished screen ───────────────────────────────────────────────────
+  if (unpublished) {
+    return (
+      <div style={{ maxWidth: 600, margin: "80px auto", padding: "0 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>📦</div>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", margin: "0 0 10px" }}>
+          Postitus eemaldatud avalikust vaatest
+        </h2>
+        <p style={{ color: "#9a9a9a", fontSize: 15, marginBottom: 28 }}>
+          Postitus on nüüd mustandina tagasi. Läheb naasmisele automaatselt…
+        </p>
+      </div>
+    );
+  }
+
   // ── Success screen ────────────────────────────────────────────────────────
   if (published) {
     return (
       <div style={{ maxWidth: 600, margin: "80px auto", padding: "0 24px", textAlign: "center" }}>
         <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: "#1a1a1a", margin: "0 0 10px" }}>
-          Postitus on üleval!
+          Postitus on salvestatud!
         </h2>
-        <p style={{ color: "#9a9a9a", fontSize: 15, marginBottom: 36 }}>
-          See ilmub blogis umbes 60 sekundi pärast.
-        </p>
+        <div style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 14, padding: "14px 20px", marginBottom: 28, textAlign: "left" }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#7a5800", lineHeight: 1.6 }}>
+            <strong>Järgmine samm:</strong> postitus ilmub blogis pärast deploymenti.
+            Palun teavita Antsu, et ta käivitaks <code style={{ background: "#f0e8d0", borderRadius: 4, padding: "1px 5px", fontSize: 12 }}>vercel deploy --prod</code>.
+          </p>
+        </div>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button onClick={onBack} style={{
             padding: "13px 26px", border: "2px solid #e6e6e6", borderRadius: 14,
@@ -309,16 +345,33 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   // ── Editor ────────────────────────────────────────────────────────────────
   return (
     <div style={{ maxWidth: 680, margin: "0 auto", padding: "0 20px 120px" }}>
-      {/* Back bar */}
+      {/* Breadcrumb nav */}
       <div style={{
         padding: "16px 0 14px", display: "flex", alignItems: "center",
-        gap: 10, borderBottom: "1px solid #f0f0ec", marginBottom: 24,
+        gap: 10, borderBottom: "1px solid #f0f0ec", marginBottom: 24, flexWrap: "wrap",
       }}>
         <button onClick={onBack} style={{
-          background: "none", border: "none", fontSize: 15, color: "#5a6b6c",
-          cursor: "pointer", fontWeight: 600, padding: 0, display: "flex", alignItems: "center", gap: 6,
-        }}>← Tagasi</button>
+          background: "none", border: "none", fontSize: 14, color: "#5a6b6c",
+          cursor: "pointer", fontWeight: 600, padding: 0, display: "flex", alignItems: "center", gap: 5,
+        }}>← {isPublished ? "Avaldatud" : "Mustandid"}</button>
+        <span style={{ color: "#d0d0cc", fontSize: 16 }}>›</span>
         <LangBadge lang={draft.lang} />
+        <span style={{ fontSize: 13, color: "#9a9a9a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+          {draft.title || draft.filename}
+        </span>
+        {isPublished && postSlug && (
+          <a
+            href={`https://blog.ksa.ee/${postSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontSize: 13, color: "#87be23", fontWeight: 700,
+              textDecoration: "none", display: "flex", alignItems: "center", gap: 4,
+              padding: "5px 12px", border: "1.5px solid #c5e58a", borderRadius: 20,
+              whiteSpace: "nowrap", flexShrink: 0,
+            }}
+          >Vaata blogis ↗</a>
+        )}
       </div>
 
       {error && (
@@ -575,8 +628,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           )}
         </div>
 
-        {/* Right: save / publish */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Right: save / publish / unpublish */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
           <button onClick={save} disabled={saving} style={{
             padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
@@ -584,9 +637,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             color: "#5a6b6c",
           }}>{saving ? "Salvestab…" : "Salvesta"}</button>
           {isPublished ? (
-            <span style={{ fontSize: 13, color: "#9a9a9a", fontStyle: "italic" }}>
-              Avaldatud post — muudatused ilmuvad 60 sek jooksul
-            </span>
+            <button onClick={unpublish} disabled={unpublishing} style={{
+              padding: "11px 22px", border: "2px solid #fca5a5", borderRadius: 12,
+              background: "white", fontSize: 14, fontWeight: 700,
+              cursor: unpublishing ? "not-allowed" : "pointer",
+              color: unpublishing ? "#9a9a9a" : "#b91c1c",
+            }}>{unpublishing ? "Eemaldan…" : "↩ Eemalda avaldamisest"}</button>
           ) : (
             <button onClick={publish} disabled={publishing} style={{
               padding: "11px 28px", border: "none", borderRadius: 12,
@@ -747,9 +803,14 @@ function PublishedTab() {
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
 
+  const q = search.trim().toLowerCase();
   const filtered = posts.filter(p => {
     if (langFilter !== "all" && p.lang !== langFilter) return false;
-    if (search.trim()) return p.title.toLowerCase().includes(search.toLowerCase());
+    if (q) return (
+      p.title.toLowerCase().includes(q) ||
+      (p.excerpt ?? "").toLowerCase().includes(q) ||
+      (p.slug ?? "").toLowerCase().includes(q)
+    );
     return true;
   });
 
@@ -1069,6 +1130,94 @@ function WriteTab() {
   );
 }
 
+// ─── Prompt Tab ───────────────────────────────────────────────────────────────
+
+function PromptTab() {
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/prompt")
+      .then(r => r.json())
+      .then((d: { content?: string; error?: string }) => {
+        if (d.content) setContent(d.content);
+        else setError(d.error ?? "Viga laadimisel");
+      })
+      .catch(e => setError((e as Error).message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function save() {
+    setSaving(true); setSaved(false); setError("");
+    try {
+      const res = await fetch("/api/admin/prompt", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const d = await res.json() as { ok?: boolean; error?: string };
+      if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+      else setError(d.error ?? "Salvestamine ebaõnnestus");
+    } catch (e) { setError((e as Error).message); }
+    finally { setSaving(false); }
+  }
+
+  return (
+    <div style={{ maxWidth: 820, margin: "0 auto", padding: "24px 20px 120px" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 800, color: "#1a1a1a" }}>
+            📝 Sisureeglid — AI kirjutamisjuhend
+          </h2>
+          <p style={{ margin: 0, fontSize: 14, color: "#9a9a9a", lineHeight: 1.5, maxWidth: 560 }}>
+            See prompt käivitub iga kord kui AI kirjutab uue postituse — mustandid, skautimisest saadud artiklid, partii genereerimine.
+            Muuda neid reegleid vastavalt vajadusele ja salvesta. Muutused jõustuvad kohe.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+          {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
+          {error && <span style={{ fontSize: 13, color: "#b91c1c" }}>⚠ {error}</span>}
+          <button onClick={save} disabled={saving || loading} style={{
+            padding: "10px 24px", border: "none", borderRadius: 12,
+            background: saving ? "#c5dfa0" : "#87be23", color: "white",
+            fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
+          }}>{saving ? "Salvestab…" : "Salvesta muudatused"}</button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a" }}>Laen…</div>
+      ) : (
+        <textarea
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          spellCheck={false}
+          style={{
+            width: "100%", minHeight: 700, padding: "20px", fontSize: 13,
+            lineHeight: 1.65, color: "#1a1a1a", border: "2px solid #e6e6e6",
+            borderRadius: 16, background: "white", outline: "none",
+            resize: "vertical", boxSizing: "border-box",
+            fontFamily: "ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace",
+          }}
+          onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+          onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+        />
+      )}
+
+      <div style={{ marginTop: 14, padding: "14px 18px", background: "#f9f9f7", borderRadius: 12, border: "1px solid #e6e6e6" }}>
+        <p style={{ margin: 0, fontSize: 13, color: "#5a6b6c", lineHeight: 1.6 }}>
+          <strong>Kuidas toimib:</strong> AI loeb seda dokumenti enne iga uue artikli kirjutamist.
+          Keelereegleid, tooni, meditsiinilise keele poliitikat ja struktuurijuhiseid saad siin täiendada.
+          Muudatused jõustuvad koheselt — järgmine genereeritud mustand järgib juba uusi reegleid.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Help Tab ─────────────────────────────────────────────────────────────────
 
 function HelpTab() {
@@ -1193,7 +1342,7 @@ function HelpTab() {
 // ─── Root Admin Page ──────────────────────────────────────────────────────────
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "published" | "write" | "help">("drafts");
+  const [tab, setTab] = useState<"drafts" | "published" | "write" | "prompt" | "help">("drafts");
 
   async function logout() {
     await fetch("/api/admin/logout");
@@ -1229,6 +1378,7 @@ export default function AdminPage() {
             { id: "drafts", label: "📋 Mustandid" },
             { id: "published", label: "✏️ Avaldatud" },
             { id: "write", label: "✍️ Kirjuta uus" },
+            { id: "prompt", label: "📝 Sisureeglid" },
             { id: "help", label: "❓ Juhend" },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -1253,7 +1403,7 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : <HelpTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
     </div>
   );
 }

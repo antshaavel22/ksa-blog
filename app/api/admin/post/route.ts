@@ -1,10 +1,11 @@
 /**
  * /api/admin/post — Read and update published posts in content/posts/
- * Same pattern as /api/admin/draft but for content/posts/ directory.
+ * READ: always filesystem (files bundled with deployment)
+ * WRITE: GitHub API in production (Vercel fs is read-only)
  */
 import { NextRequest, NextResponse } from "next/server";
 
-async function readPostDev(filePath: string): Promise<string> {
+async function readPost(filePath: string): Promise<string> {
   const fs = await import("fs");
   const path = await import("path");
   const abs = path.join(process.cwd(), filePath);
@@ -17,18 +18,6 @@ async function writePostDev(filePath: string, content: string): Promise<void> {
   const path = await import("path");
   const abs = path.join(process.cwd(), filePath);
   fs.writeFileSync(abs, content, "utf-8");
-}
-
-async function readPostProd(filePath: string): Promise<string> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
-  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-  });
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-  const data = await res.json() as { content: string };
-  return Buffer.from(data.content, "base64").toString("utf-8");
 }
 
 async function writePostProd(filePath: string, content: string): Promise<void> {
@@ -70,10 +59,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
 
   try {
-    const content =
-      process.env.NODE_ENV === "production"
-        ? await readPostProd(filePath)
-        : await readPostDev(filePath);
+    // Always use filesystem — files are bundled with the Vercel deployment
+    const content = await readPost(filePath);
     return NextResponse.json({ content });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

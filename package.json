@@ -10,7 +10,8 @@
     "convert": "tsx scripts/wp-to-mdx.ts",
     "ai-facelift": "tsx scripts/ai-facelift.ts",
     "scout": "tsx scripts/content-scout.ts",
-    "fill-translations": "tsx scripts/fill-translations.ts"
+    "fill-translations": "tsx scripts/fill-translations.ts",
+    "batch": "tsx scripts/batch-generate.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",
