@@ -117,10 +117,9 @@ async function listDraftsProd(): Promise<DraftMeta[]> {
 
 export async function GET() {
   try {
-    const drafts =
-      process.env.NODE_ENV === "production"
-        ? await listDraftsProd()
-        : await listDraftsDev();
+    // Always use filesystem — content/drafts/ is bundled with the Vercel deployment.
+    // listDraftsProd() made 548 sequential GitHub API requests which timed out.
+    const drafts = await listDraftsDev();
 
     return NextResponse.json({ drafts });
   } catch (err) {
