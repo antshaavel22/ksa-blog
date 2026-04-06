@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -22,7 +20,7 @@ export default function LoginPage() {
       });
       const data = await res.json() as { ok: boolean };
       if (data.ok) {
-        router.push("/admin");
+        window.location.href = "/admin";
       } else {
         setError("Vale parool. Proovi uuesti.");
       }
