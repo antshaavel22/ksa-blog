@@ -163,6 +163,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [error, setError] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
+  const [generatingImage, setGeneratingImage] = useState(false);
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -226,6 +228,23 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       setSyncResult({ synced: d.synced?.length ?? 0, sisters: d.sistersFound ?? 0 });
       setTimeout(() => setSyncResult(null), 5000);
     } finally { setSyncing(false); }
+  }
+
+  async function generateImage() {
+    setGeneratingImage(true); setGeneratedPrompt("");
+    try {
+      const res = await fetch("/api/admin/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, excerpt: getFmField(frontmatter, "excerpt"), lang: draft.lang }),
+      });
+      const d = await res.json() as { ok?: boolean; imageUrl?: string; prompt?: string; note?: string; error?: string };
+      if (d.error) { alert("Viga: " + d.error); return; }
+      if (d.imageUrl) {
+        setFeaturedImage(d.imageUrl);
+      }
+      if (d.prompt) setGeneratedPrompt(d.prompt);
+    } finally { setGeneratingImage(false); }
   }
 
   async function save() {
@@ -448,9 +467,36 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
         {/* Featured image */}
         <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 6, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            🖼 Kaanepilt (URL)
-          </label>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              🖼 Kaanepilt (URL)
+            </label>
+            <button
+              type="button"
+              onClick={generateImage}
+              disabled={generatingImage || !title}
+              style={{
+                padding: "4px 12px", borderRadius: 8, border: "1.5px solid #87be23",
+                background: generatingImage ? "#f0f0ec" : "white",
+                color: generatingImage ? "#9a9a9a" : "#87be23",
+                fontSize: 11, fontWeight: 700, cursor: generatingImage || !title ? "wait" : "pointer",
+                fontFamily: "inherit", whiteSpace: "nowrap",
+              }}
+            >
+              {generatingImage ? "Genereerin..." : "✨ Genereeri AI pilt"}
+            </button>
+          </div>
+          {generatedPrompt && !process.env.NEXT_PUBLIC_HAS_REPLICATE && (
+            <div style={{ marginBottom: 8, padding: "10px 12px", background: "#f9f9f7", borderRadius: 8, border: "1px solid #e6e6e6" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#5a6b6c", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>AI prompt (kopeeri Midjourney/DALL-E)</p>
+              <p style={{ fontSize: 12, color: "#1a1a1a", margin: 0, lineHeight: 1.5 }}>{generatedPrompt}</p>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(generatedPrompt)}
+                style={{ marginTop: 6, fontSize: 11, padding: "3px 10px", borderRadius: 6, border: "1px solid #e6e6e6", background: "white", cursor: "pointer", color: "#5a6b6c" }}
+              >Kopeeri prompt</button>
+            </div>
+          )}
           <input
             type="url"
             value={featuredImage}
