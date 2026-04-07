@@ -38,7 +38,7 @@ End with a thought that stays. Not a sales pitch.
 
 LANGUAGE
 ET — Warm Tallinn Estonian. Talk like a smart friend, not a brochure.
-RU — Baltic Russian, "вы". Warm, natural. Таллин (one н).
+RU — Baltic Russian, "вы". Warm, natural. Таллинн (two н — Estonian local standard).
 EN — British English. Clear and calm. BBC Health tone.
 
 

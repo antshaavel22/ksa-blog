@@ -78,11 +78,13 @@ export default function BlogFooter() {
             © {new Date().getFullYear()} KSA Silmakeskus —{" "}
             <a href="https://ksa.ee" className="hover:text-[#000000] transition-colors">ksa.ee</a>
           </p>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-6">
             {[
               { href: "https://ksa.ee/broneeri", label: "Broneeri aeg" },
               { href: "https://ksa.ee/hinnakiri", label: "Hinnakiri" },
               { href: "https://ksa.ee/kontakt", label: "Kontakt" },
+              { href: "https://ksa.ee/privaatsuspoliitika", label: "Privaatsuspoliitika" },
+              { href: "https://ksa.ee/kupsised", label: "Küpsised" },
             ].map(({ href, label }) => (
               <a
                 key={label}

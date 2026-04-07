@@ -30,18 +30,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
+  // Make featuredImage URL absolute for OG tags
+  const ogImage = post.featuredImage
+    ? post.featuredImage.startsWith("http")
+      ? post.featuredImage
+      : `https://blog.ksa.ee${post.featuredImage}`
+    : "https://ksa.ee/wp-content/uploads/2024/09/ksa-silmanipid.png";
+
   return {
     title: post.seoTitle ?? post.title,
     description: post.seoExcerpt ?? post.excerpt,
     openGraph: {
       title: post.seoTitle ?? post.title,
       description: post.seoExcerpt ?? post.excerpt,
-      images: post.featuredImage ? [{ url: post.featuredImage }] : [],
+      images: [{ url: ogImage, width: 1200, height: 630 }],
       type: "article",
       publishedTime: post.date,
+      locale: post.lang === "ru" ? "ru_RU" : post.lang === "en" ? "en_GB" : "et_EE",
     },
     alternates: {
       canonical: `https://blog.ksa.ee/${slug}`,
+    },
+    other: {
+      "content-language": post.lang ?? "et",
     },
   };
 }
