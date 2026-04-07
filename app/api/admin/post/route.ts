@@ -50,6 +50,12 @@ async function writePostProd(filePath: string, content: string): Promise<void> {
     body: JSON.stringify(body),
   });
   if (!putRes.ok) throw new Error(`GitHub write error: ${putRes.status}`);
+
+  // Explicitly trigger Vercel redeploy (GitHub auto-deploy is also active, belt+suspenders)
+  const deployHook = process.env.VERCEL_DEPLOY_HOOK;
+  if (deployHook) {
+    try { await fetch(deployHook, { method: "POST" }); } catch { /* non-fatal */ }
+  }
 }
 
 export async function GET(req: NextRequest) {

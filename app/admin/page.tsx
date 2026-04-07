@@ -160,6 +160,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [publishedSlug, setPublishedSlug] = useState("");
   const [unpublishing, setUnpublishing] = useState(false);
   const [unpublished, setUnpublished] = useState(false);
+  const [updating, setUpdating] = useState(false);       // "Update live" for published posts
+  const [updateCountdown, setUpdateCountdown] = useState(0); // >0 shows countdown bar
   const [error, setError] = useState("");
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
@@ -361,6 +363,29 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       const d = await res.json() as { ok?: boolean };
       if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
     } finally { setSaving(false); }
+  }
+
+  async function updateLive() {
+    setUpdating(true); setSaved(false);
+    const content = buildMdx(buildFm(), body);
+    try {
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(draft.path)}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const d = await res.json() as { ok?: boolean };
+      if (d.ok) {
+        setSaved(true); setTimeout(() => setSaved(false), 3000);
+        // Show 120-second countdown (Vercel rebuild time)
+        setUpdateCountdown(120);
+        const tick = setInterval(() => {
+          setUpdateCountdown(prev => {
+            if (prev <= 1) { clearInterval(tick); return 0; }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    } finally { setUpdating(false); }
   }
 
   async function publish() {
@@ -734,22 +759,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </div>
       </div>
 
-      {/* Body */}
-      <textarea
-        value={body}
-        onChange={e => setBody(e.target.value)}
-        placeholder="Artikli tekst..."
-        rows={22}
-        spellCheck
-        style={{
-          width: "100%", padding: "16px", fontSize: 15, lineHeight: 1.75,
-          color: "#1a1a1a", border: "1.5px solid #e6e6e6", borderRadius: 16,
-          background: "white", outline: "none", resize: "vertical",
-          boxSizing: "border-box", fontFamily: "inherit", minHeight: 400,
-        }}
-        onFocus={e => { e.target.style.borderColor = "#87be23"; }}
-        onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
-      />
+      {/* Formatting toolbar + Body textarea */}
+      <FormattingToolbar body={body} setBody={setBody} />
 
       {/* Review Panel — shown only for drafts */}
       {!isPublished && (
@@ -880,18 +891,38 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           }}>
             {showPreview ? "✏️ Redigeeri" : "👁 Eelvaade"}
           </button>
-          <button onClick={save} disabled={saving} style={{
-            padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
-            background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
-            color: "#5a6b6c",
-          }}>{saving ? "Salvestab…" : "Salvesta"}</button>
+          {/* For drafts: plain Salvesta. For published posts: Salvesta is just a quiet save. */}
+          {!isPublished && (
+            <button onClick={save} disabled={saving} style={{
+              padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
+              background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
+              color: "#5a6b6c",
+            }}>{saving ? "Salvestab…" : "Salvesta"}</button>
+          )}
           {isPublished ? (
-            <button onClick={unpublish} disabled={unpublishing} style={{
-              padding: "11px 22px", border: "2px solid #fca5a5", borderRadius: 12,
-              background: "white", fontSize: 14, fontWeight: 700,
-              cursor: unpublishing ? "not-allowed" : "pointer",
-              color: unpublishing ? "#9a9a9a" : "#b91c1c",
-            }}>{unpublishing ? "Eemaldan…" : "↩ Eemalda avaldamisest"}</button>
+            <>
+              <button onClick={save} disabled={saving} style={{
+                padding: "11px 20px", border: "2px solid #e6e6e6", borderRadius: 12,
+                background: "white", fontSize: 13, fontWeight: 600,
+                cursor: saving ? "not-allowed" : "pointer", color: "#5a6b6c",
+              }} title="Salvesta muudatused ilma live uuendamata">
+                {saving ? "Salvestab…" : "💾 Salvesta"}
+              </button>
+              <button onClick={updateLive} disabled={updating || updateCountdown > 0} style={{
+                padding: "11px 24px", border: "none", borderRadius: 12,
+                background: updating || updateCountdown > 0 ? "#c5dfa0" : "#87be23",
+                color: "white", fontSize: 14, fontWeight: 800,
+                cursor: updating || updateCountdown > 0 ? "not-allowed" : "pointer",
+              }}>
+                {updating ? "Uuendan…" : updateCountdown > 0 ? `⏱ Live ~${updateCountdown}s` : "🔄 Uuenda live"}
+              </button>
+              <button onClick={unpublish} disabled={unpublishing} style={{
+                padding: "11px 20px", border: "2px solid #fca5a5", borderRadius: 12,
+                background: "white", fontSize: 13, fontWeight: 600,
+                cursor: unpublishing ? "not-allowed" : "pointer",
+                color: unpublishing ? "#9a9a9a" : "#b91c1c",
+              }}>{unpublishing ? "Eemaldan…" : "↩ Eemalda"}</button>
+            </>
           ) : (
             <button onClick={publish} disabled={publishing} style={{
               padding: "11px 28px", border: "none", borderRadius: 12,
@@ -902,6 +933,121 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Formatting toolbar ───────────────────────────────────────────────────────
+// Wraps the body textarea with B / I / Link / H2 / H3 buttons.
+// Operates on the selected text range using document.execCommand-style logic.
+
+function FormattingToolbar({ body, setBody }: { body: string; setBody: (v: string) => void }) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  function wrap(before: string, after: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const selected = body.slice(start, end) || "tekst";
+    const newBody = body.slice(0, start) + before + selected + after + body.slice(end);
+    setBody(newBody);
+    // Restore selection after state update
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(start + before.length, start + before.length + selected.length);
+    });
+  }
+
+  function wrapLine(prefix: string) {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    // Find line start
+    const lineStart = body.lastIndexOf("\n", start - 1) + 1;
+    const line = body.slice(lineStart, body.indexOf("\n", start) === -1 ? body.length : body.indexOf("\n", start));
+    // Toggle: if line already starts with prefix, remove it; else add it
+    let newLine: string;
+    if (line.startsWith(prefix)) {
+      newLine = line.slice(prefix.length);
+    } else {
+      // Remove any other heading prefix first
+      newLine = prefix + line.replace(/^#{1,4}\s*/, "");
+    }
+    const lineEnd = body.indexOf("\n", start) === -1 ? body.length : body.indexOf("\n", start);
+    const newBody = body.slice(0, lineStart) + newLine + body.slice(lineEnd);
+    setBody(newBody);
+    requestAnimationFrame(() => { el.focus(); el.setSelectionRange(lineStart + prefix.length, lineStart + prefix.length); });
+  }
+
+  function insertLink() {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const selected = body.slice(start, end) || "tekst";
+    const href = prompt("Link URL:", "https://");
+    if (!href) return;
+    const md = `[${selected}](${href})`;
+    const newBody = body.slice(0, start) + md + body.slice(end);
+    setBody(newBody);
+    requestAnimationFrame(() => { el.focus(); });
+  }
+
+  const btnStyle: React.CSSProperties = {
+    padding: "5px 10px", border: "1px solid #e6e6e6", borderRadius: 7,
+    background: "white", color: "#5a6b6c", fontSize: 12, fontWeight: 700,
+    cursor: "pointer", fontFamily: "inherit", lineHeight: 1,
+  };
+
+  return (
+    <div>
+      {/* Toolbar */}
+      <div style={{
+        display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 4,
+        padding: "6px 10px", background: "#f9f9f7", border: "1.5px solid #e6e6e6",
+        borderBottom: "none", borderRadius: "12px 12px 0 0",
+      }}>
+        <button type="button" title="Paks tekst (Ctrl+B)" style={btnStyle} onClick={() => wrap("**", "**")}><strong>B</strong></button>
+        <button type="button" title="Kaldkiri (Ctrl+I)" style={btnStyle} onClick={() => wrap("*", "*")}><em>I</em></button>
+        <button type="button" title="Pealkiri H2" style={btnStyle} onClick={() => wrapLine("## ")}>H2</button>
+        <button type="button" title="Pealkiri H3" style={btnStyle} onClick={() => wrapLine("### ")}>H3</button>
+        <button type="button" title="Lisa link" style={{ ...btnStyle, display: "flex", alignItems: "center", gap: 4 }} onClick={insertLink}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          Link
+        </button>
+        <button type="button" title="Loetelu punkt" style={btnStyle} onClick={() => wrap("\n- ", "")}>• List</button>
+        <span style={{ marginLeft: "auto", fontSize: 10, color: "#c0c0b8", alignSelf: "center", paddingRight: 4 }}>Markdown</span>
+      </div>
+
+      {/* Textarea */}
+      <textarea
+        ref={textareaRef}
+        value={body}
+        onChange={e => setBody(e.target.value)}
+        placeholder="Artikli tekst..."
+        rows={22}
+        spellCheck
+        style={{
+          width: "100%", padding: "16px", fontSize: 15, lineHeight: 1.75,
+          color: "#1a1a1a", border: "1.5px solid #e6e6e6", borderRadius: "0 0 16px 16px",
+          background: "white", outline: "none", resize: "vertical",
+          boxSizing: "border-box", fontFamily: "inherit", minHeight: 400,
+        }}
+        onFocus={e => {
+          e.target.style.borderColor = "#87be23";
+          const prev = e.target.previousElementSibling as HTMLElement | null;
+          if (prev) { prev.style.borderColor = "#87be23"; prev.style.borderBottomColor = "transparent"; }
+        }}
+        onBlur={e => {
+          e.target.style.borderColor = "#e6e6e6";
+          const prev = e.target.previousElementSibling as HTMLElement | null;
+          if (prev) { prev.style.borderColor = "#e6e6e6"; prev.style.borderBottomColor = "transparent"; }
+        }}
+      />
     </div>
   );
 }
