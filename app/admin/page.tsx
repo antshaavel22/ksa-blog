@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, FormEvent } from "react";
+import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -168,6 +168,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadInfo, setUploadInfo] = useState<{ original: { name: string; sizeKB: number; width: number; height: number }; optimized: { sizeKB: number; width: number; height: number; format: string } } | null>(null);
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
+  const [showPreview, setShowPreview] = useState(false);
+  const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -209,6 +211,9 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     let fm = setFmField(frontmatter, "title", title);
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
+    if (focalPoint && focalPoint !== "center center") {
+      fm = setFmField(fm, "imageFocalPoint", focalPoint);
+    }
     if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
     if (deadline) fm = setFmField(fm, "deadline", deadline);
     if (extraMedical) {
@@ -303,14 +308,41 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       let d: { ok?: boolean; url?: string; previewUrl?: string; error?: string };
       try { d = JSON.parse(text); } catch { throw new Error(text.slice(0, 120)); }
       if (d.error) { alert("Viga: " + d.error); return; }
-      // Save production URL (/uploads/...) to frontmatter — NOT the raw GitHub preview URL
-      setFeaturedImage(d.url ?? "");
-      // Keep preview URL separately just for the editor <img> tag (before Vercel redeploys)
-      setUploadPreviewUrl(d.previewUrl ?? d.url ?? "");
+
+      const newImageUrl = d.url ?? "";
+      const newPreviewUrl = d.previewUrl ?? newImageUrl;
+
+      // Set state for visual update
+      setFeaturedImage(newImageUrl);
+      setUploadPreviewUrl(newPreviewUrl);
       setUploadInfo({
         original: { name: file.name, sizeKB: originalSizeKB, width: originalWidth, height: 0 },
         optimized: { sizeKB: compressedSizeKB, width: outW, height: outH, format: "webp" },
       });
+
+      // AUTO-SAVE the draft immediately with the new image URL.
+      // We CANNOT rely on React state here (setFeaturedImage is async),
+      // so we build the MDX content directly with the new URL injected.
+      if (newImageUrl && draft.path) {
+        try {
+          const fmWithImage = setFmField(
+            setFmField(setFmField(frontmatter, "title", title), "date", postDate),
+            "featuredImage", newImageUrl
+          );
+          const newContent = buildMdx(fmWithImage, body);
+          const endpoint = isPublished
+            ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
+            : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+          await fetch(endpoint, {
+            method: "PUT", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: newContent }),
+          });
+          setFrontmatter(fmWithImage); // keep state in sync
+          setSaved(true); setTimeout(() => setSaved(false), 3000);
+        } catch {
+          // Non-fatal — user can still save manually
+        }
+      }
     } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
     finally { setUploadingImage(false); e.target.value = ""; }
   }
@@ -459,6 +491,22 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </div>
       )}
 
+      {/* ── Preview panel ── */}
+      {showPreview && (
+        <PostPreview
+          title={title}
+          body={body}
+          featuredImage={uploadPreviewUrl || featuredImage}
+          category={getFmField(frontmatter, "categories")?.replace(/[\[\]"]/g, "").split(",")[0]?.trim() ?? ""}
+          date={postDate}
+          author={getFmField(frontmatter, "author")}
+          lang={draft.lang}
+          onClose={() => setShowPreview(false)}
+          onPublish={!isPublished ? publish : undefined}
+          publishing={publishing}
+        />
+      )}
+
       {/* Title */}
       <input
         type="text"
@@ -593,13 +641,13 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           </div>
           {featuredImage && (
             <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              {/* Drag-to-reposition crop control */}
+              <DragCrop
                 src={uploadPreviewUrl || featuredImage}
-                alt=""
-                style={{ marginTop: 8, width: "100%", maxHeight: 180, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }}
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                focalPoint={focalPoint}
+                onFocalPointChange={setFocalPoint}
               />
+
               {uploadPreviewUrl && uploadPreviewUrl !== featuredImage && (
                 <p style={{ margin: "4px 0 0", fontSize: 11, color: "#6b7280" }}>
                   ⏳ Eelvaade — pilt ilmub blogis pärast ~2 min deploymenti. Salvestatud: <code style={{ fontSize: 10 }}>{featuredImage}</code>
@@ -816,9 +864,19 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           )}
         </div>
 
-        {/* Right: save / publish / unpublish */}
+        {/* Right: preview / save / publish / unpublish */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
+          <button onClick={() => setShowPreview(v => !v)} style={{
+            padding: "11px 18px", border: "2px solid #e6e4df", borderRadius: 12,
+            background: showPreview ? "#f0fdf4" : "white",
+            borderColor: showPreview ? "#87be23" : "#e6e4df",
+            fontSize: 14, fontWeight: 700, cursor: "pointer",
+            color: showPreview ? "#3d6b00" : "#5a6b6c",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            {showPreview ? "✏️ Redigeeri" : "👁 Eelvaade"}
+          </button>
           <button onClick={save} disabled={saving} style={{
             padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
             background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
@@ -841,6 +899,342 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Drag-to-reposition crop control ─────────────────────────────────────────
+// Editor drags the image inside a fixed-aspect-ratio frame.
+// Internally tracks X/Y as percentages (0–100) → CSS object-position.
+
+function DragCrop({
+  src,
+  focalPoint,
+  onFocalPointChange,
+}: {
+  src: string;
+  focalPoint: string;
+  onFocalPointChange: (fp: string) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const startMouse = useRef({ x: 0, y: 0 });
+  const startPct = useRef({ x: 50, y: 50 });
+
+  // Parse current focalPoint ("X% Y%" or named e.g. "center center")
+  function parsePct(fp: string): { x: number; y: number } {
+    const named: Record<string, number> = { left: 0, center: 50, right: 100, top: 0, bottom: 100 };
+    const parts = fp.trim().split(/\s+/);
+    const parseOne = (s: string) => {
+      if (s.endsWith("%")) return parseFloat(s);
+      return named[s] ?? 50;
+    };
+    if (parts.length === 1) return { x: parseOne(parts[0]), y: 50 };
+    return { x: parseOne(parts[0]), y: parseOne(parts[1]) };
+  }
+
+  function toCssValue(pct: { x: number; y: number }): string {
+    return `${Math.round(pct.x)}% ${Math.round(pct.y)}%`;
+  }
+
+  const pct = parsePct(focalPoint);
+
+  function onMouseDown(e: React.MouseEvent) {
+    e.preventDefault();
+    isDragging.current = true;
+    startMouse.current = { x: e.clientX, y: e.clientY };
+    startPct.current = parsePct(focalPoint);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }
+
+  function onMouseMove(e: MouseEvent) {
+    if (!isDragging.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    // Drag direction: dragging right moves focal point left (image shifts right)
+    const dxPct = ((e.clientX - startMouse.current.x) / rect.width) * 100;
+    const dyPct = ((e.clientY - startMouse.current.y) / rect.height) * 100;
+    const newX = Math.max(0, Math.min(100, startPct.current.x - dxPct));
+    const newY = Math.max(0, Math.min(100, startPct.current.y - dyPct));
+    onFocalPointChange(toCssValue({ x: newX, y: newY }));
+  }
+
+  function onMouseUp() {
+    isDragging.current = false;
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onMouseUp);
+  }
+
+  // Touch support
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    isDragging.current = true;
+    startMouse.current = { x: t.clientX, y: t.clientY };
+    startPct.current = parsePct(focalPoint);
+  }
+
+  function onTouchMove(e: React.TouchEvent) {
+    if (!isDragging.current || !containerRef.current) return;
+    const t = e.touches[0];
+    const rect = containerRef.current.getBoundingClientRect();
+    const dxPct = ((t.clientX - startMouse.current.x) / rect.width) * 100;
+    const dyPct = ((t.clientY - startMouse.current.y) / rect.height) * 100;
+    const newX = Math.max(0, Math.min(100, startPct.current.x - dxPct));
+    const newY = Math.max(0, Math.min(100, startPct.current.y - dyPct));
+    onFocalPointChange(toCssValue({ x: newX, y: newY }));
+  }
+
+  function onTouchEnd() { isDragging.current = false; }
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      {/* Crop frame — 3:2 ratio, same as PostCard */}
+      <div
+        ref={containerRef}
+        onMouseDown={onMouseDown}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          width: "100%", aspectRatio: "3/2", borderRadius: 8,
+          border: "1px solid #e6e6e6", overflow: "hidden",
+          position: "relative", background: "#f5f2ec",
+          cursor: "grab", userSelect: "none",
+        }}
+        title="Lohista pilti, et valida kärpimisel nähtav osa"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt=""
+          draggable={false}
+          style={{
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            objectPosition: `${Math.round(pct.x)}% ${Math.round(pct.y)}%`,
+            display: "block", pointerEvents: "none",
+          }}
+          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+        />
+        {/* Drag hint overlay */}
+        <div style={{
+          position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+          opacity: 0, transition: "opacity 0.2s",
+          pointerEvents: "none",
+        }} className="drag-hint">
+          <span style={{
+            background: "rgba(0,0,0,0.55)", color: "white",
+            padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+          }}>✥ Lohista</span>
+        </div>
+      </div>
+
+      {/* Hint text + focal point readout */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
+        <p style={{ margin: 0, fontSize: 11, color: "#9a9a9a" }}>
+          ✥ <strong>Lohista</strong> pilti, et valida nähtav osa · kaart kärbitakse 3:2 suhtes
+        </p>
+        <button
+          type="button"
+          onClick={() => onFocalPointChange("50% 50%")}
+          title="Lähtesta keskmisele"
+          style={{
+            fontSize: 10, padding: "2px 8px", borderRadius: 6,
+            border: "1px solid #e6e6e6", background: "white",
+            color: "#9a9a9a", cursor: "pointer", fontFamily: "inherit",
+            visibility: focalPoint === "50% 50%" || focalPoint === "center center" ? "hidden" : "visible",
+          }}
+        >Lähtesta</button>
+      </div>
+
+      <style>{`
+        div[title="Lohista pilti, et valida kärpimisel nähtav osa"]:hover .drag-hint { opacity: 1 !important; }
+        div[title="Lohista pilti, et valida kärpimisel nähtav osa"]:active { cursor: grabbing !important; }
+      `}</style>
+    </div>
+  );
+}
+
+// ─── Markdown → HTML renderer (client-side, no dependencies) ─────────────────
+
+function mdToHtml(md: string): string {
+  if (!md) return "";
+  let html = md
+    // Headings
+    .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
+    .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.+)$/gm, "<h1>$1</h1>")
+    // Blockquote
+    .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+    // HR
+    .replace(/^---+$/gm, "<hr>")
+    // Bold + italic
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    // Images (before links)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="border-radius:16px;width:100%;height:auto;margin:2rem 0">')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#87BE23;text-decoration:underline">$1</a>')
+    // Unordered lists
+    .replace(/^[\-\*] (.+)$/gm, "<li>$1</li>")
+    .replace(/(<li>.*<\/li>\n?)+/g, s => `<ul style="list-style:disc;padding-left:1.5rem;margin-bottom:1.375rem">${s}</ul>`)
+    // Ordered lists
+    .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+    // Code inline
+    .replace(/`([^`]+)`/g, '<code style="background:#f0f0ec;border-radius:4px;padding:2px 6px;font-size:0.875em">$1</code>')
+    // Double newlines → paragraphs
+    .split(/\n\n+/)
+    .map(block => {
+      const trimmed = block.trim();
+      if (!trimmed) return "";
+      if (/^<(h[1-6]|ul|ol|blockquote|hr|img|figure)/.test(trimmed)) return trimmed;
+      return `<p style="font-size:1.0625rem;font-weight:300;line-height:1.8;margin-bottom:1.375rem;color:#111">${trimmed.replace(/\n/g, " ")}</p>`;
+    })
+    .join("\n");
+  return html;
+}
+
+// ─── Post Preview Component ───────────────────────────────────────────────────
+
+function PostPreview({
+  title, body, featuredImage, category, date, author, lang,
+  onClose, onPublish, publishing,
+}: {
+  title: string; body: string; featuredImage: string;
+  category: string; date: string; author: string; lang: string;
+  onClose: () => void; onPublish?: () => void; publishing?: boolean;
+}) {
+  const dateLocale = lang === "ru" ? "ru-RU" : lang === "en" ? "en-GB" : "et-EE";
+  const dateFormatted = date
+    ? new Date(date).toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })
+    : "";
+  const wordCount = body.trim().split(/\s+/).length;
+  const readMins = Math.max(1, Math.round(wordCount / 200));
+  const htmlBody = mdToHtml(body);
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "#FEFEFE", overflowY: "auto",
+      fontFamily: "inherit",
+    }}>
+      {/* Preview banner */}
+      <div style={{
+        position: "sticky", top: 0, zIndex: 10,
+        background: "#1a1a1a", color: "white",
+        padding: "10px 20px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{
+            background: "#87be23", color: "white",
+            fontSize: 11, fontWeight: 800, padding: "3px 10px",
+            borderRadius: 99, textTransform: "uppercase", letterSpacing: "0.08em",
+          }}>Eelvaade</span>
+          <span style={{ fontSize: 13, color: "#9a9a9a", fontWeight: 300 }}>
+            See on eelvaade — postitus pole veel avaldatud
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={onClose} style={{
+            padding: "8px 18px", borderRadius: 10, border: "1.5px solid #444",
+            background: "transparent", color: "white", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}>
+            ✏️ Tagasi redigeerima
+          </button>
+          {onPublish && (
+            <button onClick={onPublish} disabled={publishing} style={{
+              padding: "8px 20px", borderRadius: 10, border: "none",
+              background: publishing ? "#c5dfa0" : "#87be23",
+              color: "white", fontSize: 13, fontWeight: 800,
+              cursor: publishing ? "not-allowed" : "pointer",
+              boxShadow: "0 2px 10px rgba(135,190,35,0.3)",
+            }}>
+              {publishing ? "Avaldan…" : "✓ Avalda see postitus"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Simulated blog nav */}
+      <div style={{
+        borderBottom: "1px solid #E6E4DF", padding: "0 24px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        height: 60, maxWidth: 1140, margin: "0 auto",
+      }}>
+        <span style={{ fontSize: 14, color: "#5a6b6c", fontWeight: 300 }}>← ksa.ee</span>
+        <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>KSA <span style={{ color: "#87be23" }}>Blogi</span></span>
+        <span style={{
+          padding: "8px 20px", borderRadius: 99, background: "#87be23",
+          color: "white", fontSize: 13, fontWeight: 700,
+        }}>Broneeri aeg</span>
+      </div>
+
+      {/* Article content */}
+      <article style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 120px" }}>
+        {/* Breadcrumb */}
+        <nav style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#9a9a9a", marginBottom: 32 }}>
+          <span>Blogi</span>
+          {category && <><span>›</span><span style={{ color: "#87be23" }}>{category}</span></>}
+        </nav>
+
+        {/* Header */}
+        <header style={{ marginBottom: 32 }}>
+          {category && (
+            <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#87be23", display: "block", marginBottom: 12 }}>
+              {category}
+            </span>
+          )}
+          <h1 style={{
+            fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 600,
+            letterSpacing: "-0.03em", lineHeight: 1.15,
+            margin: "0 0 16px", color: "#000",
+          }}>{title || "Pealkiri puudub"}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "#9a9a9a", flexWrap: "wrap" }}>
+            {dateFormatted && <span>{dateFormatted}</span>}
+            {author && <><span>·</span><span>{author}</span></>}
+            <span>·</span>
+            <span>{readMins} min</span>
+          </div>
+        </header>
+
+        {/* Featured image */}
+        {featuredImage && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 32, aspectRatio: "16/9", background: "#F5F2EC" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={featuredImage}
+              alt={title}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            />
+          </div>
+        )}
+
+        {/* Body */}
+        <div
+          className="prose-ksa"
+          dangerouslySetInnerHTML={{ __html: htmlBody }}
+        />
+
+        {/* CTA preview */}
+        <div style={{
+          marginTop: 40, padding: "24px 28px", background: "#f8fdf0",
+          border: "1.5px solid #c5e58a", borderRadius: 20,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap",
+        }}>
+          <div>
+            <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 15 }}>Kas sinu nägemine vajab kontrolli?</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#5a6b6c", fontWeight: 300 }}>Tee tasuta kiirtest — 2 minutit.</p>
+          </div>
+          <span style={{
+            padding: "12px 24px", borderRadius: 99, background: "#87be23",
+            color: "white", fontSize: 14, fontWeight: 700,
+          }}>Tee kiirtest →</span>
+        </div>
+      </article>
     </div>
   );
 }
