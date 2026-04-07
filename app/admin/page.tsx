@@ -982,8 +982,18 @@ function PublishedTab() {
 // ─── Write New ────────────────────────────────────────────────────────────────
 
 function WriteTab() {
-  const [step, setStep] = useState<"source" | "write" | "done">("source");
-  const [sourceMode, setSourceMode] = useState<"text" | "url" | "file" | null>(null);
+  // ── Mode selection ────────────────────────────────────────────────────────
+  const [mode, setMode] = useState<"choose" | "direct" | "ai">("choose");
+
+  // ── Direct save state ─────────────────────────────────────────────────────
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [lang, setLang] = useState("et");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [savedFile, setSavedFile] = useState<{ filename: string; title: string; lang: string } | null>(null);
+
+  // ── AI generation state ───────────────────────────────────────────────────
   const [brief, setBrief] = useState("");
   const [urlInput, setUrlInput] = useState("");
   const [urlFetching, setUrlFetching] = useState(false);
@@ -997,6 +1007,32 @@ function WriteTab() {
     setLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
   }
 
+  function resetAll() {
+    setMode("choose"); setTitle(""); setBody(""); setLang("et");
+    setSaving(false); setSaveError(""); setSavedFile(null);
+    setBrief(""); setUrlInput(""); setUrlError(""); setLanguages(["et", "ru", "en"]);
+    setGenerating(false); setResults([]); setGenError("");
+  }
+
+  // ── Direct save handler ───────────────────────────────────────────────────
+  async function saveDirect(e: FormEvent) {
+    e.preventDefault();
+    if (!title.trim() || !body.trim()) return;
+    setSaving(true); setSaveError("");
+    try {
+      const res = await fetch("/api/admin/save-raw-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.trim(), body: body.trim(), lang }),
+      });
+      const d = await res.json() as { ok?: boolean; filename?: string; title?: string; lang?: string; error?: string };
+      if (d.error) { setSaveError(d.error); return; }
+      setSavedFile({ filename: d.filename!, title: d.title!, lang: d.lang! });
+    } catch (e) { setSaveError((e as Error).message); }
+    finally { setSaving(false); }
+  }
+
+  // ── AI generation handlers ────────────────────────────────────────────────
   async function fetchUrl() {
     if (!urlInput.trim()) return;
     setUrlFetching(true); setUrlError("");
@@ -1005,8 +1041,6 @@ function WriteTab() {
       const d = await res.json() as { text?: string; title?: string; error?: string };
       if (d.error) { setUrlError(d.error); return; }
       setBrief(`Allikas: ${d.title ?? urlInput}\nURL: ${urlInput}\n\n${d.text ?? ""}`);
-      setSourceMode("text");
-      setStep("write");
     } catch (e) { setUrlError((e as Error).message); }
     finally { setUrlFetching(false); }
   }
@@ -1014,11 +1048,7 @@ function WriteTab() {
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
-      setBrief(`Fail: ${file.name}\n\n${ev.target?.result as string}`);
-      setSourceMode("text");
-      setStep("write");
-    };
+    reader.onload = ev => { setBrief(`Fail: ${file.name}\n\n${ev.target?.result as string}`); };
     reader.readAsText(file);
     e.target.value = "";
   }
@@ -1035,181 +1065,335 @@ function WriteTab() {
       const d = await res.json() as { results?: PostResult[]; errors?: { lang: string; error: string }[] };
       setResults(d.results ?? []);
       if ((d.results ?? []).length === 0) setGenError("Genereerimine ebaõnnestus. Proovi uuesti.");
-      else setStep("done");
     } catch (e) { setGenError((e as Error).message); }
     finally { setGenerating(false); }
   }
 
-  function reset() { setStep("source"); setSourceMode(null); setBrief(""); setUrlInput(""); setResults([]); setGenError(""); setLanguages(["et", "ru", "en"]); }
-
-  // ── Step 1: Source ────────────────────────────────────────────────────────
-  if (step === "source") {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE: Choose
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (mode === "choose") {
     return (
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "40px 20px" }}>
-        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", textAlign: "center", marginBottom: 8 }}>
-          Kust tuleb sisu?
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "48px 20px" }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: "#000", textAlign: "center", marginBottom: 8 }}>
+          Uus postitus
         </h2>
-        <p style={{ color: "#9a9a9a", textAlign: "center", marginBottom: 36, fontSize: 15 }}>
-          Vali üks kolmest võimalusest
+        <p style={{ color: "#9a9a9a", textAlign: "center", marginBottom: 40, fontSize: 15, fontWeight: 300 }}>
+          Kuidas soovid luua?
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {/* Paste text */}
-          <button onClick={() => { setSourceMode("text"); setStep("write"); }} style={{
-            padding: "22px 24px", border: "2px solid #e6e6e6", borderRadius: 18,
-            background: "white", cursor: "pointer", textAlign: "left",
-            display: "flex", alignItems: "center", gap: 18, transition: "all 0.15s",
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Option 1: Direct — paste your own text */}
+          <button onClick={() => setMode("direct")} style={{
+            padding: "28px 28px", border: "2px solid #87be23", borderRadius: 20,
+            background: "#f8fdf0", cursor: "pointer", textAlign: "left",
+            display: "flex", alignItems: "center", gap: 20, transition: "all 0.15s",
           }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#87be23"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 20px rgba(135,190,35,0.12)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#e6e6e6"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "none"; }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(135,190,35,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
           >
-            <span style={{ fontSize: 36 }}>✏️</span>
+            <span style={{ fontSize: 40, lineHeight: 1 }}>📝</span>
             <div>
-              <p style={{ margin: "0 0 2px", fontSize: 17, fontWeight: 800, color: "#1a1a1a" }}>Kirjutan ise</p>
-              <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a" }}>Kleebi oma märkmed, lugu või idee</p>
+              <p style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#1a1a1a" }}>Salvesta otse mustandiks</p>
+              <p style={{ margin: 0, fontSize: 14, color: "#6b7280", fontWeight: 300 }}>
+                Kirjuta või kleebi oma tekst — läheb mustandisse täpselt nii nagu on
+              </p>
             </div>
           </button>
 
-          {/* URL */}
-          <div style={{ border: "2px solid #e6e6e6", borderRadius: 18, background: "white", padding: "22px 24px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 14 }}>
-              <span style={{ fontSize: 36 }}>🔗</span>
-              <div>
-                <p style={{ margin: "0 0 2px", fontSize: 17, fontWeight: 800, color: "#1a1a1a" }}>Artikli link</p>
-                <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a" }}>Kleebi link, mille põhjal kirjutada</p>
-              </div>
-            </div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input type="url" value={urlInput} onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); fetchUrl(); }}}
-                placeholder="https://..."
-                style={{ flex: 1, padding: "10px 14px", border: "2px solid #e6e6e6", borderRadius: 12, fontSize: 14, outline: "none" }}
-              />
-              <button onClick={fetchUrl} disabled={urlFetching || !urlInput.trim()} style={{
-                padding: "10px 18px", border: "none", borderRadius: 12,
-                background: urlFetching ? "#c5dfa0" : "#87be23", color: "white",
-                fontSize: 14, fontWeight: 700, cursor: urlFetching ? "not-allowed" : "pointer",
-              }}>{urlFetching ? "Laen…" : "Tõmba"}</button>
-            </div>
-            {urlError && <p style={{ color: "#b91c1c", fontSize: 13, marginTop: 6, marginBottom: 0 }}>⚠ {urlError}</p>}
-          </div>
-
-          {/* File upload */}
-          <label style={{
-            padding: "22px 24px", border: "2px solid #e6e6e6", borderRadius: 18,
-            background: "white", cursor: "pointer", display: "flex", alignItems: "center", gap: 18,
-            transition: "all 0.15s",
+          {/* Option 2: AI generation */}
+          <button onClick={() => setMode("ai")} style={{
+            padding: "28px 28px", border: "2px solid #e6e4df", borderRadius: 20,
+            background: "white", cursor: "pointer", textAlign: "left",
+            display: "flex", alignItems: "center", gap: 20, transition: "all 0.15s",
           }}
-            onMouseEnter={e => { (e.currentTarget as HTMLLabelElement).style.borderColor = "#87be23"; (e.currentTarget as HTMLLabelElement).style.boxShadow = "0 4px 20px rgba(135,190,35,0.12)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLLabelElement).style.borderColor = "#e6e6e6"; (e.currentTarget as HTMLLabelElement).style.boxShadow = "none"; }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#c4b5fd"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(139,92,246,0.10)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = "#e6e4df"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
           >
-            <span style={{ fontSize: 36 }}>📁</span>
+            <span style={{ fontSize: 40, lineHeight: 1 }}>🤖</span>
             <div>
-              <p style={{ margin: "0 0 2px", fontSize: 17, fontWeight: 800, color: "#1a1a1a" }}>Laadi fail</p>
-              <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a" }}>Tekst- või märkuste fail (.txt, .md)</p>
+              <p style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#1a1a1a" }}>AI kirjutab</p>
+              <p style={{ margin: 0, fontSize: 14, color: "#6b7280", fontWeight: 300 }}>
+                Anna idee, link või märkmed — AI genereerib artikli
+              </p>
             </div>
-            <input type="file" accept=".txt,.md,.mdx,.csv" onChange={handleFile} style={{ display: "none" }} />
-          </label>
+          </button>
         </div>
       </div>
     );
   }
 
-  // ── Step 2: Write ─────────────────────────────────────────────────────────
-  if (step === "write") {
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE: Direct — saved successfully
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (mode === "direct" && savedFile) {
+    const c = LANG_COLORS[savedFile.lang] ?? LANG_COLORS.et;
     return (
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 20px 80px" }}>
-        <button onClick={reset} style={{ background: "none", border: "none", color: "#9a9a9a", cursor: "pointer", fontSize: 14, fontWeight: 600, marginBottom: 20, padding: 0 }}>← Tagasi</button>
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "48px 20px", textAlign: "center" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
+          Mustand salvestatud!
+        </h2>
+        <p style={{ color: "#9a9a9a", fontSize: 14, marginBottom: 28, fontWeight: 300 }}>
+          Tekst on nüüd mustandites täpselt nii nagu kirjutasid.
+        </p>
 
-        <form onSubmit={generate}>
-          {/* Brief */}
-          <div style={{ marginBottom: 20 }}>
+        <div style={{
+          background: "white", border: `2px solid ${c.border}`, borderRadius: 16,
+          padding: "18px 22px", display: "flex", alignItems: "center", gap: 14, marginBottom: 28, textAlign: "left",
+        }}>
+          <LangBadge lang={savedFile.lang} />
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>{savedFile.title}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a", fontWeight: 300 }}>{savedFile.filename}</p>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={() => { setSavedFile(null); setTitle(""); setBody(""); }} style={{
+            flex: 1, padding: "14px", border: "2px solid #87be23", borderRadius: 14,
+            background: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", color: "#3d6b00",
+          }}>+ Kirjuta veel</button>
+          <button onClick={resetAll} style={{
+            flex: 1, padding: "14px", border: "2px solid #e6e4df", borderRadius: 14,
+            background: "white", fontSize: 15, fontWeight: 600, cursor: "pointer", color: "#6b7280",
+          }}>← Tagasi</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE: Direct — editor
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (mode === "direct") {
+    return (
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "32px 20px 80px" }}>
+        <button onClick={resetAll} style={{
+          background: "none", border: "none", color: "#9a9a9a", cursor: "pointer",
+          fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0,
+        }}>← Tagasi</button>
+
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#000", marginBottom: 4 }}>
+          Salvesta otse mustandiks
+        </h2>
+        <p style={{ color: "#9a9a9a", fontSize: 14, marginBottom: 28, fontWeight: 300 }}>
+          Tekst läheb mustandisse täpselt nii nagu kirjutad — ilma AI töötluseta.
+        </p>
+
+        <form onSubmit={saveDirect}>
+          {/* Title */}
+          <div style={{ marginBottom: 18 }}>
             <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
-              Sisu / idee / märkmed
+              Pealkiri *
             </label>
-            <textarea value={brief} onChange={e => setBrief(e.target.value)}
-              placeholder="Kirjuta siia... mida iganes pähe tuleb."
-              rows={12} spellCheck
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)}
+              placeholder="Artikli pealkiri"
               style={{
-                width: "100%", padding: "16px", fontSize: 15, lineHeight: 1.7,
-                border: "2px solid #e6e6e6", borderRadius: 16, background: "white",
-                outline: "none", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box",
+                width: "100%", padding: "14px 16px", fontSize: 16, fontWeight: 600,
+                border: "2px solid #e6e4df", borderRadius: 14, background: "white",
+                outline: "none", fontFamily: "inherit", boxSizing: "border-box",
               }}
               onFocus={e => { e.target.style.borderColor = "#87be23"; }}
-              onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+              onBlur={e => { e.target.style.borderColor = "#e6e4df"; }}
             />
           </div>
 
           {/* Language */}
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-              Millisesse keelde kirjutada?
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+              Keel
             </label>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 8 }}>
               {(["et", "ru", "en"] as const).map(l => {
-                const on = languages.includes(l);
+                const on = lang === l;
                 const c = LANG_COLORS[l];
                 return (
-                  <button key={l} type="button" onClick={() => toggleLang(l)} style={{
-                    flex: 1, padding: "14px 0", border: `2px solid ${on ? c.border : "#e6e6e6"}`,
-                    borderRadius: 14, background: on ? c.bg : "white", color: on ? c.text : "#9a9a9a",
-                    fontSize: 15, fontWeight: 800, cursor: "pointer", transition: "all 0.15s",
+                  <button key={l} type="button" onClick={() => setLang(l)} style={{
+                    flex: 1, padding: "12px 0", border: `2px solid ${on ? c.border : "#e6e4df"}`,
+                    borderRadius: 12, background: on ? c.bg : "white", color: on ? c.text : "#9a9a9a",
+                    fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
                   }}>
                     {LANG_NAME[l]}
-                    {on && <span style={{ display: "block", fontSize: 18 }}>✓</span>}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {genError && <p style={{ color: "#b91c1c", fontSize: 14, marginBottom: 12 }}>⚠ {genError}</p>}
+          {/* Body */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+              Tekst * <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>— Markdown on toetatud (## pealkiri, **paks**, *kaldkiri*)</span>
+            </label>
+            <textarea value={body} onChange={e => setBody(e.target.value)}
+              placeholder="Kirjuta või kleebi oma tekst siia...&#10;&#10;Tekst läheb mustandisse täpselt nii nagu on."
+              rows={18} spellCheck
+              style={{
+                width: "100%", padding: "16px", fontSize: 15, lineHeight: 1.75,
+                border: "2px solid #e6e4df", borderRadius: 16, background: "white",
+                outline: "none", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box",
+              }}
+              onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+              onBlur={e => { e.target.style.borderColor = "#e6e4df"; }}
+            />
+            {body.trim() && (
+              <p style={{ margin: "6px 0 0", fontSize: 12, color: "#9a9a9a", fontWeight: 300, textAlign: "right" }}>
+                ~{body.trim().split(/\s+/).length} sõna
+              </p>
+            )}
+          </div>
 
-          <button type="submit" disabled={generating || !brief.trim() || languages.length === 0} style={{
+          {saveError && <p style={{ color: "#b91c1c", fontSize: 14, marginBottom: 12 }}>⚠ {saveError}</p>}
+
+          <button type="submit" disabled={saving || !title.trim() || !body.trim()} style={{
             width: "100%", padding: "18px", border: "none", borderRadius: 16,
-            background: generating || !brief.trim() || languages.length === 0 ? "#c5dfa0" : "#87be23",
-            color: "white", fontSize: 18, fontWeight: 800, cursor: generating ? "not-allowed" : "pointer",
-            transition: "background 0.15s",
+            background: saving || !title.trim() || !body.trim() ? "#d1d5db" : "#87be23",
+            color: "white", fontSize: 17, fontWeight: 800, cursor: saving ? "not-allowed" : "pointer",
+            transition: "all 0.15s",
+            boxShadow: saving || !title.trim() || !body.trim() ? "none" : "0 4px 16px rgba(135,190,35,0.22)",
           }}>
-            {generating ? `Kirjutan ${languages.length} postitust…` : `✍️ Kirjuta ${languages.length > 1 ? `${languages.length} postitust` : "postitus"}`}
+            {saving ? "Salvestan…" : "💾 Salvesta mustandiks"}
           </button>
         </form>
       </div>
     );
   }
 
-  // ── Step 3: Done ──────────────────────────────────────────────────────────
-  return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: "40px 20px" }}>
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ fontSize: 56, marginBottom: 12 }}>✅</div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
-          {results.length} postitus{results.length !== 1 ? "t" : ""} loodud!
-        </h2>
-        <p style={{ color: "#9a9a9a", fontSize: 14 }}>
-          Need ootavad nüüd toimetaja ülevaatust "Mustandid" all.
-        </p>
-      </div>
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE: AI — results
+  // ═══════════════════════════════════════════════════════════════════════════
+  if (mode === "ai" && results.length > 0) {
+    return (
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "48px 20px" }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ fontSize: 56, marginBottom: 12 }}>✅</div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
+            {results.length} postitus{results.length !== 1 ? "t" : ""} loodud!
+          </h2>
+          <p style={{ color: "#9a9a9a", fontSize: 14, fontWeight: 300 }}>
+            Need ootavad nüüd toimetaja ülevaatust &quot;Mustandid&quot; all.
+          </p>
+        </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
-        {results.map(r => (
-          <div key={r.lang} style={{
-            background: "white", border: "2px solid #f0f0ec", borderRadius: 16, padding: "16px 18px",
-            display: "flex", alignItems: "center", gap: 14,
-          }}>
-            <LangBadge lang={r.lang} />
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{r.title}</p>
-              <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a" }}>{r.excerpt?.slice(0, 80)}…</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+          {results.map(r => (
+            <div key={r.lang} style={{
+              background: "white", border: "2px solid #f0f0ec", borderRadius: 16, padding: "16px 18px",
+              display: "flex", alignItems: "center", gap: 14,
+            }}>
+              <LangBadge lang={r.lang} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: "0 0 2px", fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{r.title}</p>
+                <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a" }}>{r.excerpt?.slice(0, 80)}…</p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      <button onClick={reset} style={{
-        width: "100%", padding: "15px", border: "2px solid #e6e6e6", borderRadius: 14,
-        background: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", color: "#5a6b6c",
-      }}>+ Kirjuta veel üks</button>
+        <button onClick={resetAll} style={{
+          width: "100%", padding: "15px", border: "2px solid #e6e4df", borderRadius: 14,
+          background: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", color: "#5a6b6c",
+        }}>← Tagasi</button>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MODE: AI — editor
+  // ═══════════════════════════════════════════════════════════════════════════
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: "32px 20px 80px" }}>
+      <button onClick={resetAll} style={{
+        background: "none", border: "none", color: "#9a9a9a", cursor: "pointer",
+        fontSize: 14, fontWeight: 600, marginBottom: 24, padding: 0,
+      }}>← Tagasi</button>
+
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: "#000", marginBottom: 4 }}>
+        AI kirjutab artikli
+      </h2>
+      <p style={{ color: "#9a9a9a", fontSize: 14, marginBottom: 28, fontWeight: 300 }}>
+        Anna idee, link, fail või märkmed — AI kirjutab valmis artikli.
+      </p>
+
+      {/* Source inputs: URL + file upload */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+        <div style={{ flex: 1, display: "flex", gap: 8 }}>
+          <input type="url" value={urlInput} onChange={e => setUrlInput(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); fetchUrl(); } }}
+            placeholder="Kleebi link (valikuline)…"
+            style={{ flex: 1, padding: "10px 14px", border: "2px solid #e6e4df", borderRadius: 12, fontSize: 13, outline: "none", fontFamily: "inherit" }}
+          />
+          <button onClick={fetchUrl} disabled={urlFetching || !urlInput.trim()} style={{
+            padding: "10px 14px", border: "none", borderRadius: 12,
+            background: urlFetching ? "#d1d5db" : "#5a6b6c", color: "white",
+            fontSize: 13, fontWeight: 700, cursor: urlFetching ? "not-allowed" : "pointer",
+          }}>{urlFetching ? "…" : "Tõmba"}</button>
+        </div>
+        <label style={{
+          padding: "10px 14px", border: "2px solid #e6e4df", borderRadius: 12,
+          background: "white", cursor: "pointer", fontSize: 13, fontWeight: 600, color: "#5a6b6c",
+          display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap",
+        }}>
+          📁 Fail
+          <input type="file" accept=".txt,.md,.mdx,.csv" onChange={handleFile} style={{ display: "none" }} />
+        </label>
+      </div>
+      {urlError && <p style={{ color: "#b91c1c", fontSize: 13, marginBottom: 8 }}>⚠ {urlError}</p>}
+
+      <form onSubmit={generate}>
+        {/* Brief */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+            Idee / märkmed / sisu
+          </label>
+          <textarea value={brief} onChange={e => setBrief(e.target.value)}
+            placeholder="Kirjuta idee, märkmed või kleebi tekst mille põhjal AI artikli kirjutab…"
+            rows={10} spellCheck
+            style={{
+              width: "100%", padding: "16px", fontSize: 15, lineHeight: 1.7,
+              border: "2px solid #e6e4df", borderRadius: 16, background: "white",
+              outline: "none", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box",
+            }}
+            onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+            onBlur={e => { e.target.style.borderColor = "#e6e4df"; }}
+          />
+        </div>
+
+        {/* Language */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+            Keeled
+          </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            {(["et", "ru", "en"] as const).map(l => {
+              const on = languages.includes(l);
+              const c = LANG_COLORS[l];
+              return (
+                <button key={l} type="button" onClick={() => toggleLang(l)} style={{
+                  flex: 1, padding: "12px 0", border: `2px solid ${on ? c.border : "#e6e4df"}`,
+                  borderRadius: 12, background: on ? c.bg : "white", color: on ? c.text : "#9a9a9a",
+                  fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all 0.15s",
+                }}>
+                  {LANG_NAME[l]}
+                  {on && <span style={{ display: "block", fontSize: 16 }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {genError && <p style={{ color: "#b91c1c", fontSize: 14, marginBottom: 12 }}>⚠ {genError}</p>}
+
+        <button type="submit" disabled={generating || !brief.trim() || languages.length === 0} style={{
+          width: "100%", padding: "18px", border: "none", borderRadius: 16,
+          background: generating || !brief.trim() || languages.length === 0 ? "#d1d5db" : "#7c3aed",
+          color: "white", fontSize: 17, fontWeight: 800, cursor: generating ? "not-allowed" : "pointer",
+          transition: "all 0.15s",
+        }}>
+          {generating ? `AI kirjutab ${languages.length} postitust…` : `🤖 Genereeri ${languages.length > 1 ? `${languages.length} postitust` : "postitus"}`}
+        </button>
+      </form>
     </div>
   );
 }
