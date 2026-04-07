@@ -228,13 +228,27 @@ npm run batch        # Batch generate: npm run batch -- --lang ru|en [--dry-run]
 ### Editor features
 - Breadcrumb nav: `← Mustandid > [LANG] > title` + "Vaata blogis ↗" link for published
 - Sticky action bar: Salvesta + Avalda (or Salvesta + Eemalda avaldamisest for published)
-- Featured image: URL input + preview + **✨ Genereeri AI pilt** button + "Sünkrooni pilt sõsarartiklitele"
+- Featured image: 3 ways to add:
+  1. **📁 Lae pilt üles** — upload from computer (auto-resized + compressed)
+  2. **✨ AI pilt** — AI-generated via Claude + Replicate FLUX
+  3. **URL** — paste any image URL manually
+- "Eemalda pilt" button to clear image
+- "Sünkrooni pilt sõsarartiklitele" — propagates image to RU/EN sister articles
 - YouTube embed inserter
 - Assignment (Vastutaja) + deadline picker
 - Medical review flag + email notification
 
+### Image Upload (POST /api/admin/upload-image)
+Editors upload images directly from their Mac/PC:
+- Accepts: JPEG, PNG, WebP, GIF, AVIF, HEIC (max 20 MB input)
+- Processing: `sharp` auto-resizes to max 1400px width, converts to WebP quality 82
+- Output: typically 80–200 KB (shows % reduction vs original)
+- Storage: `public/uploads/YYYY/MM/filename.webp` via GitHub API (prod) or filesystem (dev)
+- Preview: uses raw.githubusercontent.com URL for immediate display before Vercel redeploys
+- EXIF rotation: auto-corrected
+
 ### AI Image Generation
-Button "✨ Genereeri AI pilt" in editor:
+Button "✨ AI pilt" in editor:
 1. Claude (claude-opus-4-6) crafts a photographic FLUX prompt from title + excerpt
 2. If `REPLICATE_API_TOKEN` set: calls FLUX.1-schnell via Replicate → sets as featuredImage
 3. If no token: shows the Claude-crafted prompt + "Kopeeri prompt" button for manual use in Midjourney/DALL-E
