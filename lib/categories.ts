@@ -8,19 +8,38 @@ export function toSlug(name: string): string {
     .replace(/-+/g, "-");
 }
 
-// Display names for categories per language
+// Display names for categories — trilingual, keyed by slug
 export const CATEGORY_LABELS: Record<string, { et: string; ru: string; en: string }> = {
-  edulood: { et: "Edulood", ru: "Истории успеха", en: "Success Stories" },
-  kogemuslood: { et: "Kogemuslood", ru: "Истории пациентов", en: "Patient Stories" },
-  "flow-protseduur": { et: "Flow Protseduur", ru: "Процедура Flow", en: "Flow Procedure" },
-  "huvitavad-faktid": { et: "Huvitavad faktid", ru: "Интересные факты", en: "Interesting Facts" },
-  "ksa-silmakeskus": { et: "KSA Silmakeskus", ru: "KSA Vision Center", en: "KSA Vision Center" },
-  "nagemise-korrigeerimine": { et: "Nägemise korrigeerimine", ru: "Коррекция зрения", en: "Vision Correction" },
-  "silmad-ja-tervis": { et: "Silmad ja Tervis", ru: "Глаза и Здоровье", en: "Eyes & Health" },
-  "silmade-tervis-nipid": { et: "Silmade tervis & nipid", ru: "Здоровье глаз", en: "Eye Health & Tips" },
-  "eye-health-tips": { et: "Silmade tervis & nipid", ru: "Здоровье глаз", en: "Eye Health & Tips" },
-  "eye-health--tips": { et: "Silmade tervis & nipid", ru: "Здоровье глаз", en: "Eye Health & Tips" },
-  tehnoloogia: { et: "Tehnoloogia", ru: "Технология", en: "Technology" },
+  // Lifestyle / general
+  elustiil:              { et: "Elustiil",                  ru: "Стиль жизни",          en: "Lifestyle" },
+  lifestyle:             { et: "Elustiil",                  ru: "Стиль жизни",          en: "Lifestyle" },
+  // Stories
+  edulood:               { et: "Edulood",                   ru: "Истории успеха",        en: "Success Stories" },
+  "success-stories":     { et: "Edulood",                   ru: "Истории успеха",        en: "Success Stories" },
+  kogemuslood:           { et: "Kogemuslood",               ru: "Истории пациентов",     en: "Patient Stories" },
+  "patient-stories":     { et: "Kogemuslood",               ru: "Истории пациентов",     en: "Patient Stories" },
+  // Procedures
+  "flow-protseduur":     { et: "Flow Protseduur",           ru: "Процедура Flow",        en: "Flow Procedure" },
+  "flow-procedure":      { et: "Flow Protseduur",           ru: "Процедура Flow",        en: "Flow Procedure" },
+  // Facts & science
+  "huvitavad-faktid":    { et: "Huvitavad faktid",          ru: "Интересные факты",      en: "Interesting Facts" },
+  "interesting-facts":   { et: "Huvitavad faktid",          ru: "Интересные факты",      en: "Interesting Facts" },
+  // KSA brand
+  "ksa-silmakeskus":     { et: "KSA Silmakeskus",           ru: "KSA Vision Center",     en: "KSA Vision Center" },
+  "ksa-vision-center":   { et: "KSA Silmakeskus",           ru: "KSA Vision Center",     en: "KSA Vision Center" },
+  // Vision correction
+  "nagemise-korrigeerimine": { et: "Nägemise korrigeerimine", ru: "Коррекция зрения",    en: "Vision Correction" },
+  "vision-correction":   { et: "Nägemise korrigeerimine",   ru: "Коррекция зрения",      en: "Vision Correction" },
+  // Eye health
+  "silmad-ja-tervis":    { et: "Silmad ja Tervis",          ru: "Глаза и Здоровье",      en: "Eyes & Health" },
+  "eyes-health":         { et: "Silmad ja Tervis",          ru: "Глаза и Здоровье",      en: "Eyes & Health" },
+  "silmade-tervis-nipid":{ et: "Silmade tervis & nipid",    ru: "Здоровье глаз",         en: "Eye Health & Tips" },
+  "eye-health-tips":     { et: "Silmade tervis & nipid",    ru: "Здоровье глаз",         en: "Eye Health & Tips" },
+  "eye-health--tips":    { et: "Silmade tervis & nipid",    ru: "Здоровье глаз",         en: "Eye Health & Tips" },
+  "eye-health":          { et: "Silmade tervis & nipid",    ru: "Здоровье глаз",         en: "Eye Health & Tips" },
+  // Tech
+  tehnoloogia:           { et: "Tehnoloogia",               ru: "Технология",            en: "Technology" },
+  technology:            { et: "Tehnoloogia",               ru: "Технология",            en: "Technology" },
   "tehnoloogia-laserprotseduur": { et: "Tehnoloogia & laserprotseduur", ru: "Технология & лазер", en: "Technology & Laser" },
 };
 

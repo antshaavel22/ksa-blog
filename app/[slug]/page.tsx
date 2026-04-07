@@ -8,6 +8,7 @@ import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
+import { getCategoryLabel, toSlug } from "@/lib/categories";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -162,10 +163,10 @@ export default async function PostPage({ params }: PageProps) {
               <>
                 <span>›</span>
                 <Link
-                  href={`/kategooria/${post.categories[0].toLowerCase().replace(/\s+/g, "-")}`}
+                  href={`/kategooria/${toSlug(post.categories[0])}`}
                   className="hover:text-[#87be23] transition-colors"
                 >
-                  {post.categories[0]}
+                  {getCategoryLabel(toSlug(post.categories[0]), (post.lang as "et" | "ru" | "en") ?? "et")}
                 </Link>
               </>
             )}
@@ -175,7 +176,7 @@ export default async function PostPage({ params }: PageProps) {
           <header className="mb-8">
             {post.categories[0] && (
               <span className="text-xs font-medium uppercase tracking-wide text-[#87be23] block mb-3">
-                {post.categories[0]}
+                {getCategoryLabel(toSlug(post.categories[0]), (post.lang as "et" | "ru" | "en") ?? "et")}
               </span>
             )}
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1a1a1a] leading-tight mb-4">
@@ -208,7 +209,7 @@ export default async function PostPage({ params }: PageProps) {
                   </>
                 )}
               </div>
-              <ShareButton title={post.title} url={canonicalUrl} />
+              <ShareButton title={post.title} url={canonicalUrl} lang={post.lang} />
             </div>
           </header>
 
