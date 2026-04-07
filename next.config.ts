@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "ksa.ee",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+        pathname: "/antshaavel22/ksa-blog/**",
+      },
     ],
   },
   // Allow blog.ksa.ee as trusted host

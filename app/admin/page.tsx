@@ -165,6 +165,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadInfo, setUploadInfo] = useState<{ original: { name: string; sizeKB: number; width: number; height: number }; optimized: { sizeKB: number; width: number; height: number; format: string } } | null>(null);
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -245,6 +247,22 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       }
       if (d.prompt) setGeneratedPrompt(d.prompt);
     } finally { setGeneratingImage(false); }
+  }
+
+  async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true); setUploadInfo(null);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", body: formData });
+      const d = await res.json() as { ok?: boolean; url?: string; previewUrl?: string; original?: { name: string; sizeKB: number; width: number; height: number }; optimized?: { sizeKB: number; width: number; height: number; format: string }; error?: string };
+      if (d.error) { alert("Viga: " + d.error); return; }
+      setFeaturedImage(d.previewUrl ?? d.url ?? "");
+      if (d.original && d.optimized) setUploadInfo({ original: d.original, optimized: d.optimized });
+    } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
+    finally { setUploadingImage(false); e.target.value = ""; }
   }
 
   async function save() {
@@ -469,23 +487,57 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", letterSpacing: "0.05em", textTransform: "uppercase" }}>
-              🖼 Kaanepilt (URL)
+              🖼 Kaanepilt
             </label>
-            <button
-              type="button"
-              onClick={generateImage}
-              disabled={generatingImage || !title}
-              style={{
-                padding: "4px 12px", borderRadius: 8, border: "1.5px solid #87be23",
-                background: generatingImage ? "#f0f0ec" : "white",
-                color: generatingImage ? "#9a9a9a" : "#87be23",
-                fontSize: 11, fontWeight: 700, cursor: generatingImage || !title ? "wait" : "pointer",
-                fontFamily: "inherit", whiteSpace: "nowrap",
-              }}
-            >
-              {generatingImage ? "Genereerin..." : "✨ Genereeri AI pilt"}
-            </button>
+            <div style={{ display: "flex", gap: 6 }}>
+              {/* Upload from computer */}
+              <label
+                style={{
+                  padding: "4px 12px", borderRadius: 8, border: "1.5px solid #3b82f6",
+                  background: uploadingImage ? "#f0f0ec" : "white",
+                  color: uploadingImage ? "#9a9a9a" : "#3b82f6",
+                  fontSize: 11, fontWeight: 700, cursor: uploadingImage ? "wait" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4,
+                }}
+              >
+                {uploadingImage ? "Laen üles..." : "📁 Lae pilt üles"}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif,image/heic,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic"
+                  onChange={uploadImage}
+                  style={{ display: "none" }}
+                  disabled={uploadingImage}
+                />
+              </label>
+              {/* AI generate */}
+              <button
+                type="button"
+                onClick={generateImage}
+                disabled={generatingImage || !title}
+                style={{
+                  padding: "4px 12px", borderRadius: 8, border: "1.5px solid #87be23",
+                  background: generatingImage ? "#f0f0ec" : "white",
+                  color: generatingImage ? "#9a9a9a" : "#87be23",
+                  fontSize: 11, fontWeight: 700, cursor: generatingImage || !title ? "wait" : "pointer",
+                  fontFamily: "inherit", whiteSpace: "nowrap",
+                }}
+              >
+                {generatingImage ? "Genereerin..." : "✨ AI pilt"}
+              </button>
+            </div>
           </div>
+
+          {/* Upload result info */}
+          {uploadInfo && (
+            <div style={{ marginBottom: 8, padding: "8px 12px", background: "#f0fdf4", borderRadius: 8, border: "1px solid #bbf7d0", fontSize: 11, color: "#166534" }}>
+              <strong>Optimeeritud:</strong> {uploadInfo.original.name} ({uploadInfo.original.width}x{uploadInfo.original.height}, {uploadInfo.original.sizeKB} KB)
+              → {uploadInfo.optimized.width}x{uploadInfo.optimized.height} WebP, <strong>{uploadInfo.optimized.sizeKB} KB</strong>
+              {uploadInfo.original.sizeKB > uploadInfo.optimized.sizeKB && (
+                <span> ({Math.round((1 - uploadInfo.optimized.sizeKB / uploadInfo.original.sizeKB) * 100)}% väiksem)</span>
+              )}
+            </div>
+          )}
+
           {generatedPrompt && !process.env.NEXT_PUBLIC_HAS_REPLICATE && (
             <div style={{ marginBottom: 8, padding: "10px 12px", background: "#f9f9f7", borderRadius: 8, border: "1px solid #e6e6e6" }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "#5a6b6c", margin: "0 0 4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>AI prompt (kopeeri Midjourney/DALL-E)</p>
@@ -497,35 +549,52 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               >Kopeeri prompt</button>
             </div>
           )}
-          <input
-            type="url"
-            value={featuredImage}
-            onChange={e => setFeaturedImage(e.target.value)}
-            placeholder="https://ksa.ee/wp-content/uploads/..."
-            style={{
-              width: "100%", padding: "10px 14px", border: "1.5px solid #e6e6e6",
-              borderRadius: 10, fontSize: 13, outline: "none", background: "white",
-              boxSizing: "border-box", fontFamily: "inherit", color: "#1a1a1a",
-            }}
-            onFocus={e => { e.target.style.borderColor = "#87be23"; }}
-            onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
-          />
+
+          {/* URL input + upload drop hint */}
+          <div style={{ position: "relative" }}>
+            <input
+              type="url"
+              value={featuredImage}
+              onChange={e => { setFeaturedImage(e.target.value); setUploadInfo(null); }}
+              placeholder="Kleebi URL või kasuta ülalolevat nuppu pildi üleslaadimiseks"
+              style={{
+                width: "100%", padding: "10px 14px", border: "1.5px solid #e6e6e6",
+                borderRadius: 10, fontSize: 13, outline: "none", background: "white",
+                boxSizing: "border-box", fontFamily: "inherit", color: "#1a1a1a",
+              }}
+              onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+              onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+            />
+          </div>
           {featuredImage && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={featuredImage} alt="" style={{ marginTop: 8, width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <button
-                type="button"
-                onClick={syncImage}
-                disabled={syncing}
-                style={{
-                  marginTop: 8, padding: "6px 14px", borderRadius: 8, border: "1.5px solid #e6e6e6",
-                  background: syncing ? "#f0f0ec" : "white", color: "#5a6b6c", fontSize: 12, fontWeight: 600,
-                  cursor: syncing ? "wait" : "pointer", fontFamily: "inherit",
-                }}
-              >
-                {syncing ? "Sünkroonin..." : "Sünkrooni pilt sõsarartiklitele"}
-              </button>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <button
+                  type="button"
+                  onClick={syncImage}
+                  disabled={syncing}
+                  style={{
+                    padding: "6px 14px", borderRadius: 8, border: "1.5px solid #e6e6e6",
+                    background: syncing ? "#f0f0ec" : "white", color: "#5a6b6c", fontSize: 12, fontWeight: 600,
+                    cursor: syncing ? "wait" : "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  {syncing ? "Sünkroonin..." : "Sünkrooni pilt sõsarartiklitele"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setFeaturedImage(""); setUploadInfo(null); }}
+                  style={{
+                    padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5",
+                    background: "white", color: "#b91c1c", fontSize: 12, fontWeight: 600,
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  Eemalda pilt
+                </button>
+              </div>
               {syncResult && (
                 <p style={{ margin: "4px 0 0", fontSize: 11, color: syncResult.synced > 0 ? "#3d6b00" : "#9a9a9a" }}>
                   {syncResult.sisters === 0
