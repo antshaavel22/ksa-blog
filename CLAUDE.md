@@ -177,6 +177,7 @@ app/api/admin/sync-images/route.ts — GET: find sister articles | POST: propaga
 app/api/admin/prompt/route.ts  — GET/PUT content/system/master-prompt.md
 app/api/admin/generate-image/route.ts — Claude crafts photographic prompt → Replicate FLUX generates image
 app/api/admin/fetch-url/route.ts — fetches URL, strips HTML, returns text for brief
+app/api/admin/save-raw-draft/route.ts — saves user text DIRECTLY as draft (no AI processing)
 app/api/write-post/route.ts — generates trilingual drafts via Claude (uses master prompt)
 proxy.ts                   — protects /admin and /api/admin/* routes
                              NOTE: file named proxy.ts (not middleware.ts), exports proxy function
@@ -193,7 +194,7 @@ content/drafts/et/         — ET drafts staging
 content/drafts/ru/         — RU drafts (264 as of 2026-04-07)
 content/drafts/en/         — EN drafts (300 as of 2026-04-07)
 content/system/master-prompt.md — AI writing rules
-.github/workflows/daily-content-scout.yml — runs scout daily at 7am EET, creates PR
+.github/workflows/daily-content-scout.yml — runs scout daily at 7am EET, pushes directly to main
 .claude/launch.json        — dev server config for Claude Preview (port 3002)
 ```
 
@@ -216,7 +217,11 @@ npm run batch        # Batch generate: npm run batch -- --lang ru|en [--dry-run]
 ### 5 Tabs
 1. **📋 Mustandid** — browse/edit/publish drafts (564 total: 264 RU, 300 EN)
 2. **✏️ Avaldatud** — browse/edit published posts, unpublish back to draft
-3. **✍️ Kirjuta uus** — AI draft generation (3 steps: source → brief → generate)
+3. **✍️ Kirjuta uus** — two modes:
+   - **📝 Salvesta otse** — paste/write text → pick language (ET/RU/EN) → saves to draft folder UNCHANGED (no AI)
+   - **🤖 AI kirjutab** — give idea/notes/link → AI generates article (uses Claude + master prompt)
+   IMPORTANT: "Salvesta otse" saves text exactly as user wrote it. No AI editing, no rewriting.
+   User provides: title + language + body text. Endpoint: POST /api/admin/save-raw-draft
 4. **📝 Sisureeglid** — view/edit master AI writing prompt
 5. **❓ Juhend** — Estonian user manual
 
@@ -254,19 +259,27 @@ sourceUrl, briefSummary       # provenance tracking
 translatedFrom: "ET article title"  # links RU/EN to their ET original (used by sync-images)
 ```
 
+## Content Creation Rules
+1. **User-written text is sacred.** When user pastes/writes text via "Salvesta otse", save it EXACTLY as-is.
+   No AI editing, no rewriting, no "improving". The text goes to the draft folder unchanged.
+2. **Language determines folder.** User picks ET/RU/EN → file saves to `content/drafts/et/`, `ru/`, or `en/`.
+3. **AI generation is separate.** The "AI kirjutab" mode is a different flow — only used when user explicitly
+   wants AI to write from scratch based on ideas/notes/links.
+4. **Writing language priority.** When creating trilingual content, write English first (strongest creative
+   quality), then adapt to Estonian and Russian as independent-feeling pieces — not stiff translations.
+5. **Master prompt.** All AI-generated content follows `content/system/master-prompt.md` (James Clear philosophy).
+   Minimal rules, stories over statistics, life-first framing, no marketing language in articles.
+
 ## Content Scout (Daily AI Posts)
 GitHub Action runs daily at 7am EET:
-- Fetches eye health RSS feeds (Healio, ScienceDaily, Review of Ophthalmology, PubMed)
+- Fetches TOP 20 health/lifestyle/vision RSS feeds
 - Scores articles by relevance to KSA keywords
-- Generates 1 trilingual draft (ET+RU+EN) via Claude Haiku
-- Creates a PR with draft files for editor review
+- Generates 1 trilingual draft (ET+RU+EN) via Claude Sonnet
+- Pushes drafts directly to main branch (auto-deploys via Vercel)
 - Editors review in admin UI → publish with one click
 
-RSS sources:
-- `healio`: https://www.healio.com/sws/feed/news/ophthalmology (weight 3)
-- `sciencedaily`: https://www.sciencedaily.com/rss/health_medicine/eye_care.xml (weight 2)
-- `reviewofopt`: https://www.reviewofophthalmology.com/rss/news (weight 2)
-- `pubmed`: PubMed eye surgery RSS (weight 1)
+RSS sources: 21 feeds including Healio, ScienceDaily, Review of Ophthalmology, PubMed,
+WebMD, Healthline, Medical News Today, Well+Good, Mindbodygreen, and more (see content-scout.ts)
 
 ## Search
 URL param `?otsing=` on the index page filters posts by title, excerpt, categories, tags.
