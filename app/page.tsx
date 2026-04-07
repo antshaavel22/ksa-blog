@@ -53,16 +53,16 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
     <>
       <BlogNav />
       <main className="flex-1">
-        {/* Hero */}
-        <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-8 sm:py-12">
-          <div className="max-w-[1200px] mx-auto px-6">
-            <span className="text-xs font-medium uppercase tracking-widest text-[#87be23]">
+        {/* Hero — wide, warm, confident */}
+        <section className="bg-[#E8E3D3] border-b border-[#D8D3C8] py-12 sm:py-16">
+          <div className="max-w-[1140px] mx-auto px-6">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#87BE23]">
               KSA Silmakeskus
             </span>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1a1a1a] mt-2 mb-3">
-              {lang === "ru" ? "Блог" : "Blogi"}
+            <h1 className="text-[2.25rem] sm:text-[2.75rem] font-semibold tracking-[-0.035em] leading-[1.1] text-[#000000] mt-3 mb-4">
+              {lang === "ru" ? "Блог" : lang === "en" ? "Blog" : "Blogi"}
             </h1>
-            <p className="text-[#5a6b6c] text-base max-w-xl">
+            <p className="text-[#5A6B6C] text-base font-light max-w-[520px] leading-[1.65]">
               {lang === "ru"
                 ? "Хорошее зрение — одна из сверхспособностей человека. С хорошим зрением жизнь становится красивее!"
                 : lang === "en"
@@ -73,8 +73,8 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
         </section>
 
         {/* Language tabs */}
-        <section className="border-b border-[#e6e6e6] bg-white py-3">
-          <div className="max-w-[1200px] mx-auto px-6 flex gap-1">
+        <section className="border-b border-[#E6E4DF] bg-[#FEFEFE] py-3">
+          <div className="max-w-[1140px] mx-auto px-6 flex gap-1.5">
             {[
               { code: "et", label: "Eesti" },
               { code: "ru", label: "Русский" },
@@ -83,14 +83,14 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
               <Link
                 key={code}
                 href={`/?keel=${code}`}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-[32px] text-[13px] font-medium transition-colors ${
                   lang === code
-                    ? "bg-[#1a1a1a] text-white"
-                    : "bg-[#f5f3ee] text-[#5a6b6c] hover:bg-[#e8e3d3]"
+                    ? "bg-[#000000] text-white"
+                    : "bg-[#F0EDE8] text-[#5A6B6C] hover:bg-[#E8E3D3] hover:text-[#000000]"
                 }`}
               >
                 {label}
-                <span className="ml-1.5 text-xs opacity-50">
+                <span className="ml-1.5 text-[11px] opacity-50">
                   {allPosts.filter((p) => p.lang === code).length}
                 </span>
               </Link>
@@ -99,17 +99,17 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
         </section>
 
         {/* Category filters + Search */}
-        <section className="border-b border-[#e6e6e6] bg-white py-3">
-          <div className="max-w-[1200px] mx-auto px-6 flex gap-2 items-center overflow-x-auto scrollbar-hide pb-0.5">
+        <section className="border-b border-[#E6E4DF] bg-[#FEFEFE] py-3">
+          <div className="max-w-[1140px] mx-auto px-6 flex gap-2 items-center overflow-x-auto scrollbar-hide pb-0.5">
             <Link
               href={`/?keel=${lang}`}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              className={`flex-shrink-0 px-4 py-1.5 rounded-[32px] text-[13px] font-medium transition-colors ${
                 !kategooria
-                  ? "bg-[#87be23] text-white"
-                  : "bg-[#f5f3ee] text-[#5a6b6c] hover:bg-[#e8e3d3]"
+                  ? "bg-[#87BE23] text-white shadow-[0_2px_8px_rgba(135,190,35,0.25)]"
+                  : "bg-[#F0EDE8] text-[#5A6B6C] hover:bg-[#E8E3D3] hover:text-[#000000]"
               }`}
             >
-              Kõik ({langFiltered.length})
+              Kõik <span className="opacity-60">({langFiltered.length})</span>
             </Link>
             {categories
               .filter((cat) =>
@@ -124,24 +124,19 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                 <Link
                   key={cat.slug}
                   href={`/?keel=${lang}&kategooria=${cat.slug}`}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-[32px] text-[13px] font-medium transition-colors ${
                     kategooria === cat.slug
-                      ? "bg-[#87be23] text-white"
-                      : "bg-[#f5f3ee] text-[#5a6b6c] hover:bg-[#e8e3d3]"
+                      ? "bg-[#87BE23] text-white shadow-[0_2px_8px_rgba(135,190,35,0.25)]"
+                      : "bg-[#F0EDE8] text-[#5A6B6C] hover:bg-[#E8E3D3] hover:text-[#000000]"
                   }`}
                 >
                   {getCategoryLabel(cat.slug, lang as "et" | "ru" | "en")}
-                  <span className="ml-1.5 text-xs opacity-60">
-                    {
-                      langFiltered.filter((p) =>
-                        p.categories.some((c) => toSlug(c) === cat.slug)
-                      ).length
-                    }
+                  <span className="ml-1.5 opacity-50">
+                    {langFiltered.filter((p) => p.categories.some((c) => toSlug(c) === cat.slug)).length}
                   </span>
                 </Link>
               ))}
 
-            {/* Search — pushed to the right on desktop, inline on mobile */}
             <div className="flex-shrink-0 ml-auto">
               <Suspense>
                 <SearchInput lang={lang} kategooria={kategooria} />
@@ -151,17 +146,16 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
         </section>
 
         {/* Post grid */}
-        <section className="max-w-[1200px] mx-auto px-6 py-10">
+        <section className="max-w-[1140px] mx-auto px-6 py-10">
           {posts.length === 0 ? (
-            <p className="text-[#9a9a9a] text-center py-20">Artikleid ei leitud.</p>
+            <p className="text-[#9A9A9A] text-center py-24 font-light">Artikleid ei leitud.</p>
           ) : (
             <>
-              <p className="text-sm text-[#9a9a9a] mb-6">
-                Leitud {total} artiklit
-                {kategooria ? ` kategoorias "${kategooria}"` : ""}
+              <p className="text-[12px] font-light text-[#9A9A9A] mb-7 tracking-wide">
+                {total} artiklit{kategooria ? ` · ${kategooria}` : ""}
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {posts.map((post) => (
                   <PostCard key={post.slug} post={post} />
                 ))}
@@ -169,22 +163,22 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-12">
+                <div className="flex justify-center items-center gap-2 mt-14">
                   {page > 1 && (
                     <Link
                       href={`/?keel=${lang}${kategooria ? `&kategooria=${kategooria}` : ""}&leht=${page - 1}`}
-                      className="px-5 py-2 rounded-full border border-[#e6e6e6] text-sm text-[#5a6b6c] hover:border-[#87be23] transition-colors"
+                      className="px-5 py-2 rounded-[32px] border border-[#E6E4DF] text-[13px] font-medium text-[#5A6B6C] hover:border-[#87BE23] hover:text-[#000000] transition-all"
                     >
                       ← Eelmine
                     </Link>
                   )}
-                  <span className="px-4 py-2 text-sm text-[#9a9a9a]">
+                  <span className="px-4 py-2 text-[13px] font-light text-[#9A9A9A]">
                     {page} / {totalPages}
                   </span>
                   {page < totalPages && (
                     <Link
                       href={`/?keel=${lang}${kategooria ? `&kategooria=${kategooria}` : ""}&leht=${page + 1}`}
-                      className="px-5 py-2 rounded-full border border-[#e6e6e6] text-sm text-[#5a6b6c] hover:border-[#87be23] transition-colors"
+                      className="px-5 py-2 rounded-[32px] border border-[#E6E4DF] text-[13px] font-medium text-[#5A6B6C] hover:border-[#87BE23] hover:text-[#000000] transition-all"
                     >
                       Järgmine →
                     </Link>

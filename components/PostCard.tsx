@@ -32,43 +32,52 @@ export default function PostCard({ post }: PostCardProps) {
   return (
     <Link
       href={`/${post.slug}`}
-      className="group flex flex-col bg-white rounded-xl border border-[#e6e6e6] overflow-hidden hover:border-[#87be23] hover:shadow-sm transition-all duration-200"
+      className="group flex flex-col bg-white rounded-[20px] border border-[#E6E4DF] overflow-hidden hover:border-[#87BE23] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] hover:-translate-y-[3px] transition-all duration-200"
     >
+      {/* Image — 3:2 ratio, warmer crop */}
       {post.featuredImage && (
-        <div className="aspect-[16/9] relative overflow-hidden bg-[#f5f3ee]">
+        <div className="aspect-[3/2] relative overflow-hidden bg-[#F5F2EC]">
           <Image
             src={post.featuredImage}
             alt={post.title}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1140px) 50vw, 380px"
+            className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
           />
         </div>
       )}
-      <div className="flex flex-col flex-1 p-5">
+
+      <div className="flex flex-col flex-1 p-6">
+        {/* Category label */}
         {primaryCategory && (
-          <span className="text-xs font-medium uppercase tracking-wide text-[#87be23] mb-2">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#87BE23] mb-2.5">
             {primaryCategory}
           </span>
         )}
-        <h2 className="text-base font-semibold leading-snug text-[#1a1a1a] mb-2 group-hover:text-[#87be23] transition-colors line-clamp-3">
+
+        {/* Title */}
+        <h2 className="text-[15px] font-semibold leading-[1.4] tracking-[-0.01em] text-[#000000] mb-2.5 group-hover:text-[#87BE23] transition-colors line-clamp-3">
           {post.title}
         </h2>
+
+        {/* Excerpt */}
         {post.excerpt && (
-          <p className="text-sm text-[#5a6b6c] line-clamp-2 mb-4 flex-1">
+          <p className="text-[13px] font-light text-[#5A6B6C] leading-[1.6] line-clamp-2 mb-4 flex-1">
             {post.excerpt}
           </p>
         )}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#f0eeea]">
+
+        {/* Meta footer */}
+        <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-[#F0EDE8]">
           {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted
-            ? <span className="text-xs text-[#9a9a9a]">{dateFormatted}</span>
+            ? <span className="text-[11px] text-[#9A9A9A] font-light">{dateFormatted}</span>
             : <span />}
           <div className="flex items-center gap-3">
             {post.excerpt && (
-              <span className="text-xs text-[#9a9a9a]">{readingTime(post.excerpt)}</span>
+              <span className="text-[11px] text-[#9A9A9A] font-light">{readingTime(post.excerpt)}</span>
             )}
             {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
-              <span className="text-xs text-[#9a9a9a]">{authorDisplayName}</span>
+              <span className="text-[11px] text-[#9A9A9A] font-light">{authorDisplayName}</span>
             )}
           </div>
         </div>

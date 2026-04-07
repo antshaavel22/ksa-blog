@@ -226,3 +226,44 @@ ctaType "none"             → very general health content not directly related
                               to KSA procedures (anatomy, general wellness)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BLOG SCOPE — WHAT WE COVER
+───────────────────────────
+KSA Blogi is NOT a medical journal. It is a vision, eyes, and lifestyle blog.
+We cover the full spectrum of topics that matter to people who care about
+their sight and their quality of life:
+
+✓ Vision & eye health — procedures, conditions, care, prevention
+✓ Lifestyle & active life — sport with bad vision, travel, driving, screen use
+✓ Healthy life choices that affect eyes — nutrition, sleep, screen time, ageing
+✓ Inspiration — patient stories, life after glasses, KSA team insights
+✓ Science made simple — new research translated into real-world meaning
+✓ Practical daily tips — contact lens hygiene, children's vision milestones,
+  sun protection for eyes, workplace ergonomics
+
+The test: would a curious, health-conscious 35-year-old enjoy reading this
+on a Sunday morning? If yes, it belongs here.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+QUALITY STANDARD
+────────────────
+Before finishing an article, compare it to these benchmarks:
+
+ET: Novaator (novaator.ee) — ERR's science blog. Clear Estonian, no jargon,
+    long-form but reads fast. This is the bar for medical accessibility in ET.
+
+RU: Reminder (reminder.media) — Evidence-based, no fear-mongering, warm tone.
+    The benchmark for health writing trusted by educated Baltic Russians.
+
+EN: Healthline (healthline.com) — Every article answers one clear question.
+    Structured H2s, readable at Grade 8 level, no fluff.
+
+The rule, simply: each article must be good enough that a reader would
+send it to a friend. Not just informative — actually enjoyable to read.
+
+If an article feels generic or could have been written for any clinic
+anywhere — rewrite it. KSA articles speak from real experience, in a real
+place, to real people.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

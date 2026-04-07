@@ -41,16 +41,22 @@ const SOCIALS = [
 
 export default function BlogFooter() {
   return (
-    <footer className="border-t border-[#e6e6e6] bg-[#f9f9f7] mt-auto">
-      <div className="max-w-[1200px] mx-auto px-6 py-8">
-        {/* Top row: logo + socials */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-          <div className="text-sm font-medium text-[#1a1a1a]">
-            <span className="font-semibold">KSA</span>{" "}
-            <span className="text-[#87be23] font-semibold">Silmakeskus</span>
+    <footer className="border-t border-[#E6E4DF] bg-[#F9F7F4] mt-auto">
+      <div className="max-w-[1140px] mx-auto px-6 py-10">
+
+        {/* Top row: wordmark + tagline + socials */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+          <div>
+            <div className="text-[15px] font-semibold tracking-[-0.02em] text-[#000000] mb-1">
+              KSA <span className="text-[#87BE23]">Silmakeskus</span>
+            </div>
+            <p className="text-[12px] font-light text-[#9A9A9A] max-w-xs">
+              Hea nägemine on üks inimese supervõimetest.
+            </p>
           </div>
+
           {/* Social icons */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-5">
             {SOCIALS.map(({ href, label, Icon }) => (
               <a
                 key={label}
@@ -58,7 +64,7 @@ export default function BlogFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
-                className="text-[#9a9a9a] hover:text-[#87be23] transition-colors"
+                className="text-[#C0BDB8] hover:text-[#87BE23] transition-colors duration-150"
               >
                 <Icon />
               </a>
@@ -66,26 +72,29 @@ export default function BlogFooter() {
           </div>
         </div>
 
-        {/* Bottom row: copyright + links */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-[#9a9a9a] border-t border-[#e6e6e6] pt-6">
-          <div>
-            © {new Date().getFullYear()} KSA Silmakeskus &mdash;{" "}
-            <a href="https://ksa.ee" className="hover:text-[#1a1a1a] transition-colors">
-              ksa.ee
-            </a>
-          </div>
+        {/* Bottom row: copyright + nav links */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E6E4DF] pt-6">
+          <p className="text-[12px] font-light text-[#9A9A9A]">
+            © {new Date().getFullYear()} KSA Silmakeskus —{" "}
+            <a href="https://ksa.ee" className="hover:text-[#000000] transition-colors">ksa.ee</a>
+          </p>
           <div className="flex gap-6">
-            <a href="https://ksa.ee/broneeri" className="hover:text-[#1a1a1a] transition-colors">
-              Broneeri aeg
-            </a>
-            <a href="https://ksa.ee/hinnakiri" className="hover:text-[#1a1a1a] transition-colors">
-              Hinnakiri
-            </a>
-            <a href="https://ksa.ee/kontakt" className="hover:text-[#1a1a1a] transition-colors">
-              Kontakt
-            </a>
+            {[
+              { href: "https://ksa.ee/broneeri", label: "Broneeri aeg" },
+              { href: "https://ksa.ee/hinnakiri", label: "Hinnakiri" },
+              { href: "https://ksa.ee/kontakt", label: "Kontakt" },
+            ].map(({ href, label }) => (
+              <a
+                key={label}
+                href={href}
+                className="text-[12px] font-light text-[#9A9A9A] hover:text-[#000000] transition-colors"
+              >
+                {label}
+              </a>
+            ))}
           </div>
         </div>
+
       </div>
     </footer>
   );
