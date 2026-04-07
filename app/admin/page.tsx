@@ -167,6 +167,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadInfo, setUploadInfo] = useState<{ original: { name: string; sizeKB: number; width: number; height: number }; optimized: { sizeKB: number; width: number; height: number; format: string } } | null>(null);
+  const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -302,7 +303,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       let d: { ok?: boolean; url?: string; previewUrl?: string; error?: string };
       try { d = JSON.parse(text); } catch { throw new Error(text.slice(0, 120)); }
       if (d.error) { alert("Viga: " + d.error); return; }
-      setFeaturedImage(d.previewUrl ?? d.url ?? "");
+      // Save production URL (/uploads/...) to frontmatter — NOT the raw GitHub preview URL
+      setFeaturedImage(d.url ?? "");
+      // Keep preview URL separately just for the editor <img> tag (before Vercel redeploys)
+      setUploadPreviewUrl(d.previewUrl ?? d.url ?? "");
       setUploadInfo({
         original: { name: file.name, sizeKB: originalSizeKB, width: originalWidth, height: 0 },
         optimized: { sizeKB: compressedSizeKB, width: outW, height: outH, format: "webp" },
@@ -409,32 +413,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
   // ── Success screen ────────────────────────────────────────────────────────
   if (published) {
-    return (
-      <div style={{ maxWidth: 600, margin: "80px auto", padding: "0 24px", textAlign: "center" }}>
-        <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: "#1a1a1a", margin: "0 0 10px" }}>
-          Postitus on salvestatud!
-        </h2>
-        <div style={{ background: "#fff8e1", border: "1px solid #ffe082", borderRadius: 14, padding: "14px 20px", marginBottom: 28, textAlign: "left" }}>
-          <p style={{ margin: 0, fontSize: 14, color: "#7a5800", lineHeight: 1.6 }}>
-            <strong>Järgmine samm:</strong> postitus ilmub blogis pärast deploymenti.
-            Palun teavita Antsu, et ta käivitaks <code style={{ background: "#f0e8d0", borderRadius: 4, padding: "1px 5px", fontSize: 12 }}>vercel deploy --prod</code>.
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={onBack} style={{
-            padding: "13px 26px", border: "2px solid #e6e6e6", borderRadius: 14,
-            background: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", color: "#5a6b6c",
-          }}>← Tagasi</button>
-          {publishedSlug && (
-            <a href={`/${publishedSlug}`} target="_blank" rel="noopener noreferrer" style={{
-              padding: "13px 26px", borderRadius: 14, background: "#87be23", color: "white",
-              fontSize: 15, fontWeight: 700, textDecoration: "none",
-            }}>Vaata postitust →</a>
-          )}
-        </div>
-      </div>
-    );
+    return <PublishSuccessScreen slug={publishedSlug} onBack={onBack} />;
   }
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -615,7 +594,17 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           {featuredImage && (
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={featuredImage} alt="" style={{ marginTop: 8, width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={uploadPreviewUrl || featuredImage}
+                alt=""
+                style={{ marginTop: 8, width: "100%", maxHeight: 180, objectFit: "cover", borderRadius: 8, border: "1px solid #e6e6e6" }}
+                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              {uploadPreviewUrl && uploadPreviewUrl !== featuredImage && (
+                <p style={{ margin: "4px 0 0", fontSize: 11, color: "#6b7280" }}>
+                  ⏳ Eelvaade — pilt ilmub blogis pärast ~2 min deploymenti. Salvestatud: <code style={{ fontSize: 10 }}>{featuredImage}</code>
+                </p>
+              )}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <button
                   type="button"
@@ -631,7 +620,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setFeaturedImage(""); setUploadInfo(null); }}
+                  onClick={() => { setFeaturedImage(""); setUploadPreviewUrl(""); setUploadInfo(null); }}
                   style={{
                     padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5",
                     background: "white", color: "#b91c1c", fontSize: 12, fontWeight: 600,
@@ -851,6 +840,91 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             }}>{publishing ? "Avaldan…" : "✓ Avalda"}</button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Publish Success Screen ───────────────────────────────────────────────────
+
+function PublishSuccessScreen({ slug, onBack }: { slug: string; onBack: () => void }) {
+  const TOTAL = 120; // seconds until Vercel typically finishes
+  const [secs, setSecs] = useState(TOTAL);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (secs <= 0) { setReady(true); return; }
+    const t = setTimeout(() => setSecs(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secs]);
+
+  const pct = Math.round(((TOTAL - secs) / TOTAL) * 100);
+  const blogUrl = `https://blog.ksa.ee/${slug}`;
+
+  return (
+    <div style={{ maxWidth: 560, margin: "60px auto", padding: "0 24px", textAlign: "center" }}>
+      <div style={{ fontSize: 56, marginBottom: 12 }}>{ready ? "🎉" : "⚙️"}</div>
+      <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
+        {ready ? "Postitus on elus!" : "Postitus avaldatud!"}
+      </h2>
+      <p style={{ color: "#6b7280", fontSize: 15, marginBottom: 28, fontWeight: 300 }}>
+        {ready
+          ? "Vercel on lehe üles ehitanud. Postitus peaks nüüd avalik olema."
+          : "Vercel ehitab lehte uuesti. See võtab tavaliselt ~2 minutit."}
+      </p>
+
+      {/* Progress bar */}
+      {!ready && (
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ background: "#f0f0ec", borderRadius: 99, height: 8, overflow: "hidden", marginBottom: 8 }}>
+            <div style={{
+              height: "100%", borderRadius: 99,
+              background: "linear-gradient(90deg, #87be23, #a8d54f)",
+              width: `${pct}%`, transition: "width 1s linear",
+            }} />
+          </div>
+          <p style={{ fontSize: 13, color: "#9a9a9a", margin: 0 }}>
+            {secs > 0 ? `~${secs} sekundit jäänud` : "Kontrollime…"}
+          </p>
+        </div>
+      )}
+
+      {/* Info box */}
+      <div style={{
+        background: ready ? "#f0fdf4" : "#f9f9f7",
+        border: `1px solid ${ready ? "#bbf7d0" : "#e6e6e6"}`,
+        borderRadius: 14, padding: "14px 18px", marginBottom: 24, textAlign: "left",
+      }}>
+        <p style={{ margin: 0, fontSize: 13, color: ready ? "#166534" : "#5a6b6c", lineHeight: 1.6 }}>
+          {ready ? (
+            <>✅ <strong>Pilt ja tekst on mõlemad elus.</strong> Kui näed 404 — proovi 30 sek pärast uuesti.</>
+          ) : (
+            <>📌 <strong>Ära kliki linki kohe</strong> — leht ei ole veel valmis. Oota kuni loendur jõuab nulli.</>
+          )}
+        </p>
+      </div>
+
+      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+        <button onClick={onBack} style={{
+          padding: "13px 24px", border: "2px solid #e6e6e6", borderRadius: 14,
+          background: "white", fontSize: 15, fontWeight: 700, cursor: "pointer", color: "#5a6b6c",
+        }}>← Tagasi</button>
+        {slug && (
+          <a
+            href={blogUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={e => { if (!ready) { e.preventDefault(); alert(`Palun oota veel ${secs} sekundit — Vercel pole ehitamist lõpetanud.`); }}}
+            style={{
+              padding: "13px 24px", borderRadius: 14,
+              background: ready ? "#87be23" : "#d1d5db",
+              color: "white", fontSize: 15, fontWeight: 700, textDecoration: "none",
+              cursor: ready ? "pointer" : "not-allowed",
+              boxShadow: ready ? "0 4px 16px rgba(135,190,35,0.25)" : "none",
+              transition: "all 0.3s",
+            }}
+          >{ready ? "Vaata postitust →" : `Ava ${secs}s pärast →`}</a>
+        )}
       </div>
     </div>
   );
