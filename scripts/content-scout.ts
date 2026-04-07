@@ -281,7 +281,7 @@ async function fetchArticles(): Promise<Article[]> {
 function loadMasterPrompt(): string {
   const masterPath = path.join(process.cwd(), "content/system/master-prompt.md");
   if (fs.existsSync(masterPath)) {
-    return fs.readFileSync(masterPath, "utf-8").slice(0, 4000); // first 4k chars cover voice+rules
+    return fs.readFileSync(masterPath, "utf-8");
   }
   return "";
 }
@@ -291,73 +291,47 @@ function loadMasterPrompt(): string {
 function buildPrompt(article: Article, lang: string, masterPrompt: string): string {
   const langLabel = lang === "et" ? "Estonian" : lang === "ru" ? "Russian" : "English";
 
-  const langSeoKeywords: Record<string, string> = {
-    et: `"laserkorrektsiooni hind", "silmade laseroperatsioon", "ICB operatsioon", "Flow3 Tallinnas", "silmade tervis"`,
-    ru: `"лазерная коррекция зрения Таллин", "операция ICB", "Flow3 процедура", "здоровье глаз"`,
-    en: `"laser eye surgery Tallinn", "ICB lens Estonia", "Flow3 procedure", "eye health tips"`,
-  };
-
-  const qualityBenchmark: Record<string, string> = {
-    et: "Novaator (novaator.ee) — ERR's science blog. Clear Estonian, reads fast, no jargon.",
-    ru: "Reminder (reminder.media) — warm, evidence-based, trusted by Baltic Russians.",
-    en: "Healthline (healthline.com) — one clear question answered, Grade 8 reading level.",
-  };
-
   return `${masterPrompt}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONTENT SCOUT TASK
+TODAY'S WRITING TASK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-A trending article was found in the health/vision/lifestyle space.
-Your job: write a FRESH, original KSA blog post INSPIRED BY this article,
-adapted for a ${langLabel}-speaking audience in Estonia. Do NOT copy or translate.
-Use the article as a topic spark — the angle, context, and KSA voice must be yours.
+This article caught our eye today. Use it as a spark — not a source.
+Write something original in ${langLabel}. Your own angle. Your own story.
 
-QUALITY BENCHMARK: Your article must be at the level of ${qualityBenchmark[lang] ?? qualityBenchmark.en}
-Ask yourself: would a reader send this to a friend? If not — make it warmer or more useful.
+SOURCE:
+${article.title}
+${article.source}
+${article.summary.slice(0, 400)}
 
-SOURCE ARTICLE:
-Title: ${article.title}
-Source: ${article.source}
-URL: ${article.url}
-Summary: ${article.summary.slice(0, 600)}
+Write the article. Then apply James Clear's three-question edit:
+  1. Can it be shorter?
+  2. Is it more appealing than when you started?
+  3. Could it matter to someone who has never heard of KSA?
 
-LANGUAGE: ${langLabel}
-SEO keywords to weave in naturally: ${langSeoKeywords[lang] ?? langSeoKeywords.en}
-
-Return ONLY a JSON object (no markdown fences, no explanation):
+Return ONLY valid JSON — no markdown fences, no explanation:
 {
-  "title": "Engaging title max 65 chars — specific, benefit-driven, with primary keyword",
-  "slug": "url-friendly-slug-kebab-case-max-60-chars",
-  "excerpt": "Compelling 150-180 char excerpt with clear benefit and keyword. Reads like a human wrote it.",
-  "categories": ["Primary Category", "Secondary Category"],
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "ctaType": "kiirtest-inline or kiirtest-soft or none",
+  "title": "The headline. Max 65 chars. A fact, a question, or something surprising.",
+  "slug": "kebab-case-url-slug",
+  "excerpt": "One sentence that makes someone want to read. 150–170 chars.",
+  "categories": ["One or two categories"],
+  "tags": ["up to five tags"],
+  "ctaType": "kiirtest-inline if the article connects naturally to laser/ICB/Flow3 — otherwise kiirtest-soft — or none",
   "medicalReview": false,
-  "seoTitle": "SEO title max 60 chars",
-  "seoExcerpt": "Meta description 120-155 chars — clear benefit, no fluff",
+  "seoTitle": "SEO title, max 60 chars",
+  "seoExcerpt": "Meta description, 120–155 chars",
   "llmSearchQueries": [
-    "Exact conversational question this post answers (in ${langLabel})",
-    "Question 2",
-    "Question 3",
-    "Question 4",
-    "Question 5"
+    "A real question someone might type to find this article (in ${langLabel})",
+    "Question 2", "Question 3", "Question 4", "Question 5"
   ],
   "faqItems": [
-    {"q": "Practical FAQ question readers actually ask (in ${langLabel})", "a": "Clear 2-3 sentence answer"},
+    {"q": "A question readers genuinely ask", "a": "A clear, honest 2-sentence answer"},
     {"q": "Question 2", "a": "Answer 2"},
     {"q": "Question 3", "a": "Answer 3"}
   ],
-  "content": "Full markdown blog post (700-950 words). Rules:\\n- Hook immediately (relatable situation, bold fact, or direct question)\\n- Short paragraphs — 2-4 sentences max\\n- ## H2 headings every 200-250 words\\n- 1 internal KSA link naturally placed: [anchor](https://ksa.ee/hinnakiri/) or [anchor](https://ksa.ee/flow3/) or [anchor](https://ksa.ee/icb-time)\\n- Specific details — recovery times, real scenarios, tangible benefits\\n- End with empowerment, not pressure — inspire action\\n- Do NOT include the title as H1 (frontmatter handles it)\\n- Do NOT add a FAQ section (handled separately by the system)"
-}
-
-ctaType rules:
-- kiirtest-inline: post is about laser correction, ICB, Flow3, getting rid of glasses/lenses
-- kiirtest-soft: general vision/eye health/lifestyle topic
-- none: very general wellness content unrelated to eye procedures
-
-medicalReview: set true ONLY for specific complication rates, drug dosages, or contraindication lists.`;
+  "content": "The article body in markdown. 500–600 words. Start with a strong first sentence — no warming up. Short paragraphs. One idea at a time, fully, then move on. ## headings when the topic shifts. End with a thought that stays with the reader. No marketing language. No repeated ideas."
+}`;
 }
 
 // ── Generate draft post via Claude ────────────────────────────────────────────
