@@ -1,14 +1,21 @@
 name: Daily Content Scout
 
+# ─── SCHEDULE ────────────────────────────────────────────────────────────────
+# Runs every day at 07:00 Tallinn time (UTC+2 / UTC+3 summer)
+# Generates 1 trilingual draft (ET + RU + EN) from top health/vision/lifestyle blogs
+# Drafts land in content/drafts/et|ru|en/ and appear in admin Mustandid tab
+# This schedule runs indefinitely until manually disabled.
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   schedule:
-    - cron: '0 5 * * *'   # 7:00 AM Tallinn time (UTC+2) every day
-  workflow_dispatch:        # Allow manual trigger from GitHub UI
+    - cron: '0 5 * * *'   # 07:00 EET (UTC+2) · 06:00 EEST (UTC+3 summer)
+  workflow_dispatch:        # Manual trigger from GitHub UI → Actions tab
 
 jobs:
   scout:
     runs-on: ubuntu-latest
-    timeout-minutes: 15     # Hard timeout — prevents 6-hour hangs
+    timeout-minutes: 20     # Hard timeout — prevents runaway jobs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,8 +32,8 @@ jobs:
         timeout-minutes: 5
         run: npm ci --prefer-offline --no-audit --no-fund
 
-      - name: Run content scout
-        timeout-minutes: 8
+      - name: Run content scout — Top 20 sources, trilingual, Sonnet quality
+        timeout-minutes: 12
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: npm run scout -- --limit 1 --trilingual

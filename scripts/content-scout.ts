@@ -41,45 +41,167 @@ const LANG = (() => {
 const LANGS = TRILINGUAL ? ["et", "ru", "en"] : [LANG];
 const SOURCE_FILTER = (() => { const i = args.indexOf("--source"); return i >= 0 ? args[i + 1] : null; })();
 
-// ── RSS Sources ───────────────────────────────────────────────────────────────
+// ── RSS Sources — TOP 20 health, lifestyle, vision & eyes blogs ───────────────
+// Weight 3 = eye/vision specialist; Weight 2 = health/science authority;
+// Weight 1 = lifestyle/wellness (broad but trendy)
 
 const SOURCES = [
+  // ── Eye & Vision specialist (weight 3) ────────────────────────────────────
   {
     id: "healio",
     name: "Healio Ophthalmology",
     url: "https://www.healio.com/sws/feed/news/ophthalmology",
-    weight: 3,  // highest priority
-  },
-  {
-    id: "sciencedaily",
-    name: "ScienceDaily Eye Care",
-    url: "https://www.sciencedaily.com/rss/health_medicine/eye_care.xml",
-    weight: 2,
+    weight: 3,
   },
   {
     id: "reviewofopt",
     name: "Review of Ophthalmology",
     url: "https://www.reviewofophthalmology.com/rss/news",
+    weight: 3,
+  },
+  {
+    id: "aao",
+    name: "American Academy of Ophthalmology",
+    url: "https://www.aao.org/rss/eyenet",
+    weight: 3,
+  },
+  {
+    id: "eyewire",
+    name: "EyeWire News",
+    url: "https://eyewire.news/feed/",
+    weight: 3,
+  },
+  {
+    id: "allaboutvision",
+    name: "All About Vision",
+    url: "https://www.allaboutvision.com/rss.xml",
+    weight: 3,
+  },
+  {
+    id: "optometry",
+    name: "Optometry Today",
+    url: "https://www.optometry.co.uk/rss/news",
+    weight: 2,
+  },
+  // ── Science & Medical authority (weight 2) ────────────────────────────────
+  {
+    id: "sciencedaily_eye",
+    name: "ScienceDaily Eye Care",
+    url: "https://www.sciencedaily.com/rss/health_medicine/eye_care.xml",
+    weight: 2,
+  },
+  {
+    id: "sciencedaily_health",
+    name: "ScienceDaily Health",
+    url: "https://www.sciencedaily.com/rss/health_medicine.xml",
+    weight: 2,
+  },
+  {
+    id: "medscape",
+    name: "Medscape Ophthalmology",
+    url: "https://www.medscape.com/rss/ophthalmology",
+    weight: 2,
+  },
+  {
+    id: "nih",
+    name: "NIH News in Health",
+    url: "https://newsinhealth.nih.gov/sites/NHI/files/news-in-health.xml",
     weight: 2,
   },
   {
     id: "pubmed",
     name: "PubMed Eye Surgery",
     url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1nknZFGxGrAc-YoJVhCRvUr1TmO-nQV7NZrScOFEL3VVMdRbF4/?limit=20&utm_campaign=pubmed-2&fc=20240101000000",
+    weight: 2,
+  },
+  // ── Health & Lifestyle authority (weight 1) ───────────────────────────────
+  {
+    id: "healthline",
+    name: "Healthline",
+    url: "https://www.healthline.com/rss/health-news",
+    weight: 1,
+  },
+  {
+    id: "webmd",
+    name: "WebMD Health News",
+    url: "https://rssfeeds.webmd.com/rss/rss.aspx?RSSSource=RSS_PUBLIC",
+    weight: 1,
+  },
+  {
+    id: "mayoclinic",
+    name: "Mayo Clinic News",
+    url: "https://newsnetwork.mayoclinic.org/feed/",
+    weight: 1,
+  },
+  {
+    id: "bbc_health",
+    name: "BBC Health",
+    url: "https://feeds.bbci.co.uk/news/health/rss.xml",
+    weight: 1,
+  },
+  {
+    id: "guardian_health",
+    name: "The Guardian Health",
+    url: "https://www.theguardian.com/society/health/rss",
+    weight: 1,
+  },
+  {
+    id: "prevention",
+    name: "Prevention Magazine",
+    url: "https://www.prevention.com/feed/",
+    weight: 1,
+  },
+  {
+    id: "mindbodygreen",
+    name: "mindbodygreen",
+    url: "https://www.mindbodygreen.com/rss.xml",
+    weight: 1,
+  },
+  {
+    id: "wellandgood",
+    name: "Well+Good",
+    url: "https://www.wellandgood.com/feed/",
+    weight: 1,
+  },
+  {
+    id: "self",
+    name: "SELF Magazine Health",
+    url: "https://www.self.com/feed/rss",
+    weight: 1,
+  },
+  {
+    id: "everydayhealth",
+    name: "Everyday Health",
+    url: "https://www.everydayhealth.com/rss/all-news.aspx",
     weight: 1,
   },
 ];
 
 // ── KSA-relevant keywords for article scoring ─────────────────────────────────
+// Weight: eye/vision specialist topics score higher than lifestyle topics
 
 const HIGH_VALUE_KEYWORDS = [
-  "laser eye surgery", "LASIK", "PRK", "laser vision correction",
-  "refractive surgery", "myopia", "nearsightedness", "contact lenses",
-  "glasses", "vision correction", "dry eye", "eye drops",
-  "intraocular lens", "cataract", "ICL", "phakic lens",
-  "screen time", "digital eye strain", "blue light",
-  "eye health", "vision", "ophthalmology", "optometry",
-  "nägemine", "silmad", "laser", "prillid",
+  // Eye & vision procedures (highest relevance)
+  "laser eye surgery", "LASIK", "PRK", "LASEK", "laser vision correction",
+  "refractive surgery", "myopia correction", "vision correction",
+  "intraocular lens", "ICL", "phakic lens", "cataract surgery",
+  "Flow3", "surface ablation", "flapless laser",
+  // Eye health conditions
+  "myopia", "nearsightedness", "astigmatism", "presbyopia", "hyperopia",
+  "dry eye", "dry eye syndrome", "eye drops", "conjunctivitis",
+  "macular degeneration", "glaucoma", "retinal", "cornea",
+  "eye floaters", "eye strain", "blurry vision",
+  // Eyewear & alternatives
+  "glasses", "spectacles", "contact lenses", "contact lens",
+  "reading glasses", "progressive lenses", "bifocals",
+  // Lifestyle & vision (lifestyle blog angle)
+  "screen time", "digital eye strain", "blue light", "computer vision",
+  "eye health", "vision", "ophthalmology", "optometry", "eye exam",
+  "children's vision", "kids eye", "sport vision", "driving vision",
+  "nutrition for eyes", "eye vitamins", "omega-3 vision",
+  "sleep and eyes", "UV protection", "sunglasses", "eye ageing",
+  // Estonian keywords
+  "nägemine", "silmad", "laser", "prillid", "kontaktläätsed",
 ];
 
 // ── Seen article tracking ─────────────────────────────────────────────────────
@@ -123,7 +245,7 @@ interface Article {
 async function fetchArticles(): Promise<Article[]> {
   const parser = new Parser({ timeout: 10000 });
   const articles: Article[] = [];
-  const cutoff = new Date(Date.now() - 72 * 60 * 60 * 1000); // 72h window
+  const cutoff = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000); // 5-day window
 
   const sources = SOURCE_FILTER
     ? SOURCES.filter((s) => s.id === SOURCE_FILTER)
@@ -154,22 +276,46 @@ async function fetchArticles(): Promise<Article[]> {
   return articles.sort((a, b) => b.score - a.score || b.pubDate.getTime() - a.pubDate.getTime());
 }
 
+// ── Load master prompt ────────────────────────────────────────────────────────
+
+function loadMasterPrompt(): string {
+  const masterPath = path.join(process.cwd(), "content/system/master-prompt.md");
+  if (fs.existsSync(masterPath)) {
+    return fs.readFileSync(masterPath, "utf-8").slice(0, 4000); // first 4k chars cover voice+rules
+  }
+  return "";
+}
+
 // ── Build Claude prompt ───────────────────────────────────────────────────────
 
-function buildPrompt(article: Article, lang: string): string {
+function buildPrompt(article: Article, lang: string, masterPrompt: string): string {
   const langLabel = lang === "et" ? "Estonian" : lang === "ru" ? "Russian" : "English";
-  const langInstructions = {
-    et: `Estonian. Use warm, expert but accessible Estonian. Natural everyday language, not overly formal.
-Search terms to naturally include: "laserkorrektsiooni hind", "silmade laseroperatsioon", "ICB operatsioon", "Flow3 Tallinnas", "KSA Silmakeskus"`,
-    ru: `Russian. Warm, professional Russian. Natural and accessible.
-Search terms: "лазерная коррекция зрения Таллин", "операция ICB", "Flow3 процедура", "KSA Silmakeskus"`,
-    en: `English. Clear, expert tone aimed at expats in Tallinn or medical tourists.
-Search terms: "laser eye surgery Tallinn", "ICB lens replacement Estonia", "Flow3 procedure KSA"`,
+
+  const langSeoKeywords: Record<string, string> = {
+    et: `"laserkorrektsiooni hind", "silmade laseroperatsioon", "ICB operatsioon", "Flow3 Tallinnas", "silmade tervis"`,
+    ru: `"лазерная коррекция зрения Таллин", "операция ICB", "Flow3 процедура", "здоровье глаз"`,
+    en: `"laser eye surgery Tallinn", "ICB lens Estonia", "Flow3 procedure", "eye health tips"`,
   };
 
-  return `You are a senior content editor for KSA Silmakeskus, an eye clinic in Tallinn, Estonia, specialists in the Flow3 laser procedure (pinnapealne laserkorrektsiooni meetod — flapless, safer for sports) and ICB lens replacement (for those unsuitable for laser). KSA has 55,000+ procedures performed. Recovery after Flow3 is approximately 1 week.
+  const qualityBenchmark: Record<string, string> = {
+    et: "Novaator (novaator.ee) — ERR's science blog. Clear Estonian, reads fast, no jargon.",
+    ru: "Reminder (reminder.media) — warm, evidence-based, trusted by Baltic Russians.",
+    en: "Healthline (healthline.com) — one clear question answered, Grade 8 reading level.",
+  };
 
-A new article was published in the eye health space. Your job: write a FRESH, original KSA blog post INSPIRED BY this article, adapted for a ${langLabel}-speaking audience in Estonia. Do NOT copy or translate. Use the article as a topic spark only.
+  return `${masterPrompt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTENT SCOUT TASK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A trending article was found in the health/vision/lifestyle space.
+Your job: write a FRESH, original KSA blog post INSPIRED BY this article,
+adapted for a ${langLabel}-speaking audience in Estonia. Do NOT copy or translate.
+Use the article as a topic spark — the angle, context, and KSA voice must be yours.
+
+QUALITY BENCHMARK: Your article must be at the level of ${qualityBenchmark[lang] ?? qualityBenchmark.en}
+Ask yourself: would a reader send this to a friend? If not — make it warmer or more useful.
 
 SOURCE ARTICLE:
 Title: ${article.title}
@@ -177,40 +323,41 @@ Source: ${article.source}
 URL: ${article.url}
 Summary: ${article.summary.slice(0, 600)}
 
-Write in ${langInstructions[lang as keyof typeof langInstructions] ?? langInstructions.en}
+LANGUAGE: ${langLabel}
+SEO keywords to weave in naturally: ${langSeoKeywords[lang] ?? langSeoKeywords.en}
 
 Return ONLY a JSON object (no markdown fences, no explanation):
 {
-  "title": "Engaging title max 60 chars with primary keyword",
-  "slug": "url-friendly-slug-kebab-case",
-  "excerpt": "Compelling 150-180 char meta description with benefit and keyword",
+  "title": "Engaging title max 65 chars — specific, benefit-driven, with primary keyword",
+  "slug": "url-friendly-slug-kebab-case-max-60-chars",
+  "excerpt": "Compelling 150-180 char excerpt with clear benefit and keyword. Reads like a human wrote it.",
   "categories": ["Primary Category", "Secondary Category"],
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "ctaType": "kiirtest-inline or kiirtest-soft or none",
-  "medicalReview": true or false,
+  "medicalReview": false,
   "seoTitle": "SEO title max 60 chars",
-  "seoExcerpt": "Meta description 120-155 chars",
+  "seoExcerpt": "Meta description 120-155 chars — clear benefit, no fluff",
   "llmSearchQueries": [
-    "Conversational question 1 this post answers (in ${langLabel})",
-    "Conversational question 2",
-    "Conversational question 3",
-    "Conversational question 4",
-    "Conversational question 5"
+    "Exact conversational question this post answers (in ${langLabel})",
+    "Question 2",
+    "Question 3",
+    "Question 4",
+    "Question 5"
   ],
   "faqItems": [
-    {"q": "FAQ question 1 in ${langLabel}", "a": "Answer 1 (2-3 sentences)"},
-    {"q": "FAQ question 2", "a": "Answer 2"},
-    {"q": "FAQ question 3", "a": "Answer 3"}
+    {"q": "Practical FAQ question readers actually ask (in ${langLabel})", "a": "Clear 2-3 sentence answer"},
+    {"q": "Question 2", "a": "Answer 2"},
+    {"q": "Question 3", "a": "Answer 3"}
   ],
-  "content": "Full markdown blog post body (600-900 words). Include:\\n- Natural H2 headings (##) every 200-300 words\\n- 1 internal KSA link where relevant (use [text](https://ksa.ee/hinnakiri/) or [text](https://ksa.ee/icb-time) or [text](https://ksa.ee/flow3/))\\n- Conversational tone\\n- End with a natural CTA sentence pointing to KSA\\n- Do NOT include the title as H1 (it is in frontmatter)\\n- Do NOT include a FAQ section (that is handled separately)"
+  "content": "Full markdown blog post (700-950 words). Rules:\\n- Hook immediately (relatable situation, bold fact, or direct question)\\n- Short paragraphs — 2-4 sentences max\\n- ## H2 headings every 200-250 words\\n- 1 internal KSA link naturally placed: [anchor](https://ksa.ee/hinnakiri/) or [anchor](https://ksa.ee/flow3/) or [anchor](https://ksa.ee/icb-time)\\n- Specific details — recovery times, real scenarios, tangible benefits\\n- End with empowerment, not pressure — inspire action\\n- Do NOT include the title as H1 (frontmatter handles it)\\n- Do NOT add a FAQ section (handled separately by the system)"
 }
 
-CTA type rules:
-- kiirtest-inline: post is about laser correction, ICB, Flow3, getting rid of glasses
-- kiirtest-soft: general eye health education
-- none: children's eye health, general health unrelated to procedures
+ctaType rules:
+- kiirtest-inline: post is about laser correction, ICB, Flow3, getting rid of glasses/lenses
+- kiirtest-soft: general vision/eye health/lifestyle topic
+- none: very general wellness content unrelated to eye procedures
 
-medicalReview = true only if post makes specific clinical claims (contraindications, drug interactions, exact dosages, specific complication rates).`;
+medicalReview: set true ONLY for specific complication rates, drug dosages, or contraindication lists.`;
 }
 
 // ── Generate draft post via Claude ────────────────────────────────────────────
@@ -230,12 +377,12 @@ interface GeneratedPost {
   content: string;
 }
 
-async function generateDraft(article: Article, lang: string, client: Anthropic): Promise<GeneratedPost | null> {
-  const prompt = buildPrompt(article, lang);
+async function generateDraft(article: Article, lang: string, client: Anthropic, masterPrompt: string): Promise<GeneratedPost | null> {
+  const prompt = buildPrompt(article, lang, masterPrompt);
 
   const response = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 3000,
+    model: "claude-sonnet-4-5",   // upgraded: Sonnet for higher quality drafts
+    max_tokens: 4000,
     messages: [{ role: "user", content: prompt }],
   });
 
@@ -296,21 +443,26 @@ ${post.content.trim()}${faqSection}
 
 async function main() {
   const client = new Anthropic();
-  fs.mkdirSync(DRAFTS_DIR, { recursive: true });
+  fs.mkdirSync(path.join(DRAFTS_DIR, "et"), { recursive: true });
+  fs.mkdirSync(path.join(DRAFTS_DIR, "ru"), { recursive: true });
+  fs.mkdirSync(path.join(DRAFTS_DIR, "en"), { recursive: true });
 
-  console.log(`\nKSA Content Scout`);
-  console.log(`━━━━━━━━━━━━━━━━━`);
-  console.log(`Fetching RSS feeds...`);
+  // Load master prompt — gives Claude the full KSA voice, quality benchmark, scope
+  const masterPrompt = loadMasterPrompt();
+
+  console.log(`\nKSA Content Scout v2 — Top 20 Sources`);
+  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+  console.log(`Fetching RSS feeds from ${SOURCES.length} sources...`);
 
   const articles = await fetchArticles();
   const seen = loadSeen();
 
   const fresh = articles.filter((a) => !seen.has(a.url));
 
-  console.log(`Found ${articles.length} articles (${fresh.length} new, ${articles.length - fresh.length} already seen)`);
+  console.log(`Found ${articles.length} articles across all sources (${fresh.length} new)`);
 
   if (fresh.length === 0) {
-    console.log(`\nNothing new today. Try again tomorrow or run with --source to force a specific source.`);
+    console.log(`\nNothing new today — all articles already seen. Extending window or try --source.`);
     return;
   }
 
@@ -318,7 +470,7 @@ async function main() {
 
   console.log(`\nTop picks:`);
   for (const a of toProcess) {
-    console.log(`  [${a.score}] ${a.title.slice(0, 70)} (${a.source})`);
+    console.log(`  [score:${a.score}] ${a.title.slice(0, 65)} (${a.source})`);
   }
   console.log();
 
@@ -335,7 +487,7 @@ async function main() {
 
     let anySuccess = false;
     for (const lang of LANGS) {
-      const post = await generateDraft(article, lang, client);
+      const post = await generateDraft(article, lang, client, masterPrompt);
       if (!post) {
         console.log(`  ✗ [${lang}] parse failed`);
         continue;
