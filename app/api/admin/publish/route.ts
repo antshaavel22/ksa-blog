@@ -14,15 +14,20 @@ function getSlugFromPath(filePath: string): string {
   return path.basename(filePath).replace(/\.mdx?$/, "");
 }
 
-async function publishDev(draftPath: string): Promise<string> {
+async function publishDev(draftPath: string, clientContent?: string): Promise<string> {
   const fs = await import("fs");
   const pathMod = await import("path");
   const cwd = process.cwd();
 
-  const absSource = pathMod.join(cwd, draftPath);
-  if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
-
-  const raw = fs.readFileSync(absSource, "utf-8");
+  let raw: string;
+  if (clientContent) {
+    // Client sent the latest content — use it directly (avoids stale filesystem)
+    raw = clientContent;
+  } else {
+    const absSource = pathMod.join(cwd, draftPath);
+    if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
+    raw = fs.readFileSync(absSource, "utf-8");
+  }
   const published = removeDraftStatus(raw);
 
   const basename = pathMod.basename(draftPath);
@@ -31,28 +36,39 @@ async function publishDev(draftPath: string): Promise<string> {
 
   fs.mkdirSync(pathMod.dirname(absTarget), { recursive: true });
   fs.writeFileSync(absTarget, published, "utf-8");
-  fs.unlinkSync(absSource);
+
+  // Only delete if it exists (client content may not have a filesystem draft)
+  const absSource2 = pathMod.join(cwd, draftPath);
+  if (fs.existsSync(absSource2)) fs.unlinkSync(absSource2);
 
   return getSlugFromFrontmatter(published) || getSlugFromPath(draftPath);
 }
 
-async function publishProd(draftPath: string): Promise<string> {
-  const fs = await import("fs");
+async function publishProd(draftPath: string, clientContent?: string): Promise<string> {
   const pathMod = await import("path");
-  const cwd = process.cwd();
-
-  // Step 1: Read draft from FILESYSTEM (bundled with deployment)
-  const absSource = pathMod.join(cwd, draftPath);
-  if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
-  const raw = fs.readFileSync(absSource, "utf-8");
-  const published = removeDraftStatus(raw);
 
   const token = process.env.GITHUB_TOKEN!;
   const repo = process.env.GITHUB_REPO!;
   const basename = pathMod.basename(draftPath);
   const targetPath = `content/posts/${basename}`;
 
-  // Step 2: Write to content/posts/ on GitHub
+  let raw: string;
+
+  if (clientContent) {
+    // ✅ PREFERRED PATH: client sends latest content (avoids stale filesystem read)
+    raw = clientContent;
+  } else {
+    // Fallback: read from filesystem (only works if draft was in the current deployment bundle)
+    const fs = await import("fs");
+    const cwd = process.cwd();
+    const absSource = pathMod.join(cwd, draftPath);
+    if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
+    raw = fs.readFileSync(absSource, "utf-8");
+  }
+
+  const published = removeDraftStatus(raw);
+
+  // Step 1: Write to content/posts/ on GitHub
   const putUrl = `https://api.github.com/repos/${repo}/contents/${targetPath}`;
   const checkRes = await fetch(putUrl, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
@@ -80,7 +96,7 @@ async function publishProd(draftPath: string): Promise<string> {
     throw new Error(`GitHub write error: ${putRes.status} ${err}`);
   }
 
-  // Step 3: Delete draft from GitHub (if it exists there)
+  // Step 2: Delete draft from GitHub (if it exists there)
   const deleteUrl = `https://api.github.com/repos/${repo}/contents/${draftPath}`;
   const getRes = await fetch(deleteUrl, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
@@ -98,7 +114,7 @@ async function publishProd(draftPath: string): Promise<string> {
     });
   }
 
-  // Step 4: Trigger Vercel redeploy via deploy hook (if configured)
+  // Step 3: Trigger Vercel redeploy via deploy hook (if configured)
   const deployHook = process.env.VERCEL_DEPLOY_HOOK;
   if (deployHook) {
     try {
@@ -112,7 +128,10 @@ async function publishProd(draftPath: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const { path: draftPath } = await req.json() as { path: string };
+  const { path: draftPath, content: clientContent } = await req.json() as {
+    path: string;
+    content?: string; // ← client sends full MDX content to avoid stale filesystem read
+  };
 
   if (!draftPath) {
     return NextResponse.json({ error: "path is required" }, { status: 400 });
@@ -125,8 +144,8 @@ export async function POST(req: NextRequest) {
   try {
     const slug =
       process.env.NODE_ENV === "production"
-        ? await publishProd(draftPath)
-        : await publishDev(draftPath);
+        ? await publishProd(draftPath, clientContent)
+        : await publishDev(draftPath, clientContent);
 
     const needsRedeploy = process.env.NODE_ENV === "production" && !process.env.VERCEL_DEPLOY_HOOK;
 

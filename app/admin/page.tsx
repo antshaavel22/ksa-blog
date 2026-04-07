@@ -365,15 +365,18 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
   async function publish() {
     setPublishing(true); setError("");
-    // Save first
+    // Build the final content from current React state — this is the source of truth.
+    // We pass it directly to the publish API so it never has to read from the stale filesystem.
+    const finalContent = buildMdx(buildFm(), body);
+    // Also save to GitHub draft (keeps draft in sync before publish deletes it)
     await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: buildMdx(buildFm(), body) }),
+      body: JSON.stringify({ content: finalContent }),
     });
-    // Then publish
+    // Then publish — send the content directly so publish API uses it verbatim
     const res = await fetch("/api/admin/publish", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: draft.path }),
+      body: JSON.stringify({ path: draft.path, content: finalContent }),
     });
     const d = await res.json() as { ok?: boolean; slug?: string; needsRedeploy?: boolean; error?: string };
     if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
