@@ -551,7 +551,7 @@ async function main() {
   console.log("\n" + "━".repeat(60));
   console.log(`✅ Done: ${success} generated, ${failed} failed`);
   console.log(`📁 Drafts saved to: content/drafts/${LANG}/`);
-  console.log(`   Open admin to review: http://localhost:3002/admin`);
+  console.log(`   Open admin to review: https://blog.ksa.ee/admin`);
 }
 
 main().catch(console.error);
