@@ -1,8 +1,9 @@
-# KSA Blogi — Toimetaja juhend v3.0
+# KSA Blogi — Toimetaja juhend v4.0
 
-**Aadress:** blog.ksa.ee/admin · **Parool:** ksa-blogi-2024
+**Aadress:** blog.ksa.ee/admin · **Parool:** ksa-blog-2026
 **Toimetajad:** Silvia Johanna Haavel (ET) · Jana (RU, EN)
 **Tehniline tugi:** Dr. Ants Haavel (claude.ai kaudu)
+**Uuendatud:** aprill 2026
 
 ---
 
@@ -10,10 +11,10 @@
 
 | | |
 |---|---|
-| Avaldatud postitused | 442+ (ET ~270 / RU ~127 / EN ~45) |
-| Mustandid | 548+ (RU / EN / ET) |
+| Avaldatud postitused | 490+ (ET ~270 / RU ~130 / EN ~63) |
+| Mustandid | 564+ (0 ET / 264 RU / 300 EN) |
 | Keeled | ET · RU · EN — automaatne trilingual genereerimine |
-| Uus mustand iga päev | kell 7:00 automaatselt |
+| Uus mustand iga päev | kell 7:00 (EET) automaatselt |
 
 ---
 
@@ -22,8 +23,8 @@
 | Vahekaart | Kirjeldus |
 |-----------|-----------|
 | 📋 **Mustandid** | Kõik mustandid ET/RU/EN filtriga — peamine töökoht |
-| ✏️ **Avaldatud** | Kõik 442+ avaldatud postitust — saad otse muuta ja eemaldada |
-| ✍️ **Kirjuta uus** | Genereeri AI abil uus postitus ideedest, lingist või failist |
+| ✏️ **Avaldatud** | Kõik 490+ avaldatud postitust — saad otse muuta ja eemaldada |
+| ✍️ **Kirjuta uus** | Kaks võimalust: kirjuta ise (otse mustandisse) või lase AI-l genereerida |
 | 📝 **Sisureeglid** | AI kirjutamisjuhend — saad reegleid vaadata ja muuta |
 | ❓ **Juhend** | See juhend inline paneelis |
 
@@ -35,60 +36,93 @@ Iga hommikul kell 7 genereerib süsteem automaatselt uue mustandi (ET + RU + EN)
 
 1. Vali keelefilter: **ET / RU / EN** (või otsi pealkirja järgi)
 2. Klõpsa mustandikaardil — avaneb redaktor
-3. **Navigeerimine redaktoris:**
-   - Ülaosas on leivanipupuur: `← Mustandid › ET › Pealkiri`
-   - `Vaata blogis ↗` nupp — avab avaldatud postituse uues vahekaardis
-4. Kontrolli ja paranda: **pealkiri**, **kuupäev**, **pilt**, **tekst**
-5. Klõpsa **Salvesta** (salvestab, ei avalda)
-6. Klõpsa **✓ Avalda** — postitus ilmub kohe blogis
+3. Kontrolli ja paranda: **pealkiri**, **kuupäev**, **pilt**, **tekst**
+4. Klõpsa **Salvesta** (salvestab, ei avalda)
+5. Klõpsa **👁 Eelvaade** — vaata kuidas postitus blogis välja näeb enne avaldamist
+6. Klõpsa **✓ Avalda** — postitus ilmub blogis ~2 min jooksul (Vercel ehitab uuesti)
 
 > 💡 **Ajastamine:** tulevane kuupäev → ilmub automaatselt sellel päeval.
 > 💡 **Peitmine:** muuda kuupäev tulevikku → kaob avalikust vaatest.
 
 ---
 
-## 2. Avaldatud postituse muutmine ja eemaldamine
+## 2. Pilt lisamine artiklile *(uuendatud)*
+
+Redaktoris on kolm võimalust pildi lisamiseks:
+
+### 📁 Laadi pilt üles arvutist (soovitatav)
+1. Klõpsa **📁 Lae pilt üles**
+2. Vali pilt oma arvutist (JPEG, PNG, WebP, HEIC — kuni 20 MB)
+3. Brauser tihendab automaatselt → optimaalne WebP (tüüpiliselt 80–200 KB)
+4. Pilt salvestatakse **koheselt** mustandisse — kaduma ei lähe
+5. **Lohista pilti raamis** et valida, milline osa nähtavale jääb (nägu ei lõigata ära!)
+
+### ✨ AI pilt
+- Nupp **✨ AI pilt** → Claude koostab FLUX-le professionaalse pildikirjelduse
+- Kui Replicate token on seadistatud: genereerib pildi automaatselt
+- Kui pole: kuvab kirjelduse, mida saab Midjourney/DALL-E-s kasutada
+
+### 🔗 URL
+- Kleebi pildi otselink lahtrisse (nt ksa.ee/wp-content/uploads/...)
+
+### Pildi kärpimine (drag-to-crop) *(uus)*
+Pärast pildi lisamist näed **eelvaadet 3:2 raamis** (sama suhe mis blogikaardil).
+- **Lohista pilti** raamis → valid täpselt mis osa näha jääb
+- Nägu, silmad, oluline detail — kõik jääb sinna kuhu soovid
+- Nupp **Lähtesta** → tagasi keskmisele
+
+---
+
+## 3. Eelvaade enne avaldamist *(uus)*
+
+Redaktoris on nupp **👁 Eelvaade** — see avab täisekraani ülevaate:
+
+- Näed täpselt kuidas postitus blogis välja näeb (pealkiri, pilt, tekst, CTA)
+- **Avalda see postitus** nupp otse eelvaates
+- **Tagasi redigeerima** nupp tagasi redaktorisse
+- Pärast avaldamist: 120-sekundiline taimer (Vercel ehitab ~2 min) → siis avaneb "Vaata postitust" link
+
+---
+
+## 4. Oma teksti kirjutamine / kleepimine *(uus)*
+
+Klõpsa **✍️ Kirjuta uus** → näed kahte võimalust:
+
+### 📝 Salvesta otse (enda tekst)
+Kasuta seda kui sul on **valmis tekst** (kirjutasid ise, koopiasid kuskilt, dikteerisid):
+1. Klõpsa **📝 Salvesta otse**
+2. Kirjuta pealkiri
+3. Vali keel: ET / RU / EN
+4. Kleebi või kirjuta tekst
+5. **Salvesta mustandina** → tekst salvestatakse muuutmata
+
+> ⚠️ See valik **ei muuda su teksti** — täpselt nagu kirjutasid, nii läheb mustandisse.
+
+### 🤖 AI kirjutab
+Kasuta seda kui soovid **AI-l teksti genereerida** ideedest, märkmetest või lingist:
+1. Klõpsa **🤖 AI kirjutab**
+2. Sisesta idee, märkmed, URL või lühikirjeldus
+3. Vali keeled (ET/RU/EN)
+4. **Genereeri** → ~30 sek → ilmub mustanditesse
+
+---
+
+## 5. Avaldatud postituse muutmine ja eemaldamine
 
 ### Postituse muutmine
 1. Ava **✏️ Avaldatud** vahekaart
 2. Otsi pealkirja, katkendi või URL-slogi järgi
 3. Klõpsa postitusel → avaneb redaktor
 4. Tee muudatused → **Salvesta**
-5. Muudatused ilmuvad blogis ~60 sekundi jooksul
 
-### Postituse eemaldamine (unpublish) *(uus)*
-Kui tahad postituse ajutiselt avalikust vaatest eemaldada:
+### Postituse eemaldamine (unpublish)
 1. Ava post **✏️ Avaldatud** vahekaardil
-2. Klõpsa **↩ Eemalda avaldamisest** (punane nupp paremas alumises nurgas)
-3. Kinnita dialoogis
-4. Postitus liigub automaatselt tagasi **Mustandid** kausta
-5. Saad selle hiljem uuesti avaldada
-
-> 💡 **Alternatiiv:** muuda kuupäev tulevikku → postitus peidetakse ilma mustanditeks teisaldamiseta.
+2. Klõpsa **↩ Eemalda avaldamisest**
+3. Postitus liigub automaatselt tagasi **Mustandid** kausta
 
 ---
 
-## 3. Uue postituse kirjutamine
-
-Klõpsa **✍️ Kirjuta uus**:
-
-| Viis | Millal |
-|------|--------|
-| **Kirjutan ise** | Sul on idee, märkmed, võtmesõnad, laused — AI täidab ja lihvib |
-| **Kleebi URL** | Leidsid hea artikli — süsteem kirjutab KSA vaatenurgast |
-| **Laadi fail** | Word, PDF, märkmed |
-
-Seejärel: kirjuta lühikokkuvõte → vali keeled (ET/RU/EN) → **Genereeri** → ~30 sek.
-
-**Näited mida lühikokkuvõttesse kirjutada:**
-- Võtmesõnad: `Flow3, müoopia, lapsed, ootused, lühinägelikkuse operatsioon`
-- Lühilugu: `Patsient oli sportlane ja kartis Flow3 ajal aktiivsuse kaotust. Selgitame miks Flow3 on spordisõbralikum kui LASIK.`
-- Lingi URL + paar märkust mis suunas kirjutada
-- Peaaegu valmis tekst — AI lihvib ja lisab struktuuri
-
----
-
-## 4. Ülesande määramine toimetajale
+## 6. Ülesande määramine toimetajale
 
 Redaktoris alumisel ribal:
 
@@ -100,85 +134,86 @@ Redaktoris alumisel ribal:
 
 ---
 
-## 5. Pilt ja YouTube video
+## 7. Sõsarartiklite pildi sünkroonimine
 
-**Pilt:** kleebi pildi otsene URL `Pildiaadress` lahtrisse.
-- KSA pildid: `https://ksa.ee/wp-content/uploads/aasta/kuu/failinimi.jpg`
-- Uued pildid: laadi ksa.ee meediakogusse (WordPress → Meedia) → kopeeri URL
-
-**YouTube:** kleebi link YouTube lahtrisse → **Lisa video** → ilmub teksti sisse.
+Kui lisad ET artiklile pildi ja tahad sama pildi ka RU + EN versiooni:
+1. Lisa pilt ET artiklile → Salvesta
+2. Klõpsa **Sünkrooni pilt sõsarartiklitele**
+3. Süsteem leiab automaatselt seotud RU ja EN mustandid ja lisab pildi sinna
 
 ---
 
-## 6. Sisureeglid — AI kirjutamisjuhend *(uus)*
+## 8. YouTube video lisamine
 
-Vahekaart **📝 Sisureeglid** sisaldab täielikku prompti mida AI kasutab iga kord uut postitust kirjutades.
+Redaktoris on **YouTube** lahter — kleebi video link → **Lisa video** → ilmub teksti sisse.
+
+---
+
+## 9. Sisureeglid — AI kirjutamisjuhend
+
+Vahekaart **📝 Sisureeglid** sisaldab täielikku prompti mida AI kasutab.
 
 **Mida see hõlmab:**
 - KSA kliiniku faktid (55 000+ protseduuri, Flow3, ICB)
-- **Eesti keel:** loomuliku Tallinna keelega, "sina" vorm, mitte ametlik
-- **Vene keel:** Balti vene (Narva/Riia stiil — soe, mitte formaalne Moskva vene), Таллин (üks н)
-- **Inglise keel:** briti inglise (colour, centre, whilst, GP)
-- Lugemistase: arusaadav 8. klassi õpilasele, mugav 40-aastasele spetsialistile
+- **Eesti keel:** loomulik Tallinna keel, "sina" vorm
+- **Vene keel:** Балтийский стиль — soe, mitte formaalne Moskva vene · Таллин (üks н!)
+- **Inglise keel:** briti inglise (colour, centre, whilst)
+- Lugemistase: arusaadav 8. klassi õpilasele
 - Meditsiiniterminid koos lihtsustusega: "müoopia (lühinägelikkus)"
-- Meditsiinilise kontrolli (medicalReview) lipp — ainult ~1% artiklitel
 
 **Kuidas muuta:**
 1. Klõpsa **📝 Sisureeglid**
-2. Muuda teksti redaktoris
-3. **Salvesta muudatused**
-4. Järgmine genereeritud mustand järgib kohe uusi reegleid
-
-> 💡 Reegleid saab täiendada ilma tehnilise abita. Kirjuta lihtsalt sinna mida AI peab teadma.
+2. Muuda teksti
+3. **Salvesta muudatused** → järgmine genereeritud mustand järgib kohe uusi reegleid
 
 ---
 
-## 7. SEO võimalused
+## 10. SEO — mis toimub automaatselt
 
 Iga avaldatud postitusel on automaatselt:
 
-- **Meta title & description** — Claude-optimeeritud, kuvatakse Google otsingus
-- **Google Schema JSON-LD** — BlogPosting, BreadcrumbList, Organization, Person, ImageObject
-- **OpenGraph** — og:title, og:description, og:image (FB/LinkedIn jagamine)
+- **Meta title & description** — Claude-optimeeritud
+- **Google Schema JSON-LD** — BlogPosting, BreadcrumbList, Person, ImageObject
+- **OpenGraph** — FB/LinkedIn jagamiseks (title, description, image)
 - **Automaatne sitemap** — blog.ksa.ee/sitemap.xml uueneb iga avaldamisega
-- **AI otsinguküsimused** — Perplexity ja ChatGPT jaoks (llmSearchQueries)
-- **FAQ Schema** — kui postitusel on FAQ sektsioon, ilmub otse Google tulemuses
+- **AI otsinguküsimused** — Perplexity ja ChatGPT jaoks
+- **FAQ Schema** — kui postitusel on FAQ sektsioon, ilmub Google tulemuses otse
 
 ---
 
-## 8. Jälgimine ja analüütika
+## 11. Jälgimine ja analüütika
 
 | Süsteem | ID | Mis jälgib |
 |---------|----|------------|
 | Google Tag Manager | GTM-KCZVRJ8 | Kõik lehevaatamised ja sündmused |
 | Google Analytics 4 | G-7R7T8GF37J | Liiklus, kasutajad, sessioonid |
-| Web3Forms | kontaktvorm | Täitmised → registreerumised@ksa.ee |
 
 ---
 
-## 9. Mis töötab automaatselt
+## 12. Mis töötab automaatselt
 
 | Millal | Mis juhtub |
 |--------|------------|
 | Iga päev kell 7:00 | Uued silmatervise uudised → ET + RU + EN mustand automaatselt |
-| Iga avaldamine | Sitemap uueneb, Schema + OpenGraph genereeritakse |
+| Iga avaldamine | Sitemap uueneb, Schema + OpenGraph genereeritakse, Vercel ehitab (~2 min) |
+| Pärast pildi üleslaadimist | Pilt salvestatakse kohe mustandisse — ei kao ära |
 | Tuleviku kuupäev | Postitus ilmub õigel päeval iseseisvalt |
-| Iga artikkel | Seotud postitused, lugemisaeg, CTA valitakse automaatselt |
-| Iga lehevaatamine | Google Analytics logib automaatselt |
+| Iga artikli lõpus | Flow3 kiirtest CTA — suunab ksa-kiirtest.vercel.app/[keel] |
 
 ---
 
-## 10. Sagedased olukorrad
+## 13. Sagedased olukorrad
 
 | Olukord | Lahendus |
 |---------|----------|
 | Postitus vajab arsti kinnitust | Märgi *Meditsiiniline ülevaatus* → määra Antsule → Saada teavitus |
 | Viga avaldatud postituses | ✏️ Avaldatud → otsi → paranda → Salvesta |
 | Tahan postituse ajutiselt maha võtta | ✏️ Avaldatud → postitus → **↩ Eemalda avaldamisest** |
-| Genereeritud mustand on kehv | Kustuta → Kirjuta uus detailsema kokkuvõttega |
 | Tahan postitust ajutiselt peita | Muuda kuupäev tulevikku |
+| Pilt ei ilmu kohe blogis | Normaalne — Vercel ehitab ~2 min. Pilt on salvestatud, oota natuke. |
+| Pilt lõikab pea/jäsemed ära | Lohista pilti raamis → valid täpse nurga enne avaldamist |
+| Genereeritud mustand on kehv | Kustuta → Kirjuta uus detailsema kokkuvõttega |
 | Ülesande tähtaeg möödunud | Punane ⚠ märk mustandikaardil — ava ja tegutse |
-| Ei leia otsides avaldatud postitust | Otsi osas pealkirja, kasuta ka keelefilterit |
 
 ---
 

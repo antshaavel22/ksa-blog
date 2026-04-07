@@ -41,11 +41,18 @@ POST /api/admin/sync-images → GitHub API PUT to update featuredImage on sister
 ### DEPLOY FLOW
 ```
 Editor clicks "Avalda" in admin
-  → publish API writes file to GitHub (content/posts/)
+  → client builds finalContent from React state (includes latest image URL)
+  → client saves draft to GitHub (PUT /api/admin/draft) — keeps draft in sync
+  → client calls POST /api/admin/publish with { path, content: finalContent }
+  → publishProd() uses clientContent directly — NEVER reads from stale filesystem
+  → publish API writes to GitHub (content/posts/) + deletes draft
   → publish API calls VERCEL_DEPLOY_HOOK (POST)
   → Vercel rebuilds static pages (~2 min)
   → Article live at blog.ksa.ee/[slug]
 ```
+
+**CRITICAL:** publishProd() must receive content from the client. If it reads from the
+filesystem, it gets the OLD bundled file (pre-upload state) → featuredImage: "" bug.
 
 Also: any `git push origin main` auto-triggers Vercel deploy (GitHub ↔ Vercel connected 2026-04-07).
 
@@ -241,11 +248,21 @@ npm run batch        # Batch generate: npm run batch -- --lang ru|en [--dry-run]
 ### Image Upload (POST /api/admin/upload-image)
 Editors upload images directly from their Mac/PC:
 - Accepts: JPEG, PNG, WebP, GIF, AVIF, HEIC (max 20 MB input)
-- Processing: `sharp` auto-resizes to max 1400px width, converts to WebP quality 82
+- **Client-side compression** via Canvas API (max 1400px, WebP quality 0.82) — keeps payload ~150-300 KB
 - Output: typically 80–200 KB (shows % reduction vs original)
-- Storage: `public/uploads/YYYY/MM/filename.webp` via GitHub API (prod) or filesystem (dev)
-- Preview: uses raw.githubusercontent.com URL for immediate display before Vercel redeploys
-- EXIF rotation: auto-corrected
+- Storage: `public/uploads/YYYY/MM/slug-timestamp.webp` via GitHub API (prod) or filesystem (dev)
+- Returns two URLs: `url` = production path `/uploads/...` (saved to frontmatter), `previewUrl` = raw.githubusercontent.com (editor preview only)
+- **Auto-save on upload:** after upload, draft is immediately saved to GitHub with the new image URL.
+  Uses direct MDX building from state — does NOT rely on async React setState.
+- **DragCrop component:** editor drags image within 3:2 frame to pick visible area.
+  `imageFocalPoint` field (e.g. "45% 30%") saved to frontmatter via `buildFm()`.
+  Touch-supported for iPad editors.
+
+### Publish content flow (IMPORTANT — avoids stale filesystem bug)
+`publish()` in app/admin/page.tsx builds `finalContent = buildMdx(buildFm(), body)` from
+current React state and passes it to POST /api/admin/publish as `{ path, content }`.
+publishProd() uses this content directly — it NEVER reads from the bundled filesystem.
+This ensures featuredImage (and all other state) is always current when publishing.
 
 ### AI Image Generation
 Button "✨ AI pilt" in editor:
@@ -344,6 +361,20 @@ Both auto-fix issues when possible and notify on completion.
 - **DNS go-live:** waiting on Kadri (zone.ee CNAME + Yoast redirects + Search Console)
 - **Author avatar photos:** real photos for author pages instead of initials
 - **Phase 2 facelift:** `npm run ai-facelift -- --content` adds H2 structure + internal links to posts
+
+## Changelog (session 2026-04-07)
+- **Image publish bug fixed:** publishProd now uses clientContent from React state — never reads stale filesystem
+- **Auto-save on image upload:** draft saved to GitHub immediately after upload (not just on manual Salvesta)
+- **DragCrop component:** interactive drag-to-reposition within 3:2 frame; imageFocalPoint saved to frontmatter
+- **PostPreview overlay:** full-screen preview before publish with 120s countdown timer after publish
+- **PublishSuccessScreen:** gates "Vaata postitust" link until Vercel rebuild completes (~2 min)
+- **Kirjuta uus rewrite:** two-mode flow — "📝 Salvesta otse" (no AI) + "🤖 AI kirjutab"
+- **save-raw-draft API:** POST /api/admin/save-raw-draft — saves user text unchanged to correct lang folder
+- **Flow3 footer CTA:** replaced BlogBookingCTA (promo strip) + BlogContactForm with bold dark-green Flow3 section
+  - Trilingual headlines, links to ksa-kiirtest.vercel.app / /en.html / /ru.html
+  - Social proof: "55,000+ procedures"
+- **Content scout:** loadMasterPrompt() now loads full file (was truncated at 4000 chars)
+- **next.config.ts:** added raw.githubusercontent.com to image remotePatterns (upload previews)
 
 ## Known Technical Notes
 - `getPostBySlug()` matches by filename OR frontmatter `slug` field — handles date-prefixed scout files
