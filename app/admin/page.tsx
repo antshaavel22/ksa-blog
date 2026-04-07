@@ -249,18 +249,64 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     } finally { setGeneratingImage(false); }
   }
 
+  // Compress image in the browser using Canvas before uploading
+  // This keeps the payload small (~150–300 KB) regardless of original file size
+  async function compressImageClient(file: File, maxWidth = 1400, quality = 0.82): Promise<{ blob: Blob; width: number; height: number }> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => { if (blob) resolve({ blob, width: w, height: h }); else reject(new Error("Canvas compression failed")); },
+          "image/webp", quality
+        );
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image load failed")); };
+      img.src = url;
+    });
+  }
+
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingImage(true); setUploadInfo(null);
     try {
+      const originalSizeKB = Math.round(file.size / 1024);
+      const originalWidth = await new Promise<number>((res) => {
+        const img = new Image(); const url = URL.createObjectURL(file);
+        img.onload = () => { URL.revokeObjectURL(url); res(img.width); };
+        img.onerror = () => { URL.revokeObjectURL(url); res(0); };
+        img.src = url;
+      });
+
+      // Compress client-side first — avoids Next.js 4.5 MB body limit
+      const { blob, width: outW, height: outH } = await compressImageClient(file);
+      const compressedSizeKB = Math.round(blob.size / 1024);
+
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", blob, file.name.replace(/\.[^.]+$/, "") + ".webp");
+      formData.append("originalName", file.name);
+      formData.append("originalSizeKB", String(originalSizeKB));
+      formData.append("originalWidth", String(originalWidth));
+
       const res = await fetch("/api/admin/upload-image", { method: "POST", body: formData });
-      const d = await res.json() as { ok?: boolean; url?: string; previewUrl?: string; original?: { name: string; sizeKB: number; width: number; height: number }; optimized?: { sizeKB: number; width: number; height: number; format: string }; error?: string };
+      const text = await res.text();
+      let d: { ok?: boolean; url?: string; previewUrl?: string; error?: string };
+      try { d = JSON.parse(text); } catch { throw new Error(text.slice(0, 120)); }
       if (d.error) { alert("Viga: " + d.error); return; }
       setFeaturedImage(d.previewUrl ?? d.url ?? "");
-      if (d.original && d.optimized) setUploadInfo({ original: d.original, optimized: d.optimized });
+      setUploadInfo({
+        original: { name: file.name, sizeKB: originalSizeKB, width: originalWidth, height: 0 },
+        optimized: { sizeKB: compressedSizeKB, width: outW, height: outH, format: "webp" },
+      });
     } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
     finally { setUploadingImage(false); e.target.value = ""; }
   }
