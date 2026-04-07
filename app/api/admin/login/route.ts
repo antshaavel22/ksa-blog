@@ -4,13 +4,13 @@ const SESSION_TOKEN = "ksa-admin-authenticated";
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json() as { password: string };
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
 
   if (!adminPassword) {
     return NextResponse.json({ error: "Server misconfiguration: ADMIN_PASSWORD not set" }, { status: 500 });
   }
 
-  if (!password || password !== adminPassword) {
+  if (!password || password.trim() !== adminPassword) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
