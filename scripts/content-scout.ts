@@ -346,7 +346,7 @@ async function main() {
         ? path.join(DRAFTS_DIR, "ru")
         : lang === "en"
         ? path.join(DRAFTS_DIR, "en")
-        : DRAFTS_DIR;
+        : path.join(DRAFTS_DIR, "et");
       fs.mkdirSync(langDir, { recursive: true });
 
       let filename = `${today}-${post.slug}.mdx`;
@@ -359,8 +359,8 @@ async function main() {
 
       const mdxContent = buildMdxFile(post, article, lang);
       fs.writeFileSync(uniquePath, mdxContent, "utf-8");
-      savedFiles.push(lang === "et" ? filename : `${lang}/${filename}`);
-      console.log(`  ✓ [${lang}] → ${lang === "et" ? "" : lang + "/"}${filename}`);
+      savedFiles.push(`${lang}/${filename}`);
+      console.log(`  ✓ [${lang}] → ${lang}/${filename}`);
       anySuccess = true;
     }
 
