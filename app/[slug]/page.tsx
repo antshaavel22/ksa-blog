@@ -3,7 +3,6 @@ import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import KiirtestCTA from "@/components/KiirtestCTA";
 import BlogBookingCTA from "@/components/BlogBookingCTA";
-import BlogContactForm from "@/components/BlogContactForm";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
@@ -246,11 +245,8 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Soft booking CTA with promo code — shown on all posts */}
+          {/* Flow3 footer CTA — shown on all posts */}
           <BlogBookingCTA lang={post.lang} />
-
-          {/* Contact form */}
-          <BlogContactForm lang={post.lang} />
 
           {/* Medical review notice */}
           {post.medicalReview && (
