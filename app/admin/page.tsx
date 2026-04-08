@@ -163,6 +163,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [updating, setUpdating] = useState(false);       // "Update live" for published posts
   const [updateCountdown, setUpdateCountdown] = useState(0); // >0 shows countdown bar
   const [error, setError] = useState("");
+  // Language switcher — tracks current lang and active file path (may change when lang moved)
+  const [currentLang, setCurrentLang] = useState(draft.lang ?? "et");
+  const [activePath, setActivePath] = useState(draft.path);
+  const [movingLang, setMovingLang] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
@@ -188,10 +192,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   useEffect(() => {
     setLoaded(false); setError(""); setPublished(false); setSaved(false);
     const endpoint = isPublished
-      ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
-      : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+      ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
+      : `/api/admin/draft?path=${encodeURIComponent(activePath)}`;
     fetch(endpoint)
-      .then(r => r.ok ? r.json() : fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`).then(r2 => r2.json()))
+      .then(r => r.ok ? r.json() : fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`).then(r2 => r2.json()))
       .then((d: { content?: string; error?: string }) => {
         if (d.error) { setError(d.error); return; }
         const raw = d.content ?? "";
@@ -207,12 +211,45 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         setLoaded(true);
       })
       .catch(e => setError((e as Error).message));
-  }, [draft.path]);
+  }, [draft.path]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function changeLang(toLang: string) {
+    if (toLang === currentLang || movingLang) return;
+    if (!confirm(`Muuda keel ${currentLang.toUpperCase()} → ${toLang.toUpperCase()}?\n\nMustandi fail liigub uude kausta. Muudatused salvestatakse automaatselt.`)) return;
+    setMovingLang(true);
+    try {
+      const newFm = setFmField(frontmatter, "lang", toLang);
+      const content = buildMdx(newFm, body);
+      if (isPublished) {
+        // Published posts: just update lang in frontmatter, no file move
+        await fetch(`/api/admin/post?path=${encodeURIComponent(activePath)}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+        setFrontmatter(newFm);
+        setCurrentLang(toLang);
+        setSaved(true); setTimeout(() => setSaved(false), 3000);
+      } else {
+        // Draft: move file to new lang folder
+        const res = await fetch("/api/admin/move-lang", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fromPath: activePath, toLang, content }),
+        });
+        const d = await res.json() as { ok?: boolean; newPath?: string; error?: string };
+        if (d.error) { alert("Viga: " + d.error); return; }
+        setActivePath(d.newPath ?? activePath);
+        setFrontmatter(newFm);
+        setCurrentLang(toLang);
+        setSaved(true); setTimeout(() => setSaved(false), 3000);
+      }
+    } finally { setMovingLang(false); }
+  }
 
   function buildFm(extraMedical?: boolean) {
     let fm = setFmField(frontmatter, "title", title);
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
+    fm = setFmField(fm, "lang", currentLang);
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }
@@ -232,7 +269,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       const res = await fetch("/api/admin/sync-images", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filePath: draft.path, featuredImage }),
+        body: JSON.stringify({ filePath: activePath, featuredImage }),
       });
       const d = await res.json() as { synced?: string[]; sistersFound?: number };
       setSyncResult({ synced: d.synced?.length ?? 0, sisters: d.sistersFound ?? 0 });
@@ -325,7 +362,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       // AUTO-SAVE the draft immediately with the new image URL.
       // We CANNOT rely on React state here (setFeaturedImage is async),
       // so we build the MDX content directly with the new URL injected.
-      if (newImageUrl && draft.path) {
+      if (newImageUrl && activePath) {
         try {
           const fmWithImage = setFmField(
             setFmField(setFmField(frontmatter, "title", title), "date", postDate),
@@ -333,8 +370,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           );
           const newContent = buildMdx(fmWithImage, body);
           const endpoint = isPublished
-            ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
-            : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+            ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
+            : `/api/admin/draft?path=${encodeURIComponent(activePath)}`;
           await fetch(endpoint, {
             method: "PUT", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ content: newContent }),
@@ -354,8 +391,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     const content = buildMdx(buildFm(), body);
     try {
       const endpoint = isPublished
-        ? `/api/admin/post?path=${encodeURIComponent(draft.path)}`
-        : `/api/admin/draft?path=${encodeURIComponent(draft.path)}`;
+        ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
+        : `/api/admin/draft?path=${encodeURIComponent(activePath)}`;
       const res = await fetch(endpoint, {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
@@ -369,7 +406,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     setUpdating(true); setSaved(false);
     const content = buildMdx(buildFm(), body);
     try {
-      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(draft.path)}`, {
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(activePath)}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
@@ -394,14 +431,14 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     // We pass it directly to the publish API so it never has to read from the stale filesystem.
     const finalContent = buildMdx(buildFm(), body);
     // Also save to GitHub draft (keeps draft in sync before publish deletes it)
-    await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
+    await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: finalContent }),
     });
     // Then publish — send the content directly so publish API uses it verbatim
     const res = await fetch("/api/admin/publish", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: draft.path, content: finalContent }),
+      body: JSON.stringify({ path: activePath, content: finalContent }),
     });
     const d = await res.json() as { ok?: boolean; slug?: string; needsRedeploy?: boolean; error?: string };
     if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
@@ -414,7 +451,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     setUnpublishing(true); setError("");
     const res = await fetch("/api/admin/unpublish", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: draft.path }),
+      body: JSON.stringify({ path: activePath }),
     });
     const d = await res.json() as { ok?: boolean; draftPath?: string; error?: string };
     if (d.ok) { setUnpublished(true); setTimeout(() => { onBack(); }, 1800); }
@@ -426,7 +463,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     setSendingMedical(true);
     // Save draft with medicalReview flag first
     const fm = buildFm(true);
-    await fetch(`/api/admin/draft?path=${encodeURIComponent(draft.path)}`, {
+    await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: buildMdx(fm, body) }),
     });
@@ -494,7 +531,27 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           cursor: "pointer", fontWeight: 600, padding: 0, display: "flex", alignItems: "center", gap: 5,
         }}>← {isPublished ? "Avaldatud" : "Mustandid"}</button>
         <span style={{ color: "#d0d0cc", fontSize: 16 }}>›</span>
-        <LangBadge lang={draft.lang} />
+
+        {/* Interactive language switcher */}
+        <div style={{ display: "flex", gap: 3 }} title="Vaheta keelt — fail liigub õigesse kausta">
+          {(["et", "ru", "en"] as const).map(l => (
+            <button
+              key={l}
+              onClick={() => changeLang(l)}
+              disabled={movingLang}
+              style={{
+                padding: "3px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+                letterSpacing: "0.05em", textTransform: "uppercase",
+                border: `1.5px solid ${currentLang === l ? LANG_COLORS[l]?.border : "#e6e6e6"}`,
+                background: currentLang === l ? LANG_COLORS[l]?.bg : "white",
+                color: currentLang === l ? LANG_COLORS[l]?.text : "#b0b0aa",
+                cursor: movingLang ? "wait" : currentLang === l ? "default" : "pointer",
+                transition: "all 0.15s",
+              }}
+            >{l.toUpperCase()}</button>
+          ))}
+          {movingLang && <span style={{ fontSize: 11, color: "#9a9a9a", alignSelf: "center", marginLeft: 4 }}>liigutan…</span>}
+        </div>
         <span style={{ fontSize: 13, color: "#9a9a9a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
           {draft.title || draft.filename}
         </span>
