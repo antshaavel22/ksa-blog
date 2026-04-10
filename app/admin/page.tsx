@@ -1448,59 +1448,26 @@ function PostPreview({
 // ─── Publish Success Screen ───────────────────────────────────────────────────
 
 function PublishSuccessScreen({ slug, onBack }: { slug: string; onBack: () => void }) {
-  const TOTAL = 120; // seconds until Vercel typically finishes
-  const [secs, setSecs] = useState(TOTAL);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    if (secs <= 0) { setReady(true); return; }
-    const t = setTimeout(() => setSecs(s => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [secs]);
-
-  const pct = Math.round(((TOTAL - secs) / TOTAL) * 100);
   const blogUrl = `https://blog.ksa.ee/${slug}`;
 
   return (
-    <div style={{ maxWidth: 560, margin: "60px auto", padding: "0 24px", textAlign: "center" }}>
-      <div style={{ fontSize: 56, marginBottom: 12 }}>{ready ? "🎉" : "⚙️"}</div>
+    <div style={{ maxWidth: 520, margin: "60px auto", padding: "0 24px", textAlign: "center" }}>
+      <div style={{ fontSize: 56, marginBottom: 12 }}>✅</div>
       <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
-        {ready ? "Postitus on elus!" : "Postitus avaldatud!"}
+        Postitus avaldatud!
       </h2>
       <p style={{ color: "#6b7280", fontSize: 15, marginBottom: 28, fontWeight: 300 }}>
-        {ready
-          ? "Vercel on lehe üles ehitanud. Postitus peaks nüüd avalik olema."
-          : "Vercel ehitab lehte uuesti. See võtab tavaliselt ~2 minutit."}
+        Fail on GitHubis ja blogi ehitab end uuesti (~2 min). Võid kohe edasi töötada.
       </p>
-
-      {/* Progress bar */}
-      {!ready && (
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ background: "#f0f0ec", borderRadius: 99, height: 8, overflow: "hidden", marginBottom: 8 }}>
-            <div style={{
-              height: "100%", borderRadius: 99,
-              background: "linear-gradient(90deg, #87be23, #a8d54f)",
-              width: `${pct}%`, transition: "width 1s linear",
-            }} />
-          </div>
-          <p style={{ fontSize: 13, color: "#9a9a9a", margin: 0 }}>
-            {secs > 0 ? `~${secs} sekundit jäänud` : "Kontrollime…"}
-          </p>
-        </div>
-      )}
 
       {/* Info box */}
       <div style={{
-        background: ready ? "#f0fdf4" : "#f9f9f7",
-        border: `1px solid ${ready ? "#bbf7d0" : "#e6e6e6"}`,
+        background: "#f0fdf4",
+        border: "1px solid #bbf7d0",
         borderRadius: 14, padding: "14px 18px", marginBottom: 24, textAlign: "left",
       }}>
-        <p style={{ margin: 0, fontSize: 13, color: ready ? "#166534" : "#5a6b6c", lineHeight: 1.6 }}>
-          {ready ? (
-            <>✅ <strong>Pilt ja tekst on mõlemad elus.</strong> Kui näed 404 — proovi 30 sek pärast uuesti.</>
-          ) : (
-            <>📌 <strong>Ära kliki linki kohe</strong> — leht ei ole veel valmis. Oota kuni loendur jõuab nulli.</>
-          )}
+        <p style={{ margin: 0, fontSize: 13, color: "#166534", lineHeight: 1.6 }}>
+          Kui avad linki kohe ja näed 404 — see on normaalne. Vercel lõpetab ehitamise paari minutiga ja postitus ilmub automaatselt.
         </p>
       </div>
 
@@ -1514,16 +1481,13 @@ function PublishSuccessScreen({ slug, onBack }: { slug: string; onBack: () => vo
             href={blogUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={e => { if (!ready) { e.preventDefault(); alert(`Palun oota veel ${secs} sekundit — Vercel pole ehitamist lõpetanud.`); }}}
             style={{
               padding: "13px 24px", borderRadius: 14,
-              background: ready ? "#87be23" : "#d1d5db",
+              background: "#87be23",
               color: "white", fontSize: 15, fontWeight: 700, textDecoration: "none",
-              cursor: ready ? "pointer" : "not-allowed",
-              boxShadow: ready ? "0 4px 16px rgba(135,190,35,0.25)" : "none",
-              transition: "all 0.3s",
+              boxShadow: "0 4px 16px rgba(135,190,35,0.25)",
             }}
-          >{ready ? "Vaata postitust →" : `Ava ${secs}s pärast →`}</a>
+          >Vaata postitust →</a>
         )}
       </div>
     </div>
