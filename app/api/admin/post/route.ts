@@ -58,15 +58,28 @@ async function writePostProd(filePath: string, content: string): Promise<void> {
   }
 }
 
+async function readPostProd(filePath: string): Promise<string> {
+  const token = process.env.GITHUB_TOKEN!;
+  const repo = process.env.GITHUB_REPO!;
+  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`GitHub read error: ${res.status} — file not found: ${filePath}`);
+  const data = await res.json() as { content: string };
+  return Buffer.from(data.content, "base64").toString("utf-8");
+}
+
 export async function GET(req: NextRequest) {
   const filePath = req.nextUrl.searchParams.get("path");
   if (!filePath) return NextResponse.json({ error: "path is required" }, { status: 400 });
   if (!filePath.startsWith("content/posts/"))
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
-
   try {
-    // Always use filesystem — files are bundled with the Vercel deployment
-    const content = await readPost(filePath);
+    const content = process.env.NODE_ENV === "production"
+      ? await readPostProd(filePath)
+      : await readPost(filePath);
     return NextResponse.json({ content });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

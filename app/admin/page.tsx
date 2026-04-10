@@ -13,6 +13,7 @@ interface DraftMeta {
   lang: string;
   date: string;
   slug?: string;
+  featuredImage?: string;
   status?: string; // "draft" | "medical_review"
   assignedTo?: string; // "silvia" | "jana" | "ants"
   deadline?: string; // "YYYY-MM-DD"
@@ -1710,6 +1711,7 @@ function PublishedTab() {
   const [langFilter, setLangFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<DraftMeta | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const loadPosts = useCallback(() => {
     setLoading(true); setFailed(false);
@@ -1721,6 +1723,16 @@ function PublishedTab() {
   }, []);
 
   useEffect(() => { loadPosts(); }, [loadPosts]);
+
+  // Duplicate detection: group by normalised title, flag any group with 2+ posts
+  const titleGroups: Record<string, string[]> = {};
+  posts.forEach(p => {
+    const key = p.title.toLowerCase().replace(/[^a-z0-9äöüõа-яё]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+    if (!titleGroups[key]) titleGroups[key] = [];
+    titleGroups[key].push(p.path);
+  });
+  const duplicatePaths = new Set<string>();
+  Object.values(titleGroups).forEach(paths => { if (paths.length > 1) paths.forEach(p => duplicatePaths.add(p)); });
 
   const q = search.trim().toLowerCase();
   const filtered = posts.filter(p => {
@@ -1738,8 +1750,8 @@ function PublishedTab() {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 20px 60px" }}>
-      {/* Filter bar */}
+    <div style={{ maxWidth: viewMode === "grid" ? 1100 : 720, margin: "0 auto", padding: "24px 20px 60px" }}>
+      {/* Filter + view toggle bar */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         {(["all", "et", "ru", "en"] as const).map(l => (
           <button key={l} onClick={() => setLangFilter(l)} style={{
@@ -1755,61 +1767,133 @@ function PublishedTab() {
         <input
           value={search} onChange={e => setSearch(e.target.value)}
           placeholder="🔍 Otsi pealkirja..."
-          style={{
-            flex: 1, minWidth: 180, padding: "8px 14px", border: "2px solid #e6e6e6",
-            borderRadius: 24, fontSize: 14, outline: "none", background: "white",
-          }}
+          style={{ flex: 1, minWidth: 180, padding: "8px 14px", border: "2px solid #e6e6e6", borderRadius: 24, fontSize: 14, outline: "none", background: "white" }}
         />
+        {/* View mode toggle */}
+        <div style={{ display: "flex", border: "2px solid #e6e6e6", borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
+          {(["list", "grid"] as const).map(v => (
+            <button key={v} onClick={() => setViewMode(v)} style={{
+              padding: "7px 14px", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              background: viewMode === v ? "#87be23" : "white",
+              color: viewMode === v ? "white" : "#9a9a9a",
+            }}>{v === "list" ? "📋 Nimekiri" : "🏠 Koduleht"}</button>
+          ))}
+        </div>
+        {duplicatePaths.size > 0 && (
+          <span style={{ fontSize: 12, background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "5px 10px", color: "#856404", fontWeight: 600 }}>
+            ⚠ {duplicatePaths.size} duplikaati — filtreeri otsinguga
+          </span>
+        )}
       </div>
 
       {loading && <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>Laen postitusi…</div>}
-
       {!loading && failed && (
         <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🔌</div>
-          Avaldatud postituste laadimine vajab serveripoolset tuge
+          Avaldatud postituste laadimine ebaõnnestus
         </div>
       )}
-
       {!loading && !failed && filtered.length === 0 && (
         <div style={{ textAlign: "center", padding: "60px 0" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-          <p style={{ color: "#9a9a9a", fontSize: 15 }}>
-            {posts.length === 0 ? "Avaldatud postitusi ei leitud." : "Otsing ei andnud tulemusi."}
-          </p>
+          <p style={{ color: "#9a9a9a", fontSize: 15 }}>{posts.length === 0 ? "Avaldatud postitusi ei leitud." : "Otsing ei andnud tulemusi."}</p>
         </div>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {filtered.map(post => (
-          <div key={post.path} style={{
-            background: "white", border: "2px solid #f0f0ec", borderRadius: 18,
-            padding: "18px 20px", display: "flex", alignItems: "center", gap: 16,
-            cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s",
-          }}
-            onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#87be23"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(135,190,35,0.12)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "#f0f0ec"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
-            onClick={() => setSelected(post)}
-          >
-            <LangBadge lang={post.lang} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 3px", fontSize: 15, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3,
-                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {post.title || "(pealkiri puudub)"}
-              </p>
-              <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a", overflow: "hidden",
-                textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {post.excerpt}
-              </p>
-            </div>
-            <span style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5",
-              padding: "2px 8px", borderRadius: 6, flexShrink: 0 }}>
-              {post.date}
-            </span>
-            <div style={{ color: "#87be23", fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
-          </div>
-        ))}
-      </div>
+      {/* LIST VIEW */}
+      {viewMode === "list" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {filtered.map(post => {
+            const isDup = duplicatePaths.has(post.path);
+            return (
+              <div key={post.path} style={{
+                background: "white",
+                border: `2px solid ${isDup ? "#ffc107" : "#f0f0ec"}`,
+                borderRadius: 16, padding: "14px 18px",
+                display: "flex", alignItems: "center", gap: 14,
+                cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s",
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#f59e0b" : "#87be23"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(135,190,35,0.12)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#ffc107" : "#f0f0ec"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
+                onClick={() => setSelected(post)}
+              >
+                <LangBadge lang={post.lang} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {post.title || "(pealkiri puudub)"}
+                    </p>
+                    {isDup && <span style={{ fontSize: 10, background: "#ffc107", color: "#000", borderRadius: 4, padding: "1px 5px", fontWeight: 800, flexShrink: 0 }}>DUPLIKAAT</span>}
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {post.excerpt}
+                  </p>
+                </div>
+                <span style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5", padding: "2px 8px", borderRadius: 6, flexShrink: 0 }}>{post.date}</span>
+                <span style={{ fontSize: 12, color: "#87be23", fontWeight: 700, flexShrink: 0 }}>Redigeeri →</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* GRID / HOMEPAGE VIEW */}
+      {viewMode === "grid" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          {filtered.map(post => {
+            const isDup = duplicatePaths.has(post.path);
+            const liveUrl = `https://blog.ksa.ee/${post.slug ?? post.path.replace(/^content\/posts\//, "").replace(/\.mdx?$/, "")}`;
+            return (
+              <div key={post.path} style={{
+                background: "white", border: `2px solid ${isDup ? "#ffc107" : "#f0f0ec"}`,
+                borderRadius: 18, overflow: "hidden", cursor: "pointer",
+                transition: "box-shadow 0.15s, border-color 0.15s",
+                display: "flex", flexDirection: "column",
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(0,0,0,0.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#f59e0b" : "#87be23"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#ffc107" : "#f0f0ec"; }}
+                onClick={() => setSelected(post)}
+              >
+                {/* Thumbnail */}
+                <div style={{ position: "relative", aspectRatio: "3/2", background: "#f5f2ec", overflow: "hidden" }}>
+                  {post.featuredImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={post.featuredImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  ) : (
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#c8c5be" }}>👁</div>
+                  )}
+                  <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
+                    <LangBadge lang={post.lang} />
+                    {isDup && <span style={{ fontSize: 10, background: "#ffc107", color: "#000", borderRadius: 6, padding: "2px 7px", fontWeight: 800 }}>DUPLIKAAT</span>}
+                  </div>
+                </div>
+                {/* Content */}
+                <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.35,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {post.title || "(pealkiri puudub)"}
+                  </p>
+                  <p style={{ margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {post.excerpt}
+                  </p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 11, color: "#b0b0aa" }}>{post.date}</span>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <a href={liveUrl} target="_blank" rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ fontSize: 11, color: "#5a6b6c", textDecoration: "none", padding: "3px 8px", border: "1px solid #e6e6e6", borderRadius: 6 }}>
+                        Live ↗
+                      </a>
+                      <span style={{ fontSize: 11, color: "#87be23", fontWeight: 700, padding: "3px 8px", background: "#f0fde4", borderRadius: 6 }}>Redigeeri</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

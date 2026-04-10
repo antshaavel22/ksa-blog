@@ -57,18 +57,27 @@ async function writeDraftProd(filePath: string, content: string): Promise<void> 
   }
 }
 
+async function readDraftProd(filePath: string): Promise<string> {
+  const token = process.env.GITHUB_TOKEN!;
+  const repo = process.env.GITHUB_REPO!;
+  const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`GitHub read error: ${res.status} — ${filePath}`);
+  const data = await res.json() as { content: string };
+  return Buffer.from(data.content, "base64").toString("utf-8");
+}
+
 export async function GET(req: NextRequest) {
   const filePath = req.nextUrl.searchParams.get("path");
-  if (!filePath) {
-    return NextResponse.json({ error: "path is required" }, { status: 400 });
-  }
-  if (!filePath.startsWith("content/drafts/")) {
-    return NextResponse.json({ error: "Invalid path" }, { status: 400 });
-  }
-
+  if (!filePath) return NextResponse.json({ error: "path is required" }, { status: 400 });
+  if (!filePath.startsWith("content/drafts/")) return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   try {
-    // Always use filesystem — files are bundled with the Vercel deployment
-    const content = await readDraft(filePath);
+    const content = process.env.NODE_ENV === "production"
+      ? await readDraftProd(filePath)
+      : await readDraft(filePath);
     return NextResponse.json({ content });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
