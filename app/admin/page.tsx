@@ -176,6 +176,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
   const [showPreview, setShowPreview] = useState(false);
   const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
+  const [category, setCategory] = useState("");
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -206,6 +207,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setFeaturedImage(getFmField(parsed.frontmatter, "featuredImage"));
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
+          const rawCat = getFmField(parsed.frontmatter, "categories")?.replace(/[\[\]"]/g, "").split(",")[0]?.trim() ?? "";
+          setCategory(rawCat);
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -250,6 +253,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
     fm = setFmField(fm, "lang", currentLang);
+    if (category) fm = setFmField(fm, "categories", category);
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }
@@ -582,7 +586,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           title={title}
           body={body}
           featuredImage={uploadPreviewUrl || featuredImage}
-          category={getFmField(frontmatter, "categories")?.replace(/[\[\]"]/g, "").split(",")[0]?.trim() ?? ""}
+          category={category}
           date={postDate}
           author={getFmField(frontmatter, "author")}
           lang={draft.lang}
@@ -813,6 +817,49 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9a9a9a" }}>
             Video lisatakse artikli lõppu. Saad selle tekstis ümber tõsta.
           </p>
+        </div>
+
+        {/* Category selector */}
+        <div>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            🏷 Kategooria
+          </label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {([
+              { slug: "silmad-ja-tervis",          et: "Silmad ja Tervis",          ru: "Глаза и Здоровье",       en: "Eyes & Health" },
+              { slug: "huvitavad-faktid",           et: "Huvitavad faktid",           ru: "Интересные факты",       en: "Interesting Facts" },
+              { slug: "elustiil",                   et: "Elustiil",                   ru: "Стиль жизни",            en: "Lifestyle" },
+              { slug: "edulood",                    et: "Edulood",                    ru: "Истории успеха",         en: "Success Stories" },
+              { slug: "kogemuslood",                et: "Kogemuslood",                ru: "Истории пациентов",      en: "Patient Stories" },
+              { slug: "nagemise-korrigeerimine",    et: "Nägemise korrigeerimine",    ru: "Коррекция зрения",       en: "Vision Correction" },
+              { slug: "flow-protseduur",            et: "Flow Protseduur",            ru: "Процедура Flow",         en: "Flow Procedure" },
+              { slug: "silmade-tervis-nipid",       et: "Silmade tervis & nipid",     ru: "Здоровье глаз",          en: "Eye Health & Tips" },
+              { slug: "tehnoloogia",                et: "Tehnoloogia",                ru: "Технология",             en: "Technology" },
+              { slug: "ksa-silmakeskus",            et: "KSA Silmakeskus",            ru: "KSA Vision Center",      en: "KSA Vision Center" },
+            ] as const).map(cat => {
+              const label = cat[currentLang as "et" | "ru" | "en"] ?? cat.et;
+              const isActive = category === cat.slug;
+              return (
+                <button
+                  key={cat.slug}
+                  type="button"
+                  onClick={() => setCategory(isActive ? "" : cat.slug)}
+                  style={{
+                    padding: "6px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    border: `1.5px solid ${isActive ? "#87be23" : "#e6e6e6"}`,
+                    background: isActive ? "#f0fde4" : "white",
+                    color: isActive ? "#3d6b00" : "#5a6b6c",
+                    cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
+                  }}
+                >{label}</button>
+              );
+            })}
+          </div>
+          {!category && (
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: "#f59e0b" }}>
+              ⚠ Kategooria on valimata — artikkel ilmub ilma sildita
+            </p>
+          )}
         </div>
       </div>
 
