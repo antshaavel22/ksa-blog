@@ -1,34 +1,48 @@
-# KSA Blog — Claude Code Project Context
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What This Is
 KSA Silmakeskus (ksa.ee) blog migrated from WordPress+Elementor to Next.js+MDX on Vercel.
 **Target domain:** blog.ksa.ee
 **GitHub repo:** https://github.com/antshaavel22/ksa-blog
-**Strategy doc:** ~/Desktop/KSA_Blog_Reanimation_Strategy.pdf
 
 ## Tech Stack
 - **Framework:** Next.js 16.2.2 (App Router), React 19, TypeScript
-- **Styling:** Tailwind CSS v4 (uses `@import "tailwindcss"` + `@theme inline {}` — NOT v3 config)
-- **Content:** MDX files in `content/posts/` (~446 published posts)
+- **Styling:** Tailwind CSS v4 (`@import "tailwindcss"` + `@theme inline {}` — NOT v3 config). Admin UI uses inline styles only (no Tailwind).
+- **Content:** MDX files in `content/posts/` (~460+ published posts)
 - **Fonts:** Geist (same as all KSA Vercel properties)
 - **Params:** In Next.js 16, `params` is `Promise<{slug: string}>` — must `await params`
-- **Middleware:** `proxy.ts` (exports `proxy` function + `config` matcher) — protects /admin and /api/admin/*
+- **Middleware:** `proxy.ts` (NOT `middleware.ts`) — exports `proxy` function + `config` matcher, protects /admin and /api/admin/*
+
+## Commands
+
+```bash
+npm run dev          # dev server on port 3002
+npm run build        # production build
+npm run convert      # WP XML → MDX: npx tsx scripts/wp-to-mdx.ts <path.xml>
+npm run ai-facelift  # batch AI title/excerpt improvement (add --content for phase 2)
+npm run scout        # daily content scout (--limit N, --trilingual, --dry-run)
+npm run batch        # batch generate: npm run batch -- --lang ru|en [--dry-run]
+```
+
+**Node:** `/Users/antsh/.nvm/versions/node/v24.14.0/bin/node` — not in PATH by default.
+**Build:** `PATH="/Users/antsh/.nvm/versions/node/v24.14.0/bin:$PATH" node node_modules/.bin/next build`
 
 ## Architecture: Read vs Write
 
-### READS (always filesystem)
-All read operations use `fs.readFileSync` on the bundled deployment. Files are bundled with each
-Vercel deploy — never read from GitHub API at runtime.
+### READS (filesystem-first, GitHub API fallback)
+In production, read APIs try the bundled filesystem first (fast, works for files present at deploy time), then fall back to GitHub API for files created *after* the last deploy (e.g. newly-published posts, same-day scout drafts). In dev, filesystem only.
 
 ```
-GET /api/admin/drafts  → fs.readdirSync(content/drafts/)
-GET /api/admin/draft   → fs.readFileSync(content/drafts/...)
-GET /api/admin/posts   → fs.readFileSync(content/posts/...)  (reads all, no limit)
-GET /api/admin/post    → fs.readFileSync(content/posts/...)
+GET /api/admin/drafts  → fs.readdirSync(content/drafts/)   [listing: filesystem only]
+GET /api/admin/draft   → try fs → fallback GitHub API
+GET /api/admin/posts   → fs.readdirSync(content/posts/)    [listing: filesystem only]
+GET /api/admin/post    → try fs → fallback GitHub API
 ```
 
 ### WRITES (GitHub API in production)
-All write operations use GitHub REST API (contents PUT/DELETE). Never use fs.writeFileSync in prod.
+All writes use GitHub REST API (contents PUT/DELETE). Never use `fs.writeFileSync` in prod.
 
 ```
 PUT  /api/admin/draft    → GitHub API PUT content/drafts/[lang]/filename.mdx
@@ -41,364 +55,248 @@ POST /api/admin/sync-images → GitHub API PUT to update featuredImage on sister
 ### DEPLOY FLOW
 ```
 Editor clicks "Avalda" in admin
-  → client builds finalContent from React state (includes latest image URL)
-  → client saves draft to GitHub (PUT /api/admin/draft) — keeps draft in sync
-  → client calls POST /api/admin/publish with { path, content: finalContent }
-  → publishProd() uses clientContent directly — NEVER reads from stale filesystem
-  → publish API writes to GitHub (content/posts/) + deletes draft
-  → publish API calls VERCEL_DEPLOY_HOOK (POST)
-  → Vercel rebuilds static pages (~2 min)
-  → Article live at blog.ksa.ee/[slug]
+  → client builds finalContent = buildMdx(buildFm(), body) from React state
+  → POST /api/admin/publish with { path, content: finalContent }
+  → publishProd() writes to GitHub (content/posts/) + deletes draft
+  → publishProd() calls VERCEL_DEPLOY_HOOK → Vercel rebuilds (~2 min)
+  → ISR: new post URLs render on-demand on first visit (dynamicParams=true, revalidate=120)
 ```
 
-**CRITICAL:** publishProd() must receive content from the client. If it reads from the
-filesystem, it gets the OLD bundled file (pre-upload state) → featuredImage: "" bug.
+**CRITICAL:** `publishProd()` must receive content from the client. Reading from the filesystem gets the OLD bundled file (pre-upload) → `featuredImage: ""` bug.
 
-Also: any `git push origin main` auto-triggers Vercel deploy (GitHub ↔ Vercel connected 2026-04-07).
+Any `git push origin main` also auto-triggers Vercel deploy (GitHub ↔ Vercel connected).
 
 ## KSA Brand Tokens
 ```
-accent:  #87be23   (KSA green)
-text:    #1a1a1a
-surface: #f9f9f7
-border:  #e6e6e6
-muted:   #9a9a9a
+accent:    #87be23   (KSA green)
+text:      #1a1a1a
+surface:   #f9f9f7
+border:    #e6e6e6
+muted:     #9a9a9a
 secondary: #5a6b6c
 ```
 
+## Critical: Categories Frontmatter
+
+**`categories` must always be a YAML block list — never a quoted string.**
+
+Use `setCategoriesField(fm, slug)` (defined in `app/admin/page.tsx`) when writing categories — NOT `setFmField()`. `setFmField()` writes a quoted scalar (`categories: "foo"`) which gray-matter parses as `string`, causing `categories.some is not a function` build crashes.
+
+`setCategoriesField()` writes the correct format:
+```yaml
+categories:
+  - Flow Protseduur
+```
+
+`lib/posts.ts` normalises `categories` to always be `string[]` at read time (handles string, JSON array `["foo"]`, YAML list — all coerced to array). This is a safety net, not a substitute for writing correct YAML.
+
+## Frontmatter Helpers (app/admin/page.tsx)
+
+| Function | Use for |
+|---|---|
+| `setFmField(fm, key, value)` | All scalar fields (title, date, lang, featuredImage, etc.) |
+| `setCategoriesField(fm, slug)` | `categories` only — writes proper YAML block list |
+| `getFmField(fm, key)` | Read any scalar field from frontmatter string |
+| `buildFm()` | Called before save/publish — assembles final frontmatter from React state |
+| `buildMdx(fm, body)` | Wraps `---\n${fm}\n---\n${body}` |
+| `compressImageClient(file)` | Module-level (not inside DraftEditor) — shared by cover + body image upload |
+
 ## Content Facts
-- **~446 published posts** (459 migrated, 19 deleted duplicates/mislabeled, new posts added)
-- **~564 drafts** in content/drafts/ — 0 ET, 264 RU, 300 EN (as of 2026-04-07)
-- Language breakdown published: ET ~270, RU ~130, EN ~50
-- Images stay at `ksa.ee/wp-content/uploads/` (no migration needed, Next.js Image proxies)
-- WP XML source: `~/Desktop/ksasilmakeskus.WordPress.2026-04-01.xml`
-- Content format: Gutenberg blocks (NOT Elementor) — already clean HTML
-- **AI facelift run:** 437 posts have Claude-improved titles + excerpts (2026-04-02)
+- **~460+ published posts** (ET ~270, RU ~130, EN ~60+, growing daily via scout)
+- **~570+ drafts** (ET growing, RU ~264, EN ~300)
+- Images stay at `ksa.ee/wp-content/uploads/` (no migration needed)
+- **AI facelift run:** 437 posts have Claude-improved titles + excerpts
 - **medicalReview queue:** `medical-review-queue.txt` — 222 posts flagged for Dr. Haavel
-- **Batch generation:** 10 RU + 10 EN March 2026 drafts generated via `npm run batch`
+- Daily content scout (GitHub Action, 7am EET) pushes 1 trilingual draft (ET+RU+EN) directly to main
 
 ## Sister Article System
-RU/EN translations are linked to their ET original via the `translatedFrom` frontmatter field:
+RU/EN translations link to their ET original via `translatedFrom` frontmatter:
 ```yaml
 translatedFrom: "Flow3 laser silmad: elu pärast operatsiooni"  # exact ET title
 ```
-The `/api/admin/sync-images` endpoint uses this to find sisters and propagate `featuredImage`.
-- ET article = original; finds sisters where `translatedFrom === etTitle`
-- RU/EN article = translation; finds ET original then all other translations
+`/api/admin/sync-images` uses this to propagate `featuredImage` across language versions.
 
-## Blog Hero Taglines (per language)
-```
-ET: "Hea nägemine on üks inimese supervõimetest. Hea nägemisega on elu ilusam!"
-RU: "Хорошее зрение — одна из сверхспособностей человека. С хорошим зрением жизнь становится красивее!"
-EN: "Good vision is one of life's superpowers. See better — live better!"
-```
-RU version may be updated by Jana later. Edit in `app/page.tsx` hero section.
-
-## KiirtestCTA Rules (3 rules from strategy doc)
+## KiirtestCTA Rules
 ```
 Rule 1 → ctaType: "kiirtest-inline"
   Categories: edulood, kogemuslood, flow-protseduur, nagemise-korrigeerimine
 
-Rule 2 → ctaType: "kiirtest-soft"
-  Informational/educational posts (default)
+Rule 2 → ctaType: "kiirtest-soft"  (default for informational posts)
 
 Rule 3 → ctaType: "none"
   Categories: silmad-ja-tervis, silmade-tervis-nipid, eye-health-tips
 ```
-CTA URLs (ksa-kiirtest-lp.vercel.app blocks iframes — CTA now uses button link, NOT iframe):
+CTA uses button link (NOT iframe — ksa-kiirtest-lp.vercel.app blocks iframes via X-Frame-Options):
 - ET: https://ksa-kiirtest-lp.vercel.app/
 - RU: https://ksa-kiirtest-lp.vercel.app/ru.html
 - EN: https://ksa-kiirtest-lp.vercel.app/en.html
 
 ## Authors
-All author data centralised in `lib/authors.ts` — `getAuthorByKey()` maps any key or full name to
-a profile with displayName, slug, role and bio in ET/RU/EN.
-
+Centralised in `lib/authors.ts` — `getAuthorByKey()` maps any key or full name to a profile.
 ```
 antsh / Dr. Ants Haavel       → slug: dr-ants-haavel
-silvia / Silvia Haavel        → slug: silvia-johanna-haavel  (displayed as "Silvia Johanna Haavel")
+silvia / Silvia Haavel        → slug: silvia-johanna-haavel
 yana / Yana Grechits          → slug: yana-grechits
 maigret / Maigret Moru        → slug: maigret-moru
 ndhaldur / KSA Silmakeskus   → slug: ksa-silmakeskus
 ```
-
-Author pages live at `/autor/[slug]` — bio card, language filter, post grid, pagination.
-Author names on post pages link to their author page.
-
-## Blog Editors
-- **Silvia Johanna Haavel** — ET content editor
-- **Jana** — RU and EN content editor
+Editors: **Silvia Johanna Haavel** (ET), **Jana** (RU + EN)
 
 ## Tracking & SEO
-- **GTM:** GTM-KCZVRJ8 — wired in `app/layout.tsx`, fires on every page
-- **GA4:** G-7R7T8GF37J — added directly in `app/layout.tsx` alongside GTM (2026-04-07)
-- **Pixels:** managed through GTM (no hardcoded pixel tags needed)
-- **Schema JSON-LD:** auto-generated on every post — BlogPosting + BreadcrumbList + FAQPage
-- **Meta title/description:** from `seoTitle` / `seoExcerpt` frontmatter fields; falls back to `title` / `excerpt`
-- **OpenGraph:** auto from title, excerpt, featuredImage
-- **Sitemap:** auto-generated at `/sitemap.xml` on every deploy
-- **robots.txt:** `public/robots.txt` — allows all crawlers, blocks /admin and /api/
-- **LLM search queries:** hidden in post HTML for AI search engines (Perplexity, ChatGPT)
+- **GTM:** GTM-KCZVRJ8 + **GA4:** G-7R7T8GF37J — both in `app/layout.tsx`
+- Schema JSON-LD on every post: BlogPosting + BreadcrumbList + FAQPage
+- `seoTitle` / `seoExcerpt` frontmatter → meta tags (falls back to `title` / `excerpt`)
+- Sitemap auto-generated at `/sitemap.xml` each deploy
 
 ## Key Files
-```
-lib/posts.ts               — getAllPosts, getPostBySlug (matches by filename OR frontmatter slug),
-                             getRelatedPosts, getAllCategories
-                             Future posts (date > today) filtered out automatically
-lib/categories.ts          — CATEGORY_LABELS registry, getCategoryLabel(), toSlug(), CTA classification
-lib/authors.ts             — AuthorProfile type, AUTHORS array, getAuthorByKey(), getAuthorBySlug(), authorToSlug()
-lib/config.ts              — BLOG_CONFIG: showDate / showAuthor global toggles
-lib/master-prompt.ts       — Loads KSA_MASTER_PROMPT from content/system/master-prompt.md
-                             Also exports LANG_SEO_KEYWORDS (per-language SEO keyword arrays)
-content/system/master-prompt.md — Editable AI writing rules (voice, tone, medical policy, CTA rules)
-                             Edit via admin Sisureeglid tab OR directly in this file
-components/KiirtestCTA.tsx — smart CTA: kiirtest-soft (banner+button) or kiirtest-inline (full card)
-                             NOTE: inline is now a button card, NOT an iframe (iframe blocked by X-Frame-Options)
-components/BlogBookingCTA.tsx — soft booking strip (promo code BLOG24, €35 free audit)
-components/BlogContactForm.tsx — contact form → Web3Forms → registreerumised@ksa.ee
-components/YouTubeEmbed.tsx — responsive YouTube embed for MDX posts
-components/PostCard.tsx    — post card: title, category, date, reading time, author, excerpt
-components/BlogNav.tsx     — sticky header (← ksa.ee | KSA Blogi | Broneeri aeg)
-components/BlogFooter.tsx  — footer with inline SVG social icons (FB, IG, YT, TikTok) + links
-components/ShareButton.tsx — "use client" — Web Share API (mobile) + clipboard fallback (desktop)
-components/SearchInput.tsx — "use client" — URL param ?otsing= search, Enter/Escape, clear button
-components/RelatedPosts.tsx — related posts by shared categories (wired into app/[slug]/page.tsx)
-app/layout.tsx             — GTM + GA4, Geist font, default metadata
-app/page.tsx               — blog index: lang/category/search/page filters via searchParams
-app/[slug]/page.tsx        — post detail (SSG, Schema JSON-LD, date-fns locales, author link,
-                             RelatedPosts at bottom)
-app/autor/[author]/page.tsx — author profile: bio card, lang filter, post grid, pagination
-app/kategooria/[category]/page.tsx — category archive (SSG)
-app/sitemap.ts             — auto sitemap
-app/admin/page.tsx         — Admin UI: 5 tabs (Mustandid, Avaldatud, Kirjuta uus, Sisureeglid, Juhend)
-app/admin/login/page.tsx   — Login page (show/hide password toggle)
-app/api/admin/login/route.ts   — sets httpOnly cookie admin_session = ADMIN_PASSWORD
-app/api/admin/logout/route.ts  — clears cookie
-app/api/admin/drafts/route.ts  — lists content/drafts/ via filesystem (all 3 langs)
-app/api/admin/draft/route.ts   — GET: filesystem | PUT: GitHub API
-app/api/admin/post/route.ts    — GET: filesystem | PUT: GitHub API
-app/api/admin/posts/route.ts   — lists content/posts/ via filesystem, returns slug+title from frontmatter
-app/api/admin/publish/route.ts — read fs → write GitHub → delete draft GitHub → trigger deploy hook
-app/api/admin/unpublish/route.ts — read GitHub → write draft GitHub → delete post GitHub
-app/api/admin/sync-images/route.ts — GET: find sister articles | POST: propagate featuredImage to sisters
-app/api/admin/prompt/route.ts  — GET/PUT content/system/master-prompt.md
-app/api/admin/generate-image/route.ts — Claude crafts photographic prompt → Replicate FLUX generates image
-app/api/admin/fetch-url/route.ts — fetches URL, strips HTML, returns text for brief
-app/api/admin/save-raw-draft/route.ts — saves user text DIRECTLY as draft (no AI processing)
-app/api/write-post/route.ts — generates trilingual drafts via Claude (uses master prompt)
-proxy.ts                   — protects /admin and /api/admin/* routes
-                             NOTE: file named proxy.ts (not middleware.ts), exports proxy function
-public/robots.txt          — crawler rules
-scripts/wp-to-mdx.ts       — WP XML → MDX converter (run: npm run convert <xml-file>)
-scripts/content-scout.ts   — Daily RSS scout → generates ET/RU/EN drafts
-scripts/ai-facelift.ts     — Batch AI title/excerpt improvement (run: npm run ai-facelift)
-scripts/batch-generate.ts  — Batch generates 10 RU + 10 EN posts (run: npm run batch -- --lang ru)
-scripts/generate-redirects.ts — Generates redirects-for-kadri.txt from all post slugs
-redirects-for-kadri.txt    — 442 WordPress 301 redirects in Yoast CSV format for Kadri
-medical-review-queue.txt   — 222 posts flagged for Dr. Haavel medical sign-off
-KASUTAJAJUHEND.md          — Estonian user manual for editors (v3.0)
-content/drafts/et/         — ET drafts staging
-content/drafts/ru/         — RU drafts (264 as of 2026-04-07)
-content/drafts/en/         — EN drafts (300 as of 2026-04-07)
-content/system/master-prompt.md — AI writing rules
-.github/workflows/daily-content-scout.yml — runs scout daily at 7am EET, pushes directly to main
-.claude/launch.json        — dev server config for Claude Preview (port 3002)
-```
 
-## NPM Scripts
-```bash
-npm run dev          # dev server on port 3002
-npm run build        # production build
-npm run convert      # re-run XML conversion: npx tsx scripts/wp-to-mdx.ts <path.xml>
-npm run ai-facelift  # AI batch SEO improvement (phase 1: metadata; add --content for phase 2)
-npm run scout        # Daily content scout (--limit N, --trilingual, --dry-run, --source healio)
-npm run batch        # Batch generate: npm run batch -- --lang ru|en [--dry-run] [--topic N]
 ```
-**Node:** use `/Users/antsh/.nvm/versions/node/v24.14.0/bin/node` — not in PATH by default.
-**Build:** `PATH="/Users/antsh/.nvm/versions/node/v24.14.0/bin:$PATH" node node_modules/.bin/next build`
+lib/posts.ts               — getAllPosts (normalises categories→string[]), getPostBySlug,
+                             getRelatedPosts, getAllCategories
+lib/categories.ts          — CATEGORY_LABELS, getCategoryLabel(), toSlug(), CTA classification
+lib/authors.ts             — AUTHORS array, getAuthorByKey(), getAuthorBySlug()
+lib/config.ts              — BLOG_CONFIG: showDate / showAuthor global toggles
+content/system/master-prompt.md — Editable AI writing rules (edit via Sisureeglid tab or directly)
+app/admin/page.tsx         — ~2800-line monolithic admin UI (DraftEditor, PublishedTab, WriteTab,
+                             FormattingToolbar, DragCrop, PostPreview — all in one file)
+app/api/admin/draft/route.ts   — GET: fs-first→GitHub fallback | PUT/DELETE: GitHub API
+app/api/admin/post/route.ts    — GET: fs-first→GitHub fallback | PUT: GitHub API
+app/api/admin/posts/route.ts   — lists content/posts/, returns title/slug/lang/date/featuredImage/category
+app/api/admin/publish/route.ts — uses clientContent from request body, NEVER reads filesystem
+app/api/admin/sync-images/route.ts — propagates featuredImage to sister articles via translatedFrom
+app/[slug]/page.tsx        — SSG post detail, ISR (dynamicParams=true, revalidate=120)
+proxy.ts                   — middleware (named proxy.ts, not middleware.ts)
+scripts/content-scout.ts   — daily RSS → trilingual drafts via Claude
+.github/workflows/daily-content-scout.yml — 7am EET cron, pushes directly to main
+```
 
 ## Admin UI (/admin)
-**Password:** `ksa-blog-2026` (set as `ADMIN_PASSWORD` in `.env.local` and Vercel env)
-**Login URL:** https://blog.ksa.ee/admin/login
+**Password:** `ksa-blog-2026` | **Login:** https://blog.ksa.ee/admin/login
 
 ### 5 Tabs
-1. **📋 Mustandid** — browse/edit/publish drafts (564 total: 264 RU, 300 EN)
-2. **✏️ Avaldatud** — browse/edit published posts, unpublish back to draft
-3. **✍️ Kirjuta uus** — two modes:
-   - **📝 Salvesta otse** — paste/write text → pick language (ET/RU/EN) → saves to draft folder UNCHANGED (no AI)
-   - **🤖 AI kirjutab** — give idea/notes/link → AI generates article (uses Claude + master prompt)
-   IMPORTANT: "Salvesta otse" saves text exactly as user wrote it. No AI editing, no rewriting.
-   User provides: title + language + body text. Endpoint: POST /api/admin/save-raw-draft
-4. **📝 Sisureeglid** — view/edit master AI writing prompt
-5. **❓ Juhend** — Estonian user manual
+1. **Mustandid** — browse/edit/publish drafts; full editor with image upload, category, YouTube, deadline
+2. **Avaldatud** — published posts in 3 views:
+   - **Nimekiri** (list) — row per post with category pill, clickable date quick-edit
+   - **Koduleht** (grid) — editorial cards with thumbnails, hover "✎ Redigeeri" overlay, clickable date quick-edit
+   - **Live** — iframe of blog.ksa.ee embedded in admin
+3. **Kirjuta uus** — two modes:
+   - **Salvesta otse** — paste text → save UNCHANGED to draft folder (no AI)
+   - **AI kirjutab** — idea/URL → Claude generates article
+4. **Sisureeglid** — edit master AI prompt (saved to `content/system/master-prompt.md` via GitHub API)
+5. **Juhend** — Estonian user manual
 
-### Editor features
-- Breadcrumb nav: `← Mustandid > [LANG] > title` + "Vaata blogis ↗" link for published
-- Sticky action bar: Salvesta + Avalda (or Salvesta + Eemalda avaldamisest for published)
-- Featured image: 3 ways to add:
-  1. **📁 Lae pilt üles** — upload from computer (auto-resized + compressed)
-  2. **✨ AI pilt** — AI-generated via Claude + Replicate FLUX
-  3. **URL** — paste any image URL manually
-- "Eemalda pilt" button to clear image
-- "Sünkrooni pilt sõsarartiklitele" — propagates image to RU/EN sister articles
-- YouTube embed inserter
+### Editor Features
+- Breadcrumb + interactive ET/RU/EN language switcher (moves file between lang folders)
+- Sticky action bar: Salvesta + Avalda / Uuenda live (for published)
+- Featured image: upload (client-compressed to WebP ≤300KB) | AI-generated | URL paste
+- `DragCrop`: drag image in 3:2 frame → saves `imageFocalPoint` ("45% 30%") to frontmatter
+- `FormattingToolbar`: B/I/H2/H3/Link/List + **🖼 Pilt** (inline body image upload → inserts `![alt](url)` at cursor)
+- YouTube embed inserter (appends `<YouTubeEmbed url="..." />` to body)
+- Category selector (10 pills, trilingual labels, writes proper YAML block list)
 - Assignment (Vastutaja) + deadline picker
-- Medical review flag + email notification
+- Quick date edit in grid/list: click any date → inline `<input type="date">` → saves on blur/Enter
 
-### Image Upload (POST /api/admin/upload-image)
-Editors upload images directly from their Mac/PC:
-- Accepts: JPEG, PNG, WebP, GIF, AVIF, HEIC (max 20 MB input)
-- **Client-side compression** via Canvas API (max 1400px, WebP quality 0.82) — keeps payload ~150-300 KB
-- Output: typically 80–200 KB (shows % reduction vs original)
-- Storage: `public/uploads/YYYY/MM/slug-timestamp.webp` via GitHub API (prod) or filesystem (dev)
-- Returns two URLs: `url` = production path `/uploads/...` (saved to frontmatter), `previewUrl` = raw.githubusercontent.com (editor preview only)
-- **Auto-save on upload:** after upload, draft is immediately saved to GitHub with the new image URL.
-  Uses direct MDX building from state — does NOT rely on async React setState.
-- **DragCrop component:** editor drags image within 3:2 frame to pick visible area.
-  `imageFocalPoint` field (e.g. "45% 30%") saved to frontmatter via `buildFm()`.
-  Touch-supported for iPad editors.
+### Publish Flow (Critical)
+`publish()` builds `finalContent = buildMdx(buildFm(), body)` from current React state and sends it to `POST /api/admin/publish`. `publishProd()` uses this directly — never reads filesystem. This ensures `featuredImage` and all state is current.
 
-### Publish content flow (IMPORTANT — avoids stale filesystem bug)
-`publish()` in app/admin/page.tsx builds `finalContent = buildMdx(buildFm(), body)` from
-current React state and passes it to POST /api/admin/publish as `{ path, content }`.
-publishProd() uses this content directly — it NEVER reads from the bundled filesystem.
-This ensures featuredImage (and all other state) is always current when publishing.
-
-### AI Image Generation
-Button "✨ AI pilt" in editor:
-1. Claude (claude-opus-4-6) crafts a photographic FLUX prompt from title + excerpt
-2. If `REPLICATE_API_TOKEN` set: calls FLUX.1-schnell via Replicate → sets as featuredImage
-3. If no token: shows the Claude-crafted prompt + "Kopeeri prompt" button for manual use in Midjourney/DALL-E
-
-### Sisureeglid Tab
-Editable textarea with full master prompt — covers:
-- KSA voice & tone, language rules (ET/RU/EN), medical policy, CTA types, article structure
-- Changes saved to `content/system/master-prompt.md` via GitHub API in production
+### Image Upload
+`POST /api/admin/upload-image`: client compresses via Canvas (max 1400px, WebP 0.82) → ~150-300KB payload → stores at `public/uploads/YYYY/MM/slug-timestamp.webp` via GitHub API. Returns `url` (production path, saved to frontmatter) + `previewUrl` (raw.githubusercontent.com, editor-only). `compressImageClient()` is module-level in `app/admin/page.tsx` — shared by cover photo upload and inline body image toolbar button.
 
 ## Draft Frontmatter Fields
 ```yaml
-title, slug, date, author, categories, tags, excerpt, featuredImage, lang
+title, slug, date, author, lang
+categories:          # YAML block list — use setCategoriesField(), never setFmField()
+  - Flow Protseduur
+tags: []
+excerpt, featuredImage
 ctaType: "kiirtest-inline" | "kiirtest-soft" | "none"
-medicalReview: true | false   # true = needs Dr. Haavel sign-off before publish
-status: "draft"               # remove this line to publish
-seoTitle, seoExcerpt          # Claude-optimised meta (falls back to title/excerpt)
-hideDate: true                # per-post override to hide date
-hideAuthor: true              # per-post override to hide author
-llmSearchQueries: [...]       # for Perplexity/ChatGPT indexing
-faqItems: [{q, a}, ...]       # renders as FAQ section + FAQPage schema
-sourceUrl, briefSummary       # provenance tracking
-translatedFrom: "ET article title"  # links RU/EN to their ET original (used by sync-images)
+medicalReview: false  # true = needs Dr. Haavel sign-off
+seoTitle, seoExcerpt  # falls back to title/excerpt if absent
+hideDate: true        # per-post override
+hideAuthor: true      # per-post override
+imageFocalPoint: "45% 30%"  # CSS object-position from DragCrop
+translatedFrom: "ET article title"  # links RU/EN to ET original
+llmSearchQueries: []  # for Perplexity/ChatGPT indexing
+faqItems: [{q, a}]    # renders FAQ section + FAQPage schema
+sourceUrl, briefSummary  # provenance tracking
+assignedTo, deadline, status  # editorial workflow
 ```
 
 ## Content Creation Rules
-1. **User-written text is sacred.** When user pastes/writes text via "Salvesta otse", save it EXACTLY as-is.
-   No AI editing, no rewriting, no "improving". The text goes to the draft folder unchanged.
-2. **Language determines folder.** User picks ET/RU/EN → file saves to `content/drafts/et/`, `ru/`, or `en/`.
-3. **AI generation is separate.** The "AI kirjutab" mode is a different flow — only used when user explicitly
-   wants AI to write from scratch based on ideas/notes/links.
-4. **Writing language priority.** When creating trilingual content, write English first (strongest creative
-   quality), then adapt to Estonian and Russian as independent-feeling pieces — not stiff translations.
-5. **Master prompt.** All AI-generated content follows `content/system/master-prompt.md` (James Clear philosophy).
-   Minimal rules, stories over statistics, life-first framing, no marketing language in articles.
-
-## Content Scout (Daily AI Posts)
-GitHub Action runs daily at 7am EET:
-- Fetches TOP 20 health/lifestyle/vision RSS feeds
-- Scores articles by relevance to KSA keywords
-- Generates 1 trilingual draft (ET+RU+EN) via Claude Sonnet
-- Pushes drafts directly to main branch (auto-deploys via Vercel)
-- Editors review in admin UI → publish with one click
-
-RSS sources: 21 feeds including Healio, ScienceDaily, Review of Ophthalmology, PubMed,
-WebMD, Healthline, Medical News Today, Well+Good, Mindbodygreen, and more (see content-scout.ts)
-
-## Search
-URL param `?otsing=` on the index page filters posts by title, excerpt, categories, tags.
-`SearchInput` component (client) in the filter bar — Enter to search, Escape to clear.
-Admin search (Avaldatud tab) matches title + excerpt + slug.
-
-## Social Media Links (in BlogFooter)
-```
-Facebook:  https://www.facebook.com/ksasilmakeskus
-Instagram: https://www.instagram.com/ksa_silmakeskus
-TikTok:    https://www.tiktok.com/@ksa_silmakeskus
-YouTube:   https://www.youtube.com/@KSASilmakeskus
-```
+1. **User-written text is sacred.** "Salvesta otse" saves text exactly as written — no AI editing.
+2. **Language determines folder.** ET/RU/EN → `content/drafts/et/`, `ru/`, or `en/`.
+3. **Writing language priority.** When generating trilingual content: write English first, then adapt ET and RU as independent pieces.
+4. **Master prompt.** All AI content follows `content/system/master-prompt.md` (James Clear philosophy — stories over statistics, life-first framing, no marketing language).
+5. **Russian spelling:** Tallinn = **Таллинн** (two н) — Estonian Russian local standard.
 
 ## Environment Variables (.env.local)
 ```
-ANTHROPIC_API_KEY=sk-ant-...         # Claude API — drafts, AI facelift, image prompts
-NEXT_PUBLIC_WEB3FORMS_KEY=...        # Contact form submissions
-ADMIN_PASSWORD=ksa-blog-2026         # Admin panel password (CHANGED 2026-04-07)
-GITHUB_TOKEN=<pat with contents:write>  # GitHub API writes (publish, unpublish, save)
-GITHUB_REPO=antshaavel22/ksa-blog    # Target repo for GitHub API
-VERCEL_DEPLOY_HOOK=https://api.vercel.com/v1/integrations/deploy/prj_.../...
-                                     # Auto-redeploy on publish (added 2026-04-07)
-REPLICATE_API_TOKEN=<optional>       # If set: enables AI image generation via FLUX.1-schnell
-                                     # Get free token at replicate.com
+ANTHROPIC_API_KEY=...           # Claude API
+NEXT_PUBLIC_WEB3FORMS_KEY=...   # Contact form
+ADMIN_PASSWORD=ksa-blog-2026    # Admin panel
+GITHUB_TOKEN=...                # PAT with contents:write
+GITHUB_REPO=antshaavel22/ksa-blog
+VERCEL_DEPLOY_HOOK=...          # Triggers rebuild on publish
+REPLICATE_API_TOKEN=...         # Optional: enables FLUX AI image generation
 ```
 
-## Deployment (as of 2026-04-07)
-- ✅ GitHub: https://github.com/antshaavel22/ksa-blog (main branch)
-- ✅ Vercel: **auto-deploys on push to main** (GitHub connected 2026-04-07)
-- ✅ Deploy hook: publish API triggers `VERCEL_DEPLOY_HOOK` — no manual deploy needed
-- ✅ Build verified: ~490 static pages
-- ✅ Admin password: `ksa-blog-2026`
-- ⏳ DNS: Kadri needs to set CNAME blog → cname.vercel-dns.com at zone.ee
-- ⏳ Google Search Console: Kadri adds blog.ksa.ee, submits /sitemap.xml
-- ⏳ WordPress 301 redirects: Kadri imports redirects-for-kadri.txt via Yoast SEO → Redirects
+## Deployment
+- ✅ Auto-deploys on push to main (GitHub ↔ Vercel)
+- ✅ Deploy hook: publish API triggers rebuild — no manual deploy needed
+- ⏳ DNS: Kadri sets CNAME blog → cname.vercel-dns.com at zone.ee
+- ⏳ Google Search Console: add blog.ksa.ee, submit /sitemap.xml
+- ⏳ WordPress 301 redirects: Kadri imports `redirects-for-kadri.txt` via Yoast
+
+## Pending
+- **Replicate token:** Add `REPLICATE_API_TOKEN` to `.env.local` + Vercel env for actual AI image generation
+- **Medical review:** Dr. Haavel to review `medical-review-queue.txt` (222 posts)
+- **Author avatar photos:** real photos for author pages (currently initials)
+- **Phase 2 facelift:** `npm run ai-facelift -- --content` — H2 structure + internal links
+- **Cookie consent:** GTM/GA4 fire without user consent (GDPR)
+- **hreflang tags:** ET/RU/EN language alternates for SEO
 
 ## Scheduled Diagnostics
 Two Claude Code scheduled tasks run daily:
 - **08:00** `ksa-blog-diagnostics-morning` — homepage, sitemap, sample articles, git log, build
-- **18:00** `ksa-blog-diagnostics-evening` — full UI/UX + editor dashboard (all APIs, admin login, related posts)
-Both auto-fix issues when possible and notify on completion.
-
-## Pending / Next Session
-- **Replicate token:** Add `REPLICATE_API_TOKEN` to `.env.local` and Vercel env to enable actual AI image generation (get free at replicate.com)
-- **Medical review:** Dr. Haavel to glance through `medical-review-queue.txt` (222 posts flagged)
-- **Publish batch articles:** Jana to review and publish 10 RU + 10 EN March 2026 drafts
-- **DNS go-live:** waiting on Kadri (zone.ee CNAME + Yoast redirects + Search Console)
-- **Author avatar photos:** real photos for author pages instead of initials
-- **Phase 2 facelift:** `npm run ai-facelift -- --content` adds H2 structure + internal links to posts
-
-## Changelog (session 2026-04-10)
-- **Non-blocking publish:** removed 120s countdown from PublishSuccessScreen — "Vaata postitust →" is immediately clickable; small note explains 404 is temporary
-- **Language switcher in editor:** ET/RU/EN pills move draft to correct language folder via /api/admin/move-lang; published posts just update frontmatter lang field
-- **move-lang API:** POST /api/admin/move-lang — moves MDX file between content/drafts/{et,ru,en}/ folders on GitHub
-- **Таллинн spelling fixed:** two н confirmed as Estonian Russian local standard (Jana). Updated master-prompt.md.
-- **ShareButton redesign:** 3-option dropdown (Copy link / WhatsApp / Email) replaces native share sheet
-- **RelatedPosts redesign:** RelatedCard with 3:2 thumbnails, Tailwind group-hover, trilingual labels
-- **Category labels:** getCategoryLabel() for trilingual display (Lifestyle not Elustiil in EN posts)
-- **"Uuenda live" button:** for published posts, 120s countdown on THAT button only (doesn't block editors)
-- **SEO/legal audit:** sitemap, meta tags, og:locale, content-language, JSON-LD schema all verified/fixed
-- **Flow3 footer CTA:** replaced BlogBookingCTA + BlogContactForm with dark-green Flow3 section (2026-04-07)
-
-## Changelog (session 2026-04-07)
-- **Image publish bug fixed:** publishProd now uses clientContent from React state — never reads stale filesystem
-- **Auto-save on image upload:** draft saved to GitHub immediately after upload (not just on manual Salvesta)
-- **DragCrop component:** interactive drag-to-reposition within 3:2 frame; imageFocalPoint saved to frontmatter
-- **PostPreview overlay:** full-screen preview before publish
-- **Kirjuta uus rewrite:** two-mode flow — "📝 Salvesta otse" (no AI) + "🤖 AI kirjutab"
-- **save-raw-draft API:** POST /api/admin/save-raw-draft — saves user text unchanged to correct lang folder
-- **Flow3 footer CTA:** replaced BlogBookingCTA (promo strip) + BlogContactForm with bold dark-green Flow3 section
-  - Trilingual headlines, links to ksa-kiirtest.vercel.app / /en.html / /ru.html
-  - Social proof: "55,000+ procedures"
-- **Content scout:** loadMasterPrompt() now loads full file (was truncated at 4000 chars)
-- **next.config.ts:** added raw.githubusercontent.com to image remotePatterns (upload previews)
+- **18:00** `ksa-blog-diagnostics-evening` — full UI/UX + editor dashboard
 
 ## Known Technical Notes
-- `getPostBySlug()` matches by filename OR frontmatter `slug` field — handles date-prefixed scout files
-- `toSlug()` in `lib/categories.ts` strips `&` and special chars
-- Turbopack cache corruption fix: `rm -rf .next` then restart
-- `overflow-wrap: break-word` on `.prose-ksa` fixes long URL overflow on mobile
-- Category pills use horizontal scroll (`overflow-x-auto scrollbar-hide`) not wrapping
-- `BLOG_CONFIG` in `lib/config.ts` controls global showDate/showAuthor toggles
-- Per-post `hideDate: true` / `hideAuthor: true` override the global config
-- Login page uses `window.location.href = "/admin"` (NOT router.push) for reliable redirect
+- `getPostBySlug()` matches by filename OR frontmatter `slug` — handles date-prefixed scout files
+- Turbopack cache corruption: `rm -rf .next` then restart
+- `BLOG_CONFIG` in `lib/config.ts` controls global showDate/showAuthor; per-post `hideDate`/`hideAuthor` override
+- Login page uses `window.location.href = "/admin"` (NOT `router.push`) — required for reliable cookie redirect
+- `toSlug()` in `lib/categories.ts` strips `&` and special chars — use for all category comparisons
+- Admin page is ~2800 lines; all UI in one file — read sections carefully before editing, changes can have wide blast radius
+
+## Changelog (session 2026-04-10, part 2)
+- **Editorial UX redesign:** Published tab — editorial grid cards with thumbnails (posts API now returns `featuredImage`/`category`), hover "✎ Redigeeri" overlay, admin nav tabs clean (no emoji, green underline for active)
+- **Quick date edit:** click date in grid/list → inline input → saves in-place via GitHub API
+- **Inline body images:** FormattingToolbar "🖼 Pilt" button — uploads, compresses, inserts `![alt](url)` at cursor
+- **Live blog iframe:** 🌐 Live view in Avaldatud tab — full-height iframe of blog.ksa.ee
+- **Read fallback:** draft/post GET APIs now try filesystem first → GitHub API fallback (eliminates 404 on newly-created files)
+- **Categories always array:** `lib/posts.ts` normalises `categories` to `string[]` at read time; `setCategoriesField()` writes proper YAML block list; build no longer crashes on scalar categories
+- **Concurrent save guard:** `save()` returns early if already saving; error alerts on GitHub write failure
+- **Editor metadata panel:** sections separated by dividers, sentence-case labels, category shows "✓ valitud" badge
+
+## Changelog (session 2026-04-10, part 1)
+- **Non-blocking publish:** removed countdown from PublishSuccessScreen
+- **Language switcher in editor:** ET/RU/EN pills move draft to correct folder via `/api/admin/move-lang`
+- **Category selector:** 10-pill selector in editor, writes YAML block list
+- **Delete draft:** permanent delete button (trash icon) in editor
+- **ISR:** `dynamicParams=true`, `revalidate=120` on `app/[slug]/page.tsx` — new posts render on-demand
+- **YouTube in preview:** `mdToHtml()` converts `<YouTubeEmbed>` MDX tags to responsive iframe
+- **Duplicate detection:** grid view detects posts with same normalised title → amber DUPLIKAAT badge
+- **GitHub API reads for post/draft:** added for files created after last deploy
+
+## Changelog (session 2026-04-07)
+- **Image publish bug fixed:** `publishProd` uses clientContent from React state, never stale filesystem
+- **Auto-save on image upload:** draft saved to GitHub immediately after upload
+- **DragCrop component:** drag-to-reposition in 3:2 frame; `imageFocalPoint` saved to frontmatter
+- **PostPreview overlay:** full-screen preview before publish
+- **Kirjuta uus rewrite:** "Salvesta otse" (no AI) + "AI kirjutab" modes
+- **Flow3 footer CTA:** dark-green section with 55,000+ social proof, trilingual
 
 ## Related KSA Projects (all on Vercel)
 - `~/Desktop/ksa-kiirtest/` — kiirtest quiz LP (ET/RU/EN), static HTML
-- `~/Desktop/ksa-lps/` — 5 campaign LPs (ksa-besttime, ksa-finance, ksa-timetax, ksa-glasses, ksa-sports)
+- `~/Desktop/ksa-lps/` — 5 campaign LPs
 - `~/ksa-followup/` — Next.js 14 post-op SMS follow-up app (PostgreSQL, Drizzle, Twilio)
-- `~/ksa-sms-followup/` — Express.js SMS app (older)
