@@ -674,12 +674,13 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
       {/* Media fields */}
       <div style={{
-        background: "#f9f9f7", border: "1.5px solid #e6e6e6", borderRadius: 16,
-        padding: "16px 18px", marginBottom: 20, display: "flex", flexDirection: "column", gap: 14,
+        background: "white", border: "1.5px solid #e6e6e6", borderRadius: 16,
+        padding: "0", marginBottom: 20, display: "flex", flexDirection: "column",
+        overflow: "hidden",
       }}>
         {/* Publish date */}
-        <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 6, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f0f0ec" }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 8 }}>
             📅 Kuupäev
           </label>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -706,9 +707,9 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </div>
 
         {/* Featured image */}
-        <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f0f0ec" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>
               🖼 Kaanepilt
               {isPublished && (
                 <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: "#87be23", textTransform: "none", letterSpacing: 0 }}>
@@ -844,8 +845,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </div>
 
         {/* YouTube embed */}
-        <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 6, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f0f0ec" }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 8 }}>
             ▶ YouTube video
           </label>
           <div style={{ display: "flex", gap: 8 }}>
@@ -885,10 +886,17 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </div>
 
         {/* Category selector */}
-        <div>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            🏷 Kategooria
-          </label>
+        <div style={{ padding: "16px 18px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>
+              🏷 Kategooria
+            </label>
+            {category && (
+              <span style={{ fontSize: 11, color: "#3d6b00", fontWeight: 700, background: "#f0fde4", padding: "2px 9px", borderRadius: 12, border: "1px solid #c5e58a" }}>
+                ✓ valitud
+              </span>
+            )}
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
             {([
               { slug: "silmad-ja-tervis",          et: "Silmad ja Tervis",          ru: "Глаза и Здоровье",       en: "Eyes & Health" },
@@ -912,16 +920,16 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
                   style={{
                     padding: "6px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600,
                     border: `1.5px solid ${isActive ? "#87be23" : "#e6e6e6"}`,
-                    background: isActive ? "#f0fde4" : "white",
+                    background: isActive ? "#f0fde4" : "#fafaf8",
                     color: isActive ? "#3d6b00" : "#5a6b6c",
                     cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s",
                   }}
-                >{label}</button>
+                >{isActive ? `✓ ${label}` : label}</button>
               );
             })}
           </div>
           {!category && (
-            <p style={{ margin: "6px 0 0", fontSize: 11, color: "#f59e0b" }}>
+            <p style={{ margin: "8px 0 0", fontSize: 11, color: "#f59e0b" }}>
               ⚠ Kategooria on valimata — artikkel ilmub ilma sildita
             </p>
           )}
