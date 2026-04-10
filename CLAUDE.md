@@ -362,12 +362,23 @@ Both auto-fix issues when possible and notify on completion.
 - **Author avatar photos:** real photos for author pages instead of initials
 - **Phase 2 facelift:** `npm run ai-facelift -- --content` adds H2 structure + internal links to posts
 
+## Changelog (session 2026-04-10)
+- **Non-blocking publish:** removed 120s countdown from PublishSuccessScreen — "Vaata postitust →" is immediately clickable; small note explains 404 is temporary
+- **Language switcher in editor:** ET/RU/EN pills move draft to correct language folder via /api/admin/move-lang; published posts just update frontmatter lang field
+- **move-lang API:** POST /api/admin/move-lang — moves MDX file between content/drafts/{et,ru,en}/ folders on GitHub
+- **Таллинн spelling fixed:** two н confirmed as Estonian Russian local standard (Jana). Updated master-prompt.md.
+- **ShareButton redesign:** 3-option dropdown (Copy link / WhatsApp / Email) replaces native share sheet
+- **RelatedPosts redesign:** RelatedCard with 3:2 thumbnails, Tailwind group-hover, trilingual labels
+- **Category labels:** getCategoryLabel() for trilingual display (Lifestyle not Elustiil in EN posts)
+- **"Uuenda live" button:** for published posts, 120s countdown on THAT button only (doesn't block editors)
+- **SEO/legal audit:** sitemap, meta tags, og:locale, content-language, JSON-LD schema all verified/fixed
+- **Flow3 footer CTA:** replaced BlogBookingCTA + BlogContactForm with dark-green Flow3 section (2026-04-07)
+
 ## Changelog (session 2026-04-07)
 - **Image publish bug fixed:** publishProd now uses clientContent from React state — never reads stale filesystem
 - **Auto-save on image upload:** draft saved to GitHub immediately after upload (not just on manual Salvesta)
 - **DragCrop component:** interactive drag-to-reposition within 3:2 frame; imageFocalPoint saved to frontmatter
-- **PostPreview overlay:** full-screen preview before publish with 120s countdown timer after publish
-- **PublishSuccessScreen:** gates "Vaata postitust" link until Vercel rebuild completes (~2 min)
+- **PostPreview overlay:** full-screen preview before publish
 - **Kirjuta uus rewrite:** two-mode flow — "📝 Salvesta otse" (no AI) + "🤖 AI kirjutab"
 - **save-raw-draft API:** POST /api/admin/save-raw-draft — saves user text unchanged to correct lang folder
 - **Flow3 footer CTA:** replaced BlogBookingCTA (promo strip) + BlogContactForm with bold dark-green Flow3 section
