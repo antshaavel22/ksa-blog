@@ -431,6 +431,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   }
 
   async function save() {
+    if (saving) return; // prevent concurrent saves
     setSaving(true); setSaved(false);
     const content = buildMdx(buildFm(), body);
     try {
@@ -441,8 +442,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
-      const d = await res.json() as { ok?: boolean };
+      const d = await res.json() as { ok?: boolean; error?: string };
       if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+      else if (d.error) { alert("Salvestamine ebaõnnestus: " + d.error); }
+    } catch (err) {
+      alert("Võrguühenduse viga: " + (err as Error).message);
     } finally { setSaving(false); }
   }
 
@@ -1813,6 +1817,34 @@ function PublishedTab() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<DraftMeta | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "grid" | "preview">("list");
+  const [quickEditDatePath, setQuickEditDatePath] = useState<string | null>(null);
+  const [quickDateValue, setQuickDateValue] = useState("");
+  const [quickDateSaving, setQuickDateSaving] = useState(false);
+
+  async function saveQuickDate(post: DraftMeta, newDate: string) {
+    if (!newDate || newDate === post.date) { setQuickEditDatePath(null); return; }
+    setQuickDateSaving(true);
+    try {
+      const endpoint = `/api/admin/post?path=${encodeURIComponent(post.path)}`;
+      const readRes = await fetch(endpoint);
+      if (!readRes.ok) throw new Error("Lugemine ebaõnnestus");
+      const { content } = await readRes.json() as { content: string };
+      // Update date field in frontmatter
+      const updated = content.replace(/^date:\s*.+$/m, `date: "${newDate}"`);
+      const writeRes = await fetch(endpoint, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: updated }),
+      });
+      if (!writeRes.ok) throw new Error("Salvestamine ebaõnnestus");
+      // Update local state so card reflects new date immediately
+      setPosts(prev => prev.map(p => p.path === post.path ? { ...p, date: newDate } : p));
+    } catch (err) {
+      alert("Kuupäeva muutmine ebaõnnestus: " + (err as Error).message);
+    } finally {
+      setQuickDateSaving(false);
+      setQuickEditDatePath(null);
+    }
+  }
 
   const loadPosts = useCallback(() => {
     setLoading(true); setFailed(false);
@@ -1934,7 +1966,30 @@ function PublishedTab() {
                     {post.excerpt}
                   </p>
                 </div>
-                <span style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5", padding: "2px 8px", borderRadius: 6, flexShrink: 0 }}>{post.date}</span>
+                <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
+                  {quickEditDatePath === post.path ? (
+                    <input
+                      type="date"
+                      value={quickDateValue}
+                      autoFocus
+                      onChange={e => setQuickDateValue(e.target.value)}
+                      onBlur={() => saveQuickDate(post, quickDateValue)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") saveQuickDate(post, quickDateValue);
+                        if (e.key === "Escape") setQuickEditDatePath(null);
+                      }}
+                      style={{ fontSize: 11, border: "1.5px solid #87be23", borderRadius: 6, padding: "2px 6px", outline: "none" }}
+                    />
+                  ) : (
+                    <span
+                      title="Klõpsa kuupäeva muutmiseks"
+                      onClick={() => { setQuickEditDatePath(post.path); setQuickDateValue(post.date ?? ""); }}
+                      style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5", padding: "2px 8px", borderRadius: 6, cursor: "pointer" }}
+                    >
+                      {post.date}
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: 12, color: "#87be23", fontWeight: 700, flexShrink: 0 }}>Redigeeri →</span>
               </div>
             );
@@ -1983,7 +2038,34 @@ function PublishedTab() {
                     {post.excerpt}
                   </p>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 11, color: "#b0b0aa" }}>{post.date}</span>
+                    {/* Quick date edit — click date to change */}
+                    <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      {quickEditDatePath === post.path ? (
+                        <>
+                          <input
+                            type="date"
+                            value={quickDateValue}
+                            autoFocus
+                            onChange={e => setQuickDateValue(e.target.value)}
+                            onBlur={() => saveQuickDate(post, quickDateValue)}
+                            onKeyDown={e => {
+                              if (e.key === "Enter") saveQuickDate(post, quickDateValue);
+                              if (e.key === "Escape") setQuickEditDatePath(null);
+                            }}
+                            style={{ fontSize: 11, border: "1.5px solid #87be23", borderRadius: 6, padding: "2px 6px", outline: "none", color: "#1a1a1a" }}
+                          />
+                          {quickDateSaving && <span style={{ fontSize: 10, color: "#9a9a9a" }}>💾</span>}
+                        </>
+                      ) : (
+                        <span
+                          title="Klõpsa kuupäeva muutmiseks"
+                          onClick={() => { setQuickEditDatePath(post.path); setQuickDateValue(post.date ?? ""); }}
+                          style={{ fontSize: 11, color: "#b0b0aa", cursor: "pointer", textDecoration: "underline dotted", textUnderlineOffset: 2 }}
+                        >
+                          {post.date}
+                        </span>
+                      )}
+                    </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <a href={liveUrl} target="_blank" rel="noopener noreferrer"
                         onClick={e => e.stopPropagation()}
