@@ -21,6 +21,12 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// ISR: pre-build all existing posts, but also render new ones on-demand.
+// A freshly published post is served within seconds of the first visit —
+// no need to wait for a full Vercel rebuild.
+export const dynamicParams = true;
+export const revalidate = 120; // rebuild cached pages every 2 min in background
+
 export async function generateStaticParams() {
   const posts = getAllPosts();
   return posts.map((p) => ({ slug: p.slug }));
