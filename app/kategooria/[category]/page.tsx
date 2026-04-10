@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const posts = getPostsByCategory(category);
   if (posts.length === 0) return {};
   return {
-    title: `${category.replace(/-/g, " ")} — KSA Blogi`,
+    title: `${category.replace(/-/g, " ")} — KSA Blog`,
     description: `${posts.length} artiklit kategoorias ${category.replace(/-/g, " ")}. KSA Silmakeskuse ekspertartiklid.`,
     alternates: { canonical: `https://blog.ksa.ee/kategooria/${category}` },
   };
@@ -40,7 +40,7 @@ export default async function CategoryPage({ params }: PageProps) {
         <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-12">
           <div className="max-w-[1200px] mx-auto px-6">
             <nav className="text-xs text-[#9a9a9a] mb-3">
-              <Link href="/" className="hover:text-[#87be23] transition-colors">Blogi</Link>
+              <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
               <span className="mx-2">›</span>
               <span>{displayName}</span>
             </nav>

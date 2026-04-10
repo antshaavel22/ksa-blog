@@ -112,7 +112,7 @@ export default async function PostPage({ params }: PageProps) {
         {
           "@type": "ListItem",
           position: 1,
-          name: "KSA Blogi",
+          name: "KSA Blog",
           item: "https://blog.ksa.ee",
         },
         ...(post.categories[0]
@@ -170,12 +170,12 @@ export default async function PostPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <BlogNav />
+      <BlogNav lang={post.lang} />
       <main className="flex-1">
         <article className="max-w-[680px] mx-auto px-6 py-10">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-xs text-[#9a9a9a] mb-8">
-            <Link href="/" className="hover:text-[#87be23] transition-colors">Blogi</Link>
+            <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
             {post.categories[0] && (
               <>
                 <span>›</span>

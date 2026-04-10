@@ -1,6 +1,20 @@
 import Link from "next/link";
 
-export default function BlogNav() {
+const BLOG_HOME = "https://blog.ksa.ee";
+
+const CTA: Record<string, { label: string; href: string }> = {
+  et: { label: "Broneeri aeg", href: "https://ksa.ee/broneeri" },
+  en: { label: "Book now",     href: "https://ksa.ee/en.html" },
+  ru: { label: "Записаться",   href: "https://ksa.ee/ru.html" },
+};
+
+interface BlogNavProps {
+  lang?: string;
+}
+
+export default function BlogNav({ lang = "et" }: BlogNavProps) {
+  const cta = CTA[lang] ?? CTA.et;
+
   return (
     <header className="border-b border-[#E6E4DF] bg-[#FEFEFE]/95 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-[1140px] mx-auto px-6 h-[60px] flex items-center justify-between gap-6">
@@ -16,18 +30,18 @@ export default function BlogNav() {
           ksa.ee
         </Link>
 
-        {/* Wordmark */}
-        <Link href="/" className="flex items-center">
+        {/* Wordmark — always links to blog homepage */}
+        <Link href={BLOG_HOME} className="flex items-center">
           <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#000000]">KSA</span>
-          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#87BE23]">&nbsp;Blogi</span>
+          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#87BE23]">&nbsp;Blog</span>
         </Link>
 
-        {/* Primary CTA */}
+        {/* Primary CTA — language-aware */}
         <Link
-          href="https://ksa.ee/broneeri"
+          href={cta.href}
           className="text-[13px] font-semibold px-5 py-[9px] rounded-[32px] bg-[#87BE23] text-white hover:bg-[#74A31E] transition-all duration-150 shadow-[0_4px_16px_rgba(135,190,35,0.22)] hover:shadow-[0_6px_20px_rgba(135,190,35,0.32)] hover:-translate-y-px active:scale-[0.97] whitespace-nowrap"
         >
-          Broneeri aeg
+          {cta.label}
         </Link>
 
       </div>

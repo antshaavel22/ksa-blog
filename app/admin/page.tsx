@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
+import { getCategoryLabel, toSlug } from "@/lib/categories";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -208,8 +209,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setFeaturedImage(getFmField(parsed.frontmatter, "featuredImage"));
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
-          const rawCat = getFmField(parsed.frontmatter, "categories")?.replace(/[\[\]"]/g, "").split(",")[0]?.trim() ?? "";
-          setCategory(rawCat);
+          const rawCat = getFmField(parsed.frontmatter, "categories")
+            ?.replace(/[\[\]"']/g, "")   // strip YAML brackets/quotes
+            .split(",")[0]?.trim()        // first category only
+            .replace(/^-\s*/, "")        // strip YAML list dash (multiline format)
+            .trim() ?? "";
+          setCategory(toSlug(rawCat));   // normalise to slug
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -602,7 +607,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           title={title}
           body={body}
           featuredImage={uploadPreviewUrl || featuredImage}
-          category={category}
+          category={category ? getCategoryLabel(category, currentLang as "et"|"ru"|"en") : ""}
           date={postDate}
           author={getFmField(frontmatter, "author")}
           lang={draft.lang}
@@ -1448,7 +1453,7 @@ function PostPreview({
         height: 60, maxWidth: 1140, margin: "0 auto",
       }}>
         <span style={{ fontSize: 14, color: "#5a6b6c", fontWeight: 300 }}>← ksa.ee</span>
-        <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>KSA <span style={{ color: "#87be23" }}>Blogi</span></span>
+        <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.02em" }}>KSA <span style={{ color: "#87be23" }}>Blog</span></span>
         <span style={{
           padding: "8px 20px", borderRadius: 99, background: "#87be23",
           color: "white", fontSize: 13, fontWeight: 700,
@@ -1459,7 +1464,7 @@ function PostPreview({
       <article style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px 120px" }}>
         {/* Breadcrumb */}
         <nav style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#9a9a9a", marginBottom: 32 }}>
-          <span>Blogi</span>
+          <span>Blog</span>
           {category && <><span>›</span><span style={{ color: "#87be23" }}>{category}</span></>}
         </nav>
 
@@ -2509,7 +2514,7 @@ export default function AdminPage() {
 
         {/* Right */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <a href="/" style={{ fontSize: 13, color: "#9a9a9a", textDecoration: "none" }}>← Blogi</a>
+          <a href="https://blog.ksa.ee" style={{ fontSize: 13, color: "#9a9a9a", textDecoration: "none" }}>← Blog</a>
           <button onClick={logout} style={{
             padding: "6px 14px", border: "1px solid #e6e6e6", borderRadius: 8,
             background: "white", color: "#9a9a9a", fontSize: 13, cursor: "pointer",

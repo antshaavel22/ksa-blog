@@ -9,18 +9,18 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "KSA Blogi — Silmade tervis ja laserkorrektsiooni artiklid",
+  title: "KSA Blog — Silmade tervis ja laserkorrektsiooni artiklid",
   description:
     "Selged vastused silmade kohta — üle 450 artikli silmade tervise, laserkorrektsiooni ja nägemise parandamise kohta KSA Silmakeskuse ekspertidelt.",
   alternates: {
     canonical: "https://blog.ksa.ee",
   },
   openGraph: {
-    title: "KSA Blogi — Silmade tervis ja laserkorrektsiooni artiklid",
+    title: "KSA Blog — Silmade tervis ja laserkorrektsiooni artiklid",
     description: "Selged vastused silmade kohta — üle 450 artikli silmade tervise, laserkorrektsiooni ja nägemise parandamise kohta KSA Silmakeskuse ekspertidelt.",
     url: "https://blog.ksa.ee",
     siteName: "KSA Silmakeskus",
-    images: [{ url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg", width: 1200, height: 630, alt: "KSA Blogi" }],
+    images: [{ url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg", width: 1200, height: 630, alt: "KSA Blog" }],
     locale: "et_EE",
     type: "website",
   },

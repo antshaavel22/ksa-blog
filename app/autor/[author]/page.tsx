@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const author = getAuthorBySlug(slug);
   if (!author) return {};
   return {
-    title: `${author.displayName} — KSA Blogi`,
+    title: `${author.displayName} — KSA Blog`,
     description: author.bio.et,
   };
 }
@@ -69,7 +69,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
           <div className="max-w-[1200px] mx-auto px-6">
             {/* Breadcrumb */}
             <nav className="text-xs text-[#9a9a9a] mb-6">
-              <Link href="/" className="hover:text-[#87be23] transition-colors">Blogi</Link>
+              <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
               <span className="mx-2">›</span>
               <span>Autor</span>
             </nav>
