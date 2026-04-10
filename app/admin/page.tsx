@@ -1313,6 +1313,12 @@ function DragCrop({
 function mdToHtml(md: string): string {
   if (!md) return "";
   let html = md
+    // YouTubeEmbed MDX component → responsive iframe
+    .replace(/<YouTubeEmbed\s+url=["']([^"']+)["']\s*\/?>/gi, (_, url) => {
+      const videoId = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)?.[1];
+      if (!videoId) return "";
+      return `<div style="position:relative;padding-bottom:56.25%;height:0;margin:2rem 0;border-radius:16px;overflow:hidden"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+    })
     // Headings
     .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
@@ -1342,7 +1348,7 @@ function mdToHtml(md: string): string {
     .map(block => {
       const trimmed = block.trim();
       if (!trimmed) return "";
-      if (/^<(h[1-6]|ul|ol|blockquote|hr|img|figure)/.test(trimmed)) return trimmed;
+      if (/^<(h[1-6]|ul|ol|blockquote|hr|img|figure|div|iframe)/.test(trimmed)) return trimmed;
       return `<p style="font-size:1.0625rem;font-weight:300;line-height:1.8;margin-bottom:1.375rem;color:#111">${trimmed.replace(/\n/g, " ")}</p>`;
     })
     .join("\n");
@@ -1825,10 +1831,18 @@ function WriteTab() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: title.trim(), body: body.trim(), lang }),
       });
-      const d = await res.json() as { ok?: boolean; filename?: string; title?: string; lang?: string; error?: string };
-      if (d.error) { setSaveError(d.error); return; }
-      setSavedFile({ filename: d.filename!, title: d.title!, lang: d.lang! });
-    } catch (e) { setSaveError((e as Error).message); }
+      let d: { ok?: boolean; filename?: string; title?: string; lang?: string; error?: string };
+      try { d = await res.json(); } catch { throw new Error(`Server viga (${res.status})`); }
+      if (!res.ok || d.error) { setSaveError(d.error ?? `HTTP ${res.status}`); return; }
+      setSavedFile({
+        filename: d.filename ?? `${title.trim().slice(0, 40)}.mdx`,
+        title: d.title ?? title.trim(),
+        lang: d.lang ?? lang,
+      });
+    } catch (err) {
+      console.error("saveDirect error:", err);
+      setSaveError((err as Error).message ?? "Tundmatu viga");
+    }
     finally { setSaving(false); }
   }
 
@@ -1927,7 +1941,8 @@ function WriteTab() {
   // MODE: Direct — saved successfully
   // ═══════════════════════════════════════════════════════════════════════════
   if (mode === "direct" && savedFile) {
-    const c = LANG_COLORS[savedFile.lang] ?? LANG_COLORS.et;
+    const langColor = LANG_COLORS[savedFile.lang ?? "et"] ?? LANG_COLORS.et;
+    const langLabel = (savedFile.lang ?? "et").toUpperCase();
     return (
       <div style={{ maxWidth: 520, margin: "0 auto", padding: "48px 20px", textAlign: "center" }}>
         <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
@@ -1939,13 +1954,22 @@ function WriteTab() {
         </p>
 
         <div style={{
-          background: "white", border: `2px solid ${c.border}`, borderRadius: 16,
+          background: "white", border: `2px solid ${langColor.border}`, borderRadius: 16,
           padding: "18px 22px", display: "flex", alignItems: "center", gap: 14, marginBottom: 28, textAlign: "left",
         }}>
-          <LangBadge lang={savedFile.lang} />
-          <div style={{ flex: 1 }}>
-            <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 700, color: "#1a1a1a" }}>{savedFile.title}</p>
-            <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a", fontWeight: 300 }}>{savedFile.filename}</p>
+          <span style={{
+            padding: "3px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700,
+            background: langColor.bg, color: langColor.text, border: `1px solid ${langColor.border}`,
+            flexShrink: 0,
+          }}>{langLabel}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: "0 0 2px", fontSize: 15, fontWeight: 700, color: "#1a1a1a",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {savedFile.title ?? "(pealkiri)"}
+            </p>
+            <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a", fontWeight: 300 }}>
+              {savedFile.filename ?? "mustand"}
+            </p>
           </div>
         </div>
 
