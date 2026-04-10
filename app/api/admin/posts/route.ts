@@ -8,6 +8,8 @@ interface PostMeta {
   lang: string;
   date: string;
   slug: string;
+  featuredImage: string;
+  category: string;
 }
 
 function parseFrontmatterField(fm: string, key: string): string {
@@ -23,6 +25,12 @@ function parseFrontmatterField(fm: string, key: string): string {
     if (bm) return bm[1].replace(/^[ \t]+/mg, "").replace(/\n/g, " ").trim();
   }
   return val.replace(/^["']|["']$/g, "");
+}
+
+function normalizeCategory(raw: string): string {
+  if (!raw) return "";
+  // Strip leading dash/bracket/quote/whitespace and trailing bracket/quote/whitespace
+  return raw.replace(/^[\-\[\]"'\s]+/, "").replace(/[\[\]"'\s]+$/, "").trim();
 }
 
 async function listPosts(): Promise<PostMeta[]> {
@@ -46,6 +54,18 @@ async function listPosts(): Promise<PostMeta[]> {
       if (!fmMatch) continue;
       const fm = fmMatch[1];
       const slugFromFm = parseFrontmatterField(fm, "slug");
+
+      // Parse categories — may be inline or YAML block list
+      let categoryRaw = "";
+      // Try block list first: "categories:\n  - Flow Protseduur"
+      const blockCatRe = /^categories:\s*\n(?:\s+- ?(.*)\n?)/m;
+      const blockCatMatch = fm.match(blockCatRe);
+      if (blockCatMatch) {
+        categoryRaw = blockCatMatch[1].trim();
+      } else {
+        categoryRaw = parseFrontmatterField(fm, "categories");
+      }
+
       posts.push({
         filename,
         path: `content/posts/${filename}`,
@@ -54,6 +74,8 @@ async function listPosts(): Promise<PostMeta[]> {
         lang: parseFrontmatterField(fm, "lang") || "et",
         date: parseFrontmatterField(fm, "date") || "",
         slug: slugFromFm || filename.replace(/\.mdx?$/, ""),
+        featuredImage: parseFrontmatterField(fm, "featuredImage"),
+        category: normalizeCategory(categoryRaw),
       });
     } catch {
       // Skip unreadable files

@@ -14,6 +14,7 @@ interface DraftMeta {
   date: string;
   slug?: string;
   featuredImage?: string;
+  category?: string;
   status?: string; // "draft" | "medical_review"
   assignedTo?: string; // "silvia" | "jana" | "ants"
   deadline?: string; // "YYYY-MM-DD"
@@ -1820,6 +1821,7 @@ function PublishedTab() {
   const [quickEditDatePath, setQuickEditDatePath] = useState<string | null>(null);
   const [quickDateValue, setQuickDateValue] = useState("");
   const [quickDateSaving, setQuickDateSaving] = useState(false);
+  const [hoveredPath, setHoveredPath] = useState<string | null>(null);
 
   async function saveQuickDate(post: DraftMeta, newDate: string) {
     if (!newDate || newDate === post.date) { setQuickEditDatePath(null); return; }
@@ -1883,44 +1885,59 @@ function PublishedTab() {
   }
 
   return (
-    <div style={{ maxWidth: viewMode === "preview" ? "100%" : viewMode === "grid" ? 1100 : 720, margin: "0 auto", padding: viewMode === "preview" ? "24px 20px 0" : "24px 20px 60px" }}>
-      {/* Filter + view toggle bar */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
-        {(["all", "et", "ru", "en"] as const).map(l => (
-          <button key={l} onClick={() => setLangFilter(l)} style={{
-            padding: "8px 18px", borderRadius: 24, border: "2px solid",
-            borderColor: langFilter === l ? "#87be23" : "#e6e6e6",
-            background: langFilter === l ? "#87be23" : "white",
-            color: langFilter === l ? "white" : "#5a6b6c",
-            fontSize: 14, fontWeight: 700, cursor: "pointer",
-          }}>
-            {l === "all" ? `Kõik (${posts.length})` : `${l.toUpperCase()} (${posts.filter(p => p.lang === l).length})`}
-          </button>
-        ))}
-        <input
-          value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="🔍 Otsi pealkirja..."
-          style={{ flex: 1, minWidth: 180, padding: "8px 14px", border: "2px solid #e6e6e6", borderRadius: 24, fontSize: 14, outline: "none", background: "white" }}
-        />
+    <div style={{ maxWidth: viewMode === "preview" ? "100%" : viewMode === "grid" ? 1140 : 760, margin: "0 auto", padding: viewMode === "preview" ? "24px 20px 0" : "24px 20px 60px" }}>
+      {/* ── Top bar: lang filters | count | view toggle ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        {/* Lang filter pills */}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flex: 1 }}>
+          {(["all", "et", "ru", "en"] as const).map(l => (
+            <button key={l} onClick={() => setLangFilter(l)} style={{
+              padding: "6px 16px", borderRadius: 20, border: "1.5px solid",
+              borderColor: langFilter === l ? "#87be23" : "#e6e6e6",
+              background: langFilter === l ? "#87be23" : "white",
+              color: langFilter === l ? "white" : "#5a6b6c",
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+            }}>
+              {l === "all" ? "Kõik" : l.toUpperCase()}
+            </button>
+          ))}
+          <span style={{ fontSize: 13, color: "#9a9a9a", alignSelf: "center", marginLeft: 4 }}>
+            {filtered.length} artiklit{langFilter !== "all" ? ` (${posts.length} kokku)` : ""}
+          </span>
+          {duplicatePaths.size > 0 && (
+            <span style={{ fontSize: 12, background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "4px 10px", color: "#856404", fontWeight: 600 }}>
+              ⚠ {duplicatePaths.size} duplikaati
+            </span>
+          )}
+        </div>
         {/* View mode toggle */}
-        <div style={{ display: "flex", border: "2px solid #e6e6e6", borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
+        <div style={{ display: "flex", border: "1.5px solid #e6e6e6", borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
           {([
-            { v: "list", label: "📋 Nimekiri" },
-            { v: "grid", label: "🏠 Koduleht" },
-            { v: "preview", label: "🌐 Live" },
+            { v: "list", label: "Nimekiri" },
+            { v: "grid", label: "Kaardid" },
+            { v: "preview", label: "Live" },
           ] as const).map(({ v, label }) => (
             <button key={v} onClick={() => setViewMode(v)} style={{
-              padding: "7px 14px", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              padding: "6px 14px", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer",
               background: viewMode === v ? "#87be23" : "white",
               color: viewMode === v ? "white" : "#9a9a9a",
             }}>{label}</button>
           ))}
         </div>
-        {duplicatePaths.size > 0 && (
-          <span style={{ fontSize: 12, background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 8, padding: "5px 10px", color: "#856404", fontWeight: 600 }}>
-            ⚠ {duplicatePaths.size} duplikaati — filtreeri otsinguga
-          </span>
-        )}
+      </div>
+      {/* Search row */}
+      <div style={{ marginBottom: 20 }}>
+        <input
+          value={search} onChange={e => setSearch(e.target.value)}
+          placeholder="Otsi pealkirja, väljavõtet või slug'i…"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            padding: "9px 16px", border: "1.5px solid #e6e6e6", borderRadius: 10,
+            fontSize: 13, outline: "none", background: "white", color: "#1a1a1a",
+          }}
+          onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+          onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+        />
       </div>
 
       {loading && <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>Laen postitusi…</div>}
@@ -1939,19 +1956,22 @@ function PublishedTab() {
 
       {/* LIST VIEW */}
       {viewMode === "list" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {filtered.map(post => {
             const isDup = duplicatePaths.has(post.path);
+            const isHovered = hoveredPath === post.path;
             return (
               <div key={post.path} style={{
                 background: "white",
-                border: `2px solid ${isDup ? "#ffc107" : "#f0f0ec"}`,
-                borderRadius: 16, padding: "14px 18px",
+                border: `1.5px solid ${isDup ? "#ffc107" : isHovered ? "#87be23" : "#f0f0ec"}`,
+                borderRadius: 12, padding: "12px 18px",
                 display: "flex", alignItems: "center", gap: 14,
-                cursor: "pointer", transition: "border-color 0.15s, box-shadow 0.15s",
+                cursor: "pointer",
+                boxShadow: isHovered ? "0 2px 16px rgba(135,190,35,0.10)" : "none",
+                transition: "border-color 0.15s, box-shadow 0.15s",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#f59e0b" : "#87be23"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 16px rgba(135,190,35,0.12)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#ffc107" : "#f0f0ec"; (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; }}
+                onMouseEnter={() => setHoveredPath(post.path)}
+                onMouseLeave={() => setHoveredPath(null)}
                 onClick={() => setSelected(post)}
               >
                 <LangBadge lang={post.lang} />
@@ -1962,10 +1982,14 @@ function PublishedTab() {
                     </p>
                     {isDup && <span style={{ fontSize: 10, background: "#ffc107", color: "#000", borderRadius: 4, padding: "1px 5px", fontWeight: 800, flexShrink: 0 }}>DUPLIKAAT</span>}
                   </div>
-                  <p style={{ margin: 0, fontSize: 12, color: "#9a9a9a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {post.excerpt}
-                  </p>
                 </div>
+                {post.category && (
+                  <span style={{
+                    flexShrink: 0, fontSize: 11, fontWeight: 600, color: "#3d6b00",
+                    background: "#edf7d6", border: "1px solid #c5e58a",
+                    borderRadius: 20, padding: "2px 10px",
+                  }}>{post.category}</span>
+                )}
                 <div onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
                   {quickEditDatePath === post.path ? (
                     <input
@@ -1984,78 +2008,107 @@ function PublishedTab() {
                     <span
                       title="Klõpsa kuupäeva muutmiseks"
                       onClick={() => { setQuickEditDatePath(post.path); setQuickDateValue(post.date ?? ""); }}
-                      style={{ fontSize: 11, color: "#9a9a9a", background: "#f5f5f5", padding: "2px 8px", borderRadius: 6, cursor: "pointer" }}
+                      style={{ fontSize: 11, color: "#b0b0aa", cursor: "pointer", textDecoration: "underline dotted", textUnderlineOffset: 2 }}
                     >
                       {post.date}
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 12, color: "#87be23", fontWeight: 700, flexShrink: 0 }}>Redigeeri →</span>
+                <span style={{ fontSize: 12, color: isHovered ? "#87be23" : "#9a9a9a", fontWeight: 700, flexShrink: 0, transition: "color 0.15s" }}>Redigeeri →</span>
               </div>
             );
           })}
         </div>
       )}
 
-      {/* GRID / HOMEPAGE VIEW */}
+      {/* GRID / EDITORIAL CARD VIEW */}
       {viewMode === "grid" && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 24 }}>
           {filtered.map(post => {
             const isDup = duplicatePaths.has(post.path);
+            const isHovered = hoveredPath === post.path;
             const liveUrl = `https://blog.ksa.ee/${post.slug ?? post.path.replace(/^content\/posts\//, "").replace(/\.mdx?$/, "")}`;
+            const excerptOrCat = post.excerpt || post.category || "";
             return (
-              <div key={post.path} style={{
-                background: "white", border: `2px solid ${isDup ? "#ffc107" : "#f0f0ec"}`,
-                borderRadius: 18, overflow: "hidden", cursor: "pointer",
-                transition: "box-shadow 0.15s, border-color 0.15s",
+              <article key={post.path} style={{
+                background: "white",
+                border: `1.5px solid ${isDup ? "#ffc107" : isHovered ? "#87be23" : "#ebebeb"}`,
+                borderRadius: 16, overflow: "hidden", cursor: "pointer",
+                boxShadow: isHovered ? "0 8px 32px rgba(0,0,0,0.12)" : "0 1px 4px rgba(0,0,0,0.04)",
                 display: "flex", flexDirection: "column",
+                transform: isHovered ? "translateY(-2px)" : "none",
+                transition: "box-shadow 0.18s, border-color 0.18s, transform 0.18s",
               }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(0,0,0,0.10)"; (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#f59e0b" : "#87be23"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "none"; (e.currentTarget as HTMLDivElement).style.borderColor = isDup ? "#ffc107" : "#f0f0ec"; }}
+                onMouseEnter={() => setHoveredPath(post.path)}
+                onMouseLeave={() => setHoveredPath(null)}
                 onClick={() => setSelected(post)}
               >
-                {/* Thumbnail */}
-                <div style={{ position: "relative", aspectRatio: "3/2", background: "#f5f2ec", overflow: "hidden" }}>
+                {/* Thumbnail with hover overlay */}
+                <div style={{ position: "relative", aspectRatio: "3/2", background: "#f5f2ec", overflow: "hidden", flexShrink: 0 }}>
                   {post.featuredImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={post.featuredImage} alt={post.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   ) : (
-                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, color: "#c8c5be" }}>👁</div>
+                    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 36, opacity: 0.35 }}>👁</span>
+                    </div>
                   )}
-                  <div style={{ position: "absolute", top: 10, left: 10, display: "flex", gap: 6 }}>
-                    <LangBadge lang={post.lang} />
-                    {isDup && <span style={{ fontSize: 10, background: "#ffc107", color: "#000", borderRadius: 6, padding: "2px 7px", fontWeight: 800 }}>DUPLIKAAT</span>}
+                  {/* Hover edit overlay */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    background: "rgba(0,0,0,0.42)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    opacity: isHovered ? 1 : 0,
+                    transition: "opacity 0.18s",
+                    pointerEvents: "none",
+                  }}>
+                    <span style={{ color: "white", fontSize: 14, fontWeight: 700, letterSpacing: "0.02em" }}>✎ Redigeeri</span>
                   </div>
+                  {/* Lang badge top-left */}
+                  <div style={{ position: "absolute", top: 10, left: 10 }}>
+                    <LangBadge lang={post.lang} />
+                  </div>
+                  {/* Duplicate badge top-right */}
+                  {isDup && (
+                    <span style={{
+                      position: "absolute", top: 10, right: 10,
+                      fontSize: 10, background: "#ffc107", color: "#000",
+                      borderRadius: 6, padding: "2px 7px", fontWeight: 800,
+                    }}>DUPLIKAAT</span>
+                  )}
                 </div>
-                {/* Content */}
-                <div style={{ padding: "14px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
-                  <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.35,
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+
+                {/* Card body */}
+                <div style={{ padding: "14px 16px 12px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  <p style={{
+                    margin: "0 0 6px", fontSize: 15, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.35,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  }}>
                     {post.title || "(pealkiri puudub)"}
                   </p>
-                  <p style={{ margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                    {post.excerpt}
+                  <p style={{
+                    margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
+                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                  }}>
+                    {excerptOrCat}
                   </p>
+
+                  {/* Footer */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    {/* Quick date edit — click date to change */}
-                    <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <div onClick={e => e.stopPropagation()}>
                       {quickEditDatePath === post.path ? (
-                        <>
-                          <input
-                            type="date"
-                            value={quickDateValue}
-                            autoFocus
-                            onChange={e => setQuickDateValue(e.target.value)}
-                            onBlur={() => saveQuickDate(post, quickDateValue)}
-                            onKeyDown={e => {
-                              if (e.key === "Enter") saveQuickDate(post, quickDateValue);
-                              if (e.key === "Escape") setQuickEditDatePath(null);
-                            }}
-                            style={{ fontSize: 11, border: "1.5px solid #87be23", borderRadius: 6, padding: "2px 6px", outline: "none", color: "#1a1a1a" }}
-                          />
-                          {quickDateSaving && <span style={{ fontSize: 10, color: "#9a9a9a" }}>💾</span>}
-                        </>
+                        <input
+                          type="date"
+                          value={quickDateValue}
+                          autoFocus
+                          onChange={e => setQuickDateValue(e.target.value)}
+                          onBlur={() => saveQuickDate(post, quickDateValue)}
+                          onKeyDown={e => {
+                            if (e.key === "Enter") saveQuickDate(post, quickDateValue);
+                            if (e.key === "Escape") setQuickEditDatePath(null);
+                          }}
+                          style={{ fontSize: 11, border: "1.5px solid #87be23", borderRadius: 6, padding: "2px 6px", outline: "none", color: "#1a1a1a" }}
+                        />
                       ) : (
                         <span
                           title="Klõpsa kuupäeva muutmiseks"
@@ -2066,17 +2119,14 @@ function PublishedTab() {
                         </span>
                       )}
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <a href={liveUrl} target="_blank" rel="noopener noreferrer"
-                        onClick={e => e.stopPropagation()}
-                        style={{ fontSize: 11, color: "#5a6b6c", textDecoration: "none", padding: "3px 8px", border: "1px solid #e6e6e6", borderRadius: 6 }}>
-                        Live ↗
-                      </a>
-                      <span style={{ fontSize: 11, color: "#87be23", fontWeight: 700, padding: "3px 8px", background: "#f0fde4", borderRadius: 6 }}>Redigeeri</span>
-                    </div>
+                    <a href={liveUrl} target="_blank" rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      style={{ fontSize: 11, color: "#5a6b6c", textDecoration: "none", padding: "3px 9px", border: "1px solid #e6e6e6", borderRadius: 6, fontWeight: 600 }}>
+                      Live ↗
+                    </a>
                   </div>
                 </div>
-              </div>
+              </article>
             );
           })}
         </div>
@@ -2804,17 +2854,18 @@ export default function AdminPage() {
         {/* Tabs */}
         <div style={{ display: "flex", flex: 1, paddingLeft: 8 }}>
           {([
-            { id: "drafts", label: "📋 Mustandid" },
-            { id: "published", label: "✏️ Avaldatud" },
-            { id: "write", label: "✍️ Kirjuta uus" },
-            { id: "prompt", label: "📝 Sisureeglid" },
-            { id: "help", label: "❓ Juhend" },
+            { id: "drafts", label: "Mustandid" },
+            { id: "published", label: "Avaldatud" },
+            { id: "write", label: "Kirjuta uus" },
+            { id: "prompt", label: "Sisureeglid" },
+            { id: "help", label: "Juhend" },
           ] as const).map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               padding: "0 20px", border: "none",
               borderBottom: tab === t.id ? "3px solid #87be23" : "3px solid transparent",
-              background: "none", color: tab === t.id ? "#1a1a1a" : "#9a9a9a",
-              fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
+              background: "none",
+              color: tab === t.id ? "#87be23" : "#9a9a9a",
+              fontSize: 14, fontWeight: 700,
               cursor: "pointer", minHeight: 56, transition: "color 0.15s",
             }}>{t.label}</button>
           ))}
