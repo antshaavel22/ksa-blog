@@ -77,10 +77,20 @@ export async function GET(req: NextRequest) {
   if (!filePath.startsWith("content/posts/"))
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   try {
-    const content = process.env.NODE_ENV === "production"
-      ? await readPostProd(filePath)
-      : await readPost(filePath);
-    return NextResponse.json({ content });
+    if (process.env.NODE_ENV === "production") {
+      // Try filesystem first (fast, always works for files in the deployment bundle).
+      // Fall back to GitHub API for files created after the last deploy (e.g. newly published posts).
+      try {
+        const content = await readPost(filePath);
+        return NextResponse.json({ content });
+      } catch {
+        const content = await readPostProd(filePath);
+        return NextResponse.json({ content });
+      }
+    } else {
+      const content = await readPost(filePath);
+      return NextResponse.json({ content });
+    }
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }

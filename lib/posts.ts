@@ -52,7 +52,15 @@ export function getAllPosts(lang?: PostLang): PostMeta[] {
       const filePath = path.join(postsDirectory, filename);
       const raw = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(raw);
-      return data as PostMeta;
+      const post = data as PostMeta;
+      // Normalise categories: gray-matter may return a string (if frontmatter
+      // uses `categories: "foo"`) or an array — always coerce to string[].
+      if (!Array.isArray(post.categories)) {
+        post.categories = post.categories
+          ? String(post.categories).split(",").map((s: string) => s.trim()).filter(Boolean)
+          : [];
+      }
+      return post;
     })
     .filter((p) => (lang ? p.lang === lang : true))
     .filter((p) => !p.date || p.date <= new Date().toISOString().split("T")[0])

@@ -80,6 +80,21 @@ function setFmField(fm: string, key: string, value: string): string {
   return re.test(fm) ? fm.replace(re, quoted) : fm + `\n${quoted}`;
 }
 
+// Write a YAML list field (e.g. categories) — replaces any existing key:…value with
+// a proper YAML block list so gray-matter always parses it as string[].
+function setCategoriesField(fm: string, slug: string): string {
+  if (!slug) return fm;
+  // Convert slug back to display label (capitalise first letter, replace hyphens)
+  const label = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const block = `categories:\n  - ${label}`;
+  // Replace inline  categories: "…"  or  categories: […]  or existing block
+  const inlineRe = /^categories:.*$/m;
+  const blockRe = /^categories:\s*\n(?:\s+-.+\n?)*/m;
+  if (blockRe.test(fm)) return fm.replace(blockRe, block + "\n");
+  if (inlineRe.test(fm)) return fm.replace(inlineRe, block);
+  return fm + `\n${block}`;
+}
+
 function buildMdx(frontmatter: string, body: string): string {
   return `---\n${frontmatter}\n---\n${body}`;
 }
@@ -285,7 +300,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
     fm = setFmField(fm, "lang", currentLang);
-    if (category) fm = setFmField(fm, "categories", category);
+    if (category) fm = setCategoriesField(fm, category);
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }

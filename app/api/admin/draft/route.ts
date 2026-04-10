@@ -75,10 +75,21 @@ export async function GET(req: NextRequest) {
   if (!filePath) return NextResponse.json({ error: "path is required" }, { status: 400 });
   if (!filePath.startsWith("content/drafts/")) return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   try {
-    const content = process.env.NODE_ENV === "production"
-      ? await readDraftProd(filePath)
-      : await readDraft(filePath);
-    return NextResponse.json({ content });
+    if (process.env.NODE_ENV === "production") {
+      // Try filesystem first (fast, always available for files in the deployment bundle).
+      // Fall back to GitHub API for files created after the last deploy.
+      try {
+        const content = await readDraft(filePath);
+        return NextResponse.json({ content });
+      } catch {
+        // Not in bundle — read from GitHub (file was created after last deploy)
+        const content = await readDraftProd(filePath);
+        return NextResponse.json({ content });
+      }
+    } else {
+      const content = await readDraft(filePath);
+      return NextResponse.json({ content });
+    }
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
