@@ -160,6 +160,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [publishedSlug, setPublishedSlug] = useState("");
   const [unpublishing, setUnpublishing] = useState(false);
   const [unpublished, setUnpublished] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [updating, setUpdating] = useState(false);       // "Update live" for published posts
   const [updateCountdown, setUpdateCountdown] = useState(0); // >0 shows countdown bar
   const [error, setError] = useState("");
@@ -461,6 +462,21 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     if (d.ok) { setUnpublished(true); setTimeout(() => { onBack(); }, 1800); }
     else { setError(d.error ?? "Eemaldamine ebaõnnestus"); }
     setUnpublishing(false);
+  }
+
+  async function deleteDraft() {
+    if (!confirm(`Kustuta mustand "${title}" jäädavalt?\n\nSeda ei saa tagasi võtta!`)) return;
+    setDeleting(true); setError("");
+    try {
+      const res = await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
+        method: "DELETE",
+      });
+      const d = await res.json() as { ok?: boolean; error?: string };
+      if (d.ok) { onBack(); }
+      else { setError(d.error ?? "Kustutamine ebaõnnestus"); }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally { setDeleting(false); }
   }
 
   async function sendToMedicalReview() {
@@ -997,11 +1013,19 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           </button>
           {/* For drafts: plain Salvesta. For published posts: Salvesta is just a quiet save. */}
           {!isPublished && (
-            <button onClick={save} disabled={saving} style={{
-              padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
-              background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
-              color: "#5a6b6c",
-            }}>{saving ? "Salvestab…" : "Salvesta"}</button>
+            <>
+              <button onClick={save} disabled={saving} style={{
+                padding: "11px 22px", border: "2px solid #e6e6e6", borderRadius: 12,
+                background: "white", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer",
+                color: "#5a6b6c",
+              }}>{saving ? "Salvestab…" : "Salvesta"}</button>
+              <button onClick={deleteDraft} disabled={deleting} title="Kustuta mustand jäädavalt" style={{
+                padding: "11px 16px", border: "2px solid #fca5a5", borderRadius: 12,
+                background: "white", fontSize: 14, fontWeight: 700,
+                cursor: deleting ? "not-allowed" : "pointer",
+                color: deleting ? "#9a9a9a" : "#b91c1c",
+              }}>{deleting ? "…" : "🗑"}</button>
+            </>
           )}
           {isPublished ? (
             <>
