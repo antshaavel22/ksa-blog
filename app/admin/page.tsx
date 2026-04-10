@@ -141,6 +141,31 @@ async function sendEmail(to: string, subject: string, message: string) {
   });
 }
 
+// Compress image in the browser using Canvas before uploading
+// Shared by DraftEditor (cover photo) and FormattingToolbar (inline body images)
+async function compressImageClient(file: File, maxWidth = 1400, quality = 0.82): Promise<{ blob: Blob; width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const scale = img.width > maxWidth ? maxWidth / img.width : 1;
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(
+        (blob) => { if (blob) resolve({ blob, width: w, height: h }); else reject(new Error("Canvas compression failed")); },
+        "image/webp", quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image load failed")); };
+    img.src = url;
+  });
+}
+
 function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   draft: DraftMeta;
   onBack: () => void;
@@ -305,31 +330,6 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     } finally { setGeneratingImage(false); }
   }
 
-  // Compress image in the browser using Canvas before uploading
-  // This keeps the payload small (~150–300 KB) regardless of original file size
-  async function compressImageClient(file: File, maxWidth = 1400, quality = 0.82): Promise<{ blob: Blob; width: number; height: number }> {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        const scale = img.width > maxWidth ? maxWidth / img.width : 1;
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(img, 0, 0, w, h);
-        canvas.toBlob(
-          (blob) => { if (blob) resolve({ blob, width: w, height: h }); else reject(new Error("Canvas compression failed")); },
-          "image/webp", quality
-        );
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Image load failed")); };
-      img.src = url;
-    });
-  }
-
   async function uploadImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -395,6 +395,24 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       }
     } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
     finally { setUploadingImage(false); e.target.value = ""; }
+  }
+
+  // Upload an inline body image (called from FormattingToolbar image button)
+  // Returns the production URL to insert as markdown, or null on failure
+  async function uploadBodyImage(file: File): Promise<string | null> {
+    try {
+      const { blob } = await compressImageClient(file);
+      const formData = new FormData();
+      formData.append("image", blob, file.name.replace(/\.[^.]+$/, "") + ".webp");
+      formData.append("originalName", file.name);
+      const res = await fetch("/api/admin/upload-image", { method: "POST", body: formData });
+      const d = await res.json() as { ok?: boolean; url?: string; error?: string };
+      if (d.error || !d.url) { alert("Pildi üleslaadimine ebaõnnestus: " + (d.error ?? "unknown")); return null; }
+      return d.url;
+    } catch (err) {
+      alert("Pildi üleslaadimine ebaõnnestus: " + (err as Error).message);
+      return null;
+    }
   }
 
   async function save() {
@@ -672,6 +690,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
             <label style={{ fontSize: 12, fontWeight: 700, color: "#5a6b6c", letterSpacing: "0.05em", textTransform: "uppercase" }}>
               🖼 Kaanepilt
+              {isPublished && (
+                <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: "#87be23", textTransform: "none", letterSpacing: 0 }}>
+                  · Lae uus pilt üles → Salvesta → live ~2 min
+                </span>
+              )}
             </label>
             <div style={{ display: "flex", gap: 6 }}>
               {/* Upload from computer */}
@@ -886,7 +909,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       </div>
 
       {/* Formatting toolbar + Body textarea */}
-      <FormattingToolbar body={body} setBody={setBody} />
+      <FormattingToolbar body={body} setBody={setBody} onUploadBodyImage={uploadBodyImage} />
 
       {/* Review Panel — shown only for drafts */}
       {!isPublished && (
@@ -1075,8 +1098,16 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 // Wraps the body textarea with B / I / Link / H2 / H3 buttons.
 // Operates on the selected text range using document.execCommand-style logic.
 
-function FormattingToolbar({ body, setBody }: { body: string; setBody: (v: string) => void }) {
+function FormattingToolbar({
+  body, setBody, onUploadBodyImage,
+}: {
+  body: string;
+  setBody: (v: string) => void;
+  onUploadBodyImage?: (file: File) => Promise<string | null>;
+}) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingBodyImg, setUploadingBodyImg] = useState(false);
 
   function wrap(before: string, after: string) {
     const el = textareaRef.current;
@@ -1128,6 +1159,27 @@ function FormattingToolbar({ body, setBody }: { body: string; setBody: (v: strin
     requestAnimationFrame(() => { el.focus(); });
   }
 
+  async function handleImageFile(file: File) {
+    if (!onUploadBodyImage) return;
+    const el = textareaRef.current;
+    const cursorPos = el?.selectionStart ?? body.length;
+    setUploadingBodyImg(true);
+    try {
+      const url = await onUploadBodyImage(file);
+      if (!url) return;
+      const altText = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
+      const md = `\n![${altText}](${url})\n`;
+      const newBody = body.slice(0, cursorPos) + md + body.slice(cursorPos);
+      setBody(newBody);
+      requestAnimationFrame(() => {
+        if (el) { el.focus(); el.setSelectionRange(cursorPos + md.length, cursorPos + md.length); }
+      });
+    } finally {
+      setUploadingBodyImg(false);
+      if (imgInputRef.current) imgInputRef.current.value = "";
+    }
+  }
+
   const btnStyle: React.CSSProperties = {
     padding: "5px 10px", border: "1px solid #e6e6e6", borderRadius: 7,
     background: "white", color: "#5a6b6c", fontSize: 12, fontWeight: 700,
@@ -1154,6 +1206,40 @@ function FormattingToolbar({ body, setBody }: { body: string; setBody: (v: strin
           Link
         </button>
         <button type="button" title="Loetelu punkt" style={btnStyle} onClick={() => wrap("\n- ", "")}>• List</button>
+        {onUploadBodyImage && (
+          <>
+            <button
+              type="button"
+              title="Lisa pilt artiklisse"
+              style={{
+                ...btnStyle,
+                display: "flex", alignItems: "center", gap: 4,
+                opacity: uploadingBodyImg ? 0.5 : 1,
+                cursor: uploadingBodyImg ? "not-allowed" : "pointer",
+              }}
+              disabled={uploadingBodyImg}
+              onClick={() => imgInputRef.current?.click()}
+            >
+              {uploadingBodyImg ? (
+                <span style={{ fontSize: 11 }}>⏳</span>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+              )}
+              Pilt
+            </button>
+            <input
+              ref={imgInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f); }}
+            />
+          </>
+        )}
         <span style={{ marginLeft: "auto", fontSize: 10, color: "#c0c0b8", alignSelf: "center", paddingRight: 4 }}>Markdown</span>
       </div>
 
@@ -1711,7 +1797,7 @@ function PublishedTab() {
   const [langFilter, setLangFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<DraftMeta | null>(null);
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [viewMode, setViewMode] = useState<"list" | "grid" | "preview">("list");
 
   const loadPosts = useCallback(() => {
     setLoading(true); setFailed(false);
@@ -1750,7 +1836,7 @@ function PublishedTab() {
   }
 
   return (
-    <div style={{ maxWidth: viewMode === "grid" ? 1100 : 720, margin: "0 auto", padding: "24px 20px 60px" }}>
+    <div style={{ maxWidth: viewMode === "preview" ? "100%" : viewMode === "grid" ? 1100 : 720, margin: "0 auto", padding: viewMode === "preview" ? "24px 20px 0" : "24px 20px 60px" }}>
       {/* Filter + view toggle bar */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         {(["all", "et", "ru", "en"] as const).map(l => (
@@ -1771,12 +1857,16 @@ function PublishedTab() {
         />
         {/* View mode toggle */}
         <div style={{ display: "flex", border: "2px solid #e6e6e6", borderRadius: 12, overflow: "hidden", flexShrink: 0 }}>
-          {(["list", "grid"] as const).map(v => (
+          {([
+            { v: "list", label: "📋 Nimekiri" },
+            { v: "grid", label: "🏠 Koduleht" },
+            { v: "preview", label: "🌐 Live" },
+          ] as const).map(({ v, label }) => (
             <button key={v} onClick={() => setViewMode(v)} style={{
               padding: "7px 14px", border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
               background: viewMode === v ? "#87be23" : "white",
               color: viewMode === v ? "white" : "#9a9a9a",
-            }}>{v === "list" ? "📋 Nimekiri" : "🏠 Koduleht"}</button>
+            }}>{label}</button>
           ))}
         </div>
         {duplicatePaths.size > 0 && (
@@ -1892,6 +1982,43 @@ function PublishedTab() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* LIVE PREVIEW — iframe of blog.ksa.ee */}
+      {viewMode === "preview" && (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+            <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a" }}>
+              Live blogi — muudatused ilmuvad peale järgmist deploy&apos;i (~2 min pärast salvestamist)
+            </p>
+            <a
+              href="https://blog.ksa.ee"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 12, color: "#87be23", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
+            >
+              Ava uues aknas ↗
+            </a>
+          </div>
+          <div style={{ border: "2px solid #e6e6e6", borderRadius: 16, overflow: "hidden", background: "#f5f2ec" }}>
+            <div style={{ background: "#f0ede8", borderBottom: "1px solid #e6e6e6", padding: "8px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", gap: 5 }}>
+                {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
+              </div>
+              <div style={{ flex: 1, background: "white", borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#9a9a9a", border: "1px solid #e6e6e6" }}>
+                blog.ksa.ee
+              </div>
+              <a href="https://blog.ksa.ee" target="_blank" rel="noopener noreferrer"
+                style={{ fontSize: 11, color: "#5a6b6c", textDecoration: "none", fontWeight: 600 }}>↗</a>
+            </div>
+            <iframe
+              src="https://blog.ksa.ee"
+              title="KSA Blog live preview"
+              style={{ width: "100%", height: "calc(100vh - 240px)", minHeight: 600, border: "none", display: "block" }}
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            />
+          </div>
         </div>
       )}
     </div>
