@@ -45,7 +45,51 @@ export const AUTHORS: AuthorProfile[] = [
       en: "Dr. Ants Haavel is an ophthalmologist and founder of KSA Vision Clinic with over 25 years of clinical experience. He has performed more than 55,000 eye procedures, including Flow3 laser correction, ICB lens implantation, and cataract surgery. Dr. Haavel is one of Estonia's most recognised refractive surgery specialists. He regularly presents at international ophthalmology conferences and practises evidence-based medicine. All medical claims on the KSA blog are reviewed and approved by him.",
     },
     profileUrl: "https://ksa.ee/meeskond/",
-    avatarUrl: "https://ksa.ee/wp-content/uploads/2024/ants-haavel.jpg",
+    avatarUrl: "/uploads/authors/ants-haavel.jpg",
+  },
+  {
+    keys: ["karl-erik", "Dr. Karl-Erik Tillmann", "Karl-Erik Tillmann"],
+    displayName: "Dr. Karl-Erik Tillmann",
+    slug: "dr-karl-erik-tillmann",
+    role: {
+      et: "Silmaarst, KSA Silmakeskus",
+      ru: "Офтальмолог, KSA Silmakeskus",
+      en: "Ophthalmologist, KSA Vision Clinic",
+    },
+    credentials: {
+      et: "MD · Tartu Ülikool",
+      ru: "MD · Тартуский университет",
+      en: "MD · University of Tartu",
+    },
+    bio: {
+      et: "Dr. Karl-Erik Tillmann on KSA Silmakeskuse silmaarst, kes on spetsialiseerunud laserkorrektsiooni ja refraktiivsele kirurgiale. Ta töötab tihedas koostöös Dr. Ants Haavelega, tagades patsientidele individuaalse ja tõenduspõhise lähenemise. Dr. Tillmann osaleb regulaarselt erialastel koolitustel ja rahvusvahelistel konverentsidel, et pakkuda patsientidele parima kaasaegse meditsiini tulemusi.",
+      ru: "Доктор Карл-Эрик Тиллманн — офтальмолог KSA Silmakeskus, специализирующийся на лазерной коррекции зрения и рефракционной хирургии. Он работает в тесном сотрудничестве с доктором Антсом Хаавелом, обеспечивая каждому пациенту индивидуальный и основанный на доказательствах подход. Доктор Тиллманн регулярно участвует в международных конференциях и повышении квалификации.",
+      en: "Dr. Karl-Erik Tillmann is an ophthalmologist at KSA Vision Clinic specialising in laser vision correction and refractive surgery. He works in close collaboration with Dr. Ants Haavel, ensuring an individualised, evidence-based approach for every patient. Dr. Tillmann regularly attends international conferences and continuing medical education programmes.",
+    },
+    profileUrl: "https://ksa.ee/meeskond/",
+    avatarUrl: "/uploads/authors/karl-erik-tillmann.jpg",
+  },
+  {
+    keys: ["liisi", "Optometrist Liisi", "Liisi"],
+    displayName: "Liisi",
+    slug: "optometrist-liisi",
+    role: {
+      et: "Optometrist, KSA Silmakeskus",
+      ru: "Оптометрист, KSA Silmakeskus",
+      en: "Optometrist, KSA Vision Clinic",
+    },
+    credentials: {
+      et: "Optometrist · KSA Silmakeskus",
+      ru: "Оптометрист · KSA Silmakeskus",
+      en: "Optometrist · KSA Vision Clinic",
+    },
+    bio: {
+      et: "Liisi on KSA Silmakeskuse kogenud optometrist, kes tegeleb nägemise hindamise, prillide ja kontaktläätsede valikuga ning silmade tervise seirega. Ta aitab patsientidel mõista nende nägemise eripärasid ja leiab igaühele sobiva lahenduse — olgu selleks prillid, kontaktläätsed või kirurgilise korrektsiooni sobivuse hindamine. Liisi on meeskonna usaldusväärne esimene kontaktpunkt kõikidele silmanägemisega seotud küsimustele.",
+      ru: "Лийси — опытный оптометрист KSA Silmakeskus, занимающийся оценкой зрения, подбором очков и контактных линз, а также мониторингом здоровья глаз. Она помогает пациентам разобраться в особенностях их зрения и подобрать подходящее решение — будь то очки, контактные линзы или оценка пригодности к хирургической коррекции. Лийси — надёжный первый контакт в команде по всем вопросам, связанным со зрением.",
+      en: "Liisi is an experienced optometrist at KSA Vision Clinic, focusing on vision assessments, glasses and contact lens fitting, and eye health monitoring. She helps patients understand their unique vision needs and find the right solution — whether that's glasses, contact lenses, or an evaluation for surgical correction. Liisi is the team's trusted first point of contact for all vision-related questions.",
+    },
+    profileUrl: "https://ksa.ee/meeskond/",
+    avatarUrl: "/uploads/authors/liisi-optometrist.jpg",
   },
   {
     keys: ["silvia", "Silvia Haavel", "Silvia Johanna Haavel"],
