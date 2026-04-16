@@ -40,9 +40,7 @@ async function listPosts(): Promise<PostMeta[]> {
   if (!fs.existsSync(dir)) return [];
 
   const files = fs.readdirSync(dir)
-    .filter((f: string) => f.endsWith(".mdx") || f.endsWith(".md"))
-    .sort()
-    .reverse(); // newest first
+    .filter((f: string) => f.endsWith(".mdx") || f.endsWith(".md"));
 
   const posts: PostMeta[] = [];
   for (const filename of files) {
@@ -81,6 +79,10 @@ async function listPosts(): Promise<PostMeta[]> {
       // Skip unreadable files
     }
   }
+  // Sort newest first: by date frontmatter desc, filename desc as tiebreaker.
+  // This keeps order consistent for scout-prefixed files AND WP-migrated files
+  // (which have no date prefix in filename). Matches /api/admin/drafts ordering.
+  posts.sort((a, b) => b.date.localeCompare(a.date) || b.filename.localeCompare(a.filename));
   return posts;
 }
 
