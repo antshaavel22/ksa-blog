@@ -1,0 +1,48 @@
+# KSA Silmakeskus Blog
+
+> KSA Silmakeskus (KSA Vision Clinic) is Estonia's leading refractive eye surgery centre, located in Tallinn. Founded and led by Dr. Ants Haavel, ophthalmologist. Over 55,000 procedures performed. This blog publishes evidence-based eye health content in Estonian, Russian, and English.
+
+## About
+
+- **Clinic:** KSA Silmakeskus (KSA Vision Clinic)
+- **Website:** https://ksa.ee
+- **Blog:** https://blog.ksa.ee
+- **Location:** Tallinn, Estonia
+- **Procedures:** Flow3 laser vision correction, ICB lens implantation, cataract surgery, dry eye treatment
+- **Languages:** Estonian (et), Russian (ru), English (en)
+- **Posts:** 460+ published articles
+
+## Content Topics
+
+- Laser vision correction (Flow3 / LASIK / LASEK / PRK)
+- ICB implantable collamer lens surgery
+- Dry eye disease — causes, symptoms, treatment
+- Eye health tips and prevention
+- Children's vision and myopia
+- Contact lenses vs. surgery
+- Cataract surgery and recovery
+- Screen time and digital eye strain
+- Patient stories and recovery experiences
+- Eye anatomy and how vision works
+
+## Key Pages
+
+- Blog home: https://blog.ksa.ee
+- Laser correction: https://ksa.ee/flow3/
+- ICB procedure: https://ksa.ee/icb-time
+- Price list: https://ksa.ee/hinnakiri/
+- Free vision test: https://ksa-kiirtest-lp.vercel.app/
+
+## Authors
+
+- **Dr. Ants Haavel** — ophthalmologist, CEO of KSA Silmakeskus, medical authority on all clinical content
+- **Silvia Johanna Haavel** — Estonian content editor
+- **Yana Grechits** — Russian and English content editor
+
+## Medical Authority
+
+All clinical claims are reviewed by Dr. Ants Haavel, MD. KSA Silmakeskus has performed over 55,000 eye procedures since founding. Content follows Estonian and EU medical standards.
+
+## Sitemap
+
+https://blog.ksa.ee/sitemap.xml

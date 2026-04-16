@@ -10,11 +10,17 @@ export interface AuthorProfile {
     ru: string;
     en: string;
   };
+  credentials?: {
+    et: string;
+    ru: string;
+    en: string;
+  };
   bio: {
     et: string;
     ru: string;
     en: string;
   };
+  profileUrl?: string;
   avatarUrl?: string;
 }
 
@@ -28,11 +34,17 @@ export const AUTHORS: AuthorProfile[] = [
       ru: "Офтальмолог, руководитель KSA Silmakeskus",
       en: "Ophthalmologist, CEO of KSA Vision Clinic",
     },
-    bio: {
-      et: "Dr. Ants Haavel on kogenud silmaarst ja KSA Silmakeskuse asutaja. Ta on läbi viinud üle 55 000 silmaoperatsiooni ning on Eesti juhtivaid laserkorrektsiooni spetsialiste.",
-      ru: "Доктор Антс Хаавел — опытный офтальмолог и основатель KSA Silmakeskus. Он провёл более 55 000 глазных операций и является ведущим специалистом по лазерной коррекции зрения в Эстонии.",
-      en: "Dr. Ants Haavel is an experienced ophthalmologist and founder of KSA Vision Clinic. He has performed over 55,000 eye procedures and is one of Estonia's leading laser vision correction specialists.",
+    credentials: {
+      et: "MD · Tartu Ülikool · Üle 25 aasta kogemust",
+      ru: "MD · Тартуский университет · Более 25 лет опыта",
+      en: "MD · University of Tartu · 25+ years of experience",
     },
+    bio: {
+      et: "Dr. Ants Haavel on silmaarst ja KSA Silmakeskuse asutaja, kellel on üle 25 aasta kliinilist kogemust. Ta on läbi viinud üle 55 000 silmaoperatsiooni, sh laserkorrektsioon (Flow3), ICB-läätse implantatsioon ja kataraktioperatsioon. Dr. Haavel on Eesti üks tunnustatumaid refraktiivsele kirurgiale spetsialiseerunud silmaarste. Ta on regulaarne ettekandja rahvusvahelistel silmaarstide konverentsidel ning järgib oma töös tõenduspõhise meditsiini põhimõtteid. Kõik KSA blogi meditsiinilised väited on tema poolt üle vaadatud.",
+      ru: "Доктор Антс Хаавел — офтальмолог и основатель KSA Silmakeskus с более чем 25-летним клиническим опытом. Он провёл свыше 55 000 глазных операций, включая лазерную коррекцию (Flow3), имплантацию линзы ICB и операции по удалению катаракты. Доктор Хаавел является одним из наиболее признанных специалистов по рефракционной хирургии в Эстонии. Он регулярно выступает на международных офтальмологических конференциях и руководствуется принципами доказательной медицины. Все медицинские утверждения в блоге KSA проверены им лично.",
+      en: "Dr. Ants Haavel is an ophthalmologist and founder of KSA Vision Clinic with over 25 years of clinical experience. He has performed more than 55,000 eye procedures, including Flow3 laser correction, ICB lens implantation, and cataract surgery. Dr. Haavel is one of Estonia's most recognised refractive surgery specialists. He regularly presents at international ophthalmology conferences and practises evidence-based medicine. All medical claims on the KSA blog are reviewed and approved by him.",
+    },
+    profileUrl: "https://ksa.ee/meeskond/",
     avatarUrl: "https://ksa.ee/wp-content/uploads/2024/ants-haavel.jpg",
   },
   {

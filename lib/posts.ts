@@ -31,6 +31,8 @@ export interface PostMeta {
   seoExcerpt?: string;
   hideDate?: boolean;
   hideAuthor?: boolean;
+  translatedFrom?: string;
+  expertReviewer?: string;
 }
 
 export interface Post extends PostMeta {
@@ -108,6 +110,25 @@ export function getAllCategories(): { slug: string; name: string; count: number 
   return Array.from(map.entries())
     .map(([slug, { name, count }]) => ({ slug, name, count }))
     .sort((a, b) => b.count - a.count);
+}
+
+export function getSisterPosts(post: PostMeta): PostMeta[] {
+  const all = getAllPosts();
+  let etTitle: string | undefined;
+
+  if (post.lang === "et") {
+    etTitle = post.title;
+  } else if (post.translatedFrom) {
+    etTitle = post.translatedFrom;
+  }
+
+  if (!etTitle) return [];
+
+  return all.filter(
+    (p) =>
+      p.slug !== post.slug &&
+      (p.title === etTitle || p.translatedFrom === etTitle)
+  );
 }
 
 export function getRelatedPosts(post: PostMeta, limit = 3): PostMeta[] {

@@ -1,4 +1,4 @@
-import { getAllPosts, getPostBySlug, getRelatedPosts } from "@/lib/posts";
+import { getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/lib/posts";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import KiirtestCTA from "@/components/KiirtestCTA";
@@ -6,6 +6,7 @@ import BlogBookingCTA from "@/components/BlogBookingCTA";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
+import AuthorBio from "@/components/AuthorBio";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
@@ -56,6 +57,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     alternates: {
       canonical: `https://blog.ksa.ee/${slug}`,
+      languages: Object.fromEntries([
+        [post.lang ?? "et", `https://blog.ksa.ee/${slug}`],
+        ...getSisterPosts(post).map((s) => [s.lang, `https://blog.ksa.ee/${s.slug}`]),
+      ]),
     },
     other: {
       "content-language": post.lang ?? "et",
@@ -77,6 +82,7 @@ export default async function PostPage({ params }: PageProps) {
   const canonicalUrl = `https://blog.ksa.ee/${slug}`;
   const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
   const authorName = authorProfile?.displayName ?? post.author ?? "KSA Silmakeskus";
+  const reviewerProfile = post.expertReviewer ? getAuthorByKey(post.expertReviewer) : undefined;
 
   // ── Schema JSON-LD ──────────────────────────────────────────────────────────
   const schemaGraph: object[] = [
@@ -261,6 +267,24 @@ export default async function PostPage({ params }: PageProps) {
                 <span key={i}>{q}</span>
               ))}
             </div>
+          )}
+
+          {/* Author bio card */}
+          {authorProfile && (
+            <AuthorBio
+              author={authorProfile}
+              lang={(post.lang as "et" | "ru" | "en") ?? "et"}
+              variant="author"
+            />
+          )}
+
+          {/* Expert reviewer bio card (optometrist or guest expert) */}
+          {reviewerProfile && (
+            <AuthorBio
+              author={reviewerProfile}
+              lang={(post.lang as "et" | "ru" | "en") ?? "et"}
+              variant="reviewer"
+            />
           )}
 
           {/* Flow3 footer CTA — shown on all posts */}
