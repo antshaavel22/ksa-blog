@@ -83,17 +83,36 @@ function setFmField(fm: string, key: string, value: string): string {
 
 // Write a YAML list field (e.g. categories) — replaces any existing key:…value with
 // a proper YAML block list so gray-matter always parses it as string[].
-function setCategoriesField(fm: string, slug: string): string {
-  if (!slug) return fm;
-  // Convert slug back to display label (capitalise first letter, replace hyphens)
-  const label = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  const block = `categories:\n  - ${label}`;
-  // Replace inline  categories: "…"  or  categories: […]  or existing block
+function setCategoriesField(fm: string, slugsOrSlug: string | string[]): string {
+  const slugs = Array.isArray(slugsOrSlug) ? slugsOrSlug : [slugsOrSlug];
+  if (slugs.length === 0) return fm;
+  // Convert slugs back to display labels: "flow-protseduur" → "Flow Protseduur"
+  const labels = slugs.map(s => s.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+  const block = `categories:\n${labels.map(l => `  - ${l}`).join("\n")}`;
+  const blockRe = /^categories:\s*\n(?:[ \t]+-[ \t]+.+\n?)*/m;
   const inlineRe = /^categories:.*$/m;
-  const blockRe = /^categories:\s*\n(?:\s+-.+\n?)*/m;
   if (blockRe.test(fm)) return fm.replace(blockRe, block + "\n");
   if (inlineRe.test(fm)) return fm.replace(inlineRe, block);
   return fm + `\n${block}`;
+}
+
+function getFmCategories(fm: string): string[] {
+  // Block list: categories:\n  - Foo\n  - Bar
+  const blockMatch = fm.match(/^categories:\s*\n((?:[ \t]+-[ \t]+.+\n?)+)/m);
+  if (blockMatch) {
+    return blockMatch[1]
+      .split("\n")
+      .map(line => line.replace(/^[ \t]+-[ \t]+/, "").trim())
+      .filter(Boolean)
+      .map(cat => toSlug(cat));
+  }
+  // Inline scalar or quoted
+  const inlineMatch = fm.match(/^categories:\s*["']?([^"'\n\[\]]+)["']?/m);
+  if (inlineMatch) {
+    const val = inlineMatch[1].replace(/^-\s*/, "").trim();
+    return val ? [toSlug(val)] : [];
+  }
+  return [];
 }
 
 function buildMdx(frontmatter: string, body: string): string {
@@ -220,7 +239,9 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
   const [showPreview, setShowPreview] = useState(false);
   const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
-  const [category, setCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [renamingImage, setRenamingImage] = useState(false);
+  const [imageRenameInput, setImageRenameInput] = useState("");
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -251,12 +272,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setFeaturedImage(getFmField(parsed.frontmatter, "featuredImage"));
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
-          const rawCat = getFmField(parsed.frontmatter, "categories")
-            ?.replace(/[\[\]"']/g, "")   // strip YAML brackets/quotes
-            .split(",")[0]?.trim()        // first category only
-            .replace(/^-\s*/, "")        // strip YAML list dash (multiline format)
-            .trim() ?? "";
-          setCategory(toSlug(rawCat));   // normalise to slug
+          setSelectedCategories(getFmCategories(parsed.frontmatter));
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -301,7 +317,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
     fm = setFmField(fm, "lang", currentLang);
-    if (category) fm = setCategoriesField(fm, category);
+    if (selectedCategories.length > 0) fm = setCategoriesField(fm, selectedCategories);
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }
@@ -429,6 +445,38 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       alert("Pildi üleslaadimine ebaõnnestus: " + (err as Error).message);
       return null;
     }
+  }
+
+  async function doRenameImage() {
+    const newName = imageRenameInput.trim();
+    if (!newName || !featuredImage) return;
+
+    // Extract the GitHub path from the URL: /uploads/YYYY/MM/old-name.webp
+    const urlPath = featuredImage.startsWith("/") ? featuredImage : new URL(featuredImage).pathname;
+    const githubPath = `public${urlPath}`; // "public/uploads/2026/04/old-name.webp"
+    const ext = urlPath.split(".").pop() ?? "webp";
+    const dir = urlPath.substring(0, urlPath.lastIndexOf("/") + 1); // "/uploads/2026/04/"
+    const newFilename = `${newName}.${ext}`;
+    const newUrlPath = `${dir}${newFilename}`;
+    const newGithubPath = `public${newUrlPath}`;
+
+    setUploadingImage(true);
+    setRenamingImage(false);
+    try {
+      const res = await fetch("/api/admin/rename-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldPath: githubPath, newPath: newGithubPath }),
+      });
+      const d = await res.json() as { ok?: boolean; url?: string; error?: string };
+      if (d.error) { alert("Ümbernimetamine ebaõnnestus: " + d.error); return; }
+      const newUrl = d.url ?? newUrlPath;
+      setFeaturedImage(newUrl);
+      setUploadPreviewUrl(newUrl);
+      setSaved(false);
+    } catch (err) {
+      alert("Ümbernimetamine ebaõnnestus: " + (err as Error).message);
+    } finally { setUploadingImage(false); }
   }
 
   async function save() {
@@ -646,7 +694,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           title={title}
           body={body}
           featuredImage={uploadPreviewUrl || featuredImage}
-          category={category ? getCategoryLabel(category, currentLang as "et"|"ru"|"en") : ""}
+          category={selectedCategories[0] ? getCategoryLabel(selectedCategories[0], currentLang as "et"|"ru"|"en") : ""}
           date={postDate}
           author={getFmField(frontmatter, "author")}
           lang={draft.lang}
@@ -808,6 +856,40 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
                   ⏳ Eelvaade — pilt ilmub blogis pärast ~2 min deploymenti. Salvestatud: <code style={{ fontSize: 10 }}>{featuredImage}</code>
                 </p>
               )}
+              {featuredImage && featuredImage.includes("/uploads/") && (
+                <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  {renamingImage ? (
+                    <>
+                      <input
+                        type="text"
+                        value={imageRenameInput}
+                        onChange={e => setImageRenameInput(e.target.value.replace(/[^a-z0-9-]/gi, "-").toLowerCase())}
+                        placeholder="uus-failinimi-ilma-laiendita"
+                        style={{ flex: 1, padding: "6px 10px", border: "1.5px solid #87be23", borderRadius: 8, fontSize: 12, outline: "none", fontFamily: "inherit" }}
+                        onKeyDown={e => { if (e.key === "Enter") doRenameImage(); if (e.key === "Escape") setRenamingImage(false); }}
+                        autoFocus
+                      />
+                      <button type="button" onClick={doRenameImage} disabled={!imageRenameInput.trim()}
+                        style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "#87be23", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                        Salvesta
+                      </button>
+                      <button type="button" onClick={() => setRenamingImage(false)}
+                        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #e6e6e6", background: "white", fontSize: 12, cursor: "pointer" }}>
+                        Tühista
+                      </button>
+                    </>
+                  ) : (
+                    <button type="button" onClick={() => {
+                      const current = featuredImage.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "";
+                      setImageRenameInput(current);
+                      setRenamingImage(true);
+                    }}
+                      style={{ fontSize: 11, color: "#5a6b6c", background: "none", border: "1px solid #e6e6e6", borderRadius: 6, padding: "3px 10px", cursor: "pointer" }}>
+                      ✏️ Nimeta ümber
+                    </button>
+                  )}
+                </div>
+              )}
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <button
                   type="button"
@@ -889,11 +971,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         <div style={{ padding: "16px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>
-              🏷 Kategooria
+              🏷 Kategooriad
             </label>
-            {category && (
+            {selectedCategories.length > 0 && (
               <span style={{ fontSize: 11, color: "#3d6b00", fontWeight: 700, background: "#f0fde4", padding: "2px 9px", borderRadius: 12, border: "1px solid #c5e58a" }}>
-                ✓ valitud
+                {selectedCategories.length > 1 ? `${selectedCategories.length} valitud` : "✓ valitud"}
               </span>
             )}
           </div>
@@ -911,12 +993,16 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               { slug: "ksa-silmakeskus",            et: "KSA Silmakeskus",            ru: "KSA Vision Center",      en: "KSA Vision Center" },
             ] as const).map(cat => {
               const label = cat[currentLang as "et" | "ru" | "en"] ?? cat.et;
-              const isActive = category === cat.slug;
+              const isActive = selectedCategories.includes(cat.slug);
               return (
                 <button
                   key={cat.slug}
                   type="button"
-                  onClick={() => setCategory(isActive ? "" : cat.slug)}
+                  onClick={() => setSelectedCategories(prev =>
+                    prev.includes(cat.slug)
+                      ? prev.filter(s => s !== cat.slug)
+                      : prev.length >= 5 ? prev : [...prev, cat.slug]
+                  )}
                   style={{
                     padding: "6px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600,
                     border: `1.5px solid ${isActive ? "#87be23" : "#e6e6e6"}`,
@@ -928,9 +1014,14 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               );
             })}
           </div>
-          {!category && (
+          {!selectedCategories.length && (
             <p style={{ margin: "8px 0 0", fontSize: 11, color: "#f59e0b" }}>
               ⚠ Kategooria on valimata — artikkel ilmub ilma sildita
+            </p>
+          )}
+          {selectedCategories.length >= 5 && (
+            <p style={{ margin: "8px 0 0", fontSize: 11, color: "#3d6b00" }}>
+              Maksimaalselt 5 kategooriat valitud
             </p>
           )}
         </div>
