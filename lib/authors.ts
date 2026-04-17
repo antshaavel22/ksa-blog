@@ -40,9 +40,9 @@ export const AUTHORS: AuthorProfile[] = [
       en: "MD · University of Tartu · 25+ years of experience",
     },
     bio: {
-      et: "Dr. Ants Haavel on silmaarst ja KSA Silmakeskuse asutaja, kellel on üle 25 aasta kliinilist kogemust. Ta on läbi viinud üle 55 000 silmaoperatsiooni, sh laserkorrektsioon (Flow3). Dr. Haavel on Eesti üks tunnustatumaid refraktiivsele kirurgiale spetsialiseerunud silmaarste. Ta on regulaarne delegaat rahvusvahelistel silmaarstide konverentsidel ning järgib oma töös tõenduspõhise meditsiini põhimõtteid. Kõik KSA blogi meditsiinilised väited on tema poolt üle vaadatud.",
-      ru: "Доктор Антс Хаавел — офтальмолог и основатель KSA Silmakeskus с более чем 25-летним клиническим опытом. Он провёл свыше 55 000 глазных операций, включая лазерную коррекцию (Flow3), имплантацию линзы ICB и операции по удалению катаракты. Доктор Хаавел является одним из наиболее признанных специалистов по рефракционной хирургии в Эстонии. Он регулярно выступает на международных офтальмологических конференциях и руководствуется принципами доказательной медицины. Все медицинские утверждения в блоге KSA проверены им лично.",
-      en: "Dr. Ants Haavel is an ophthalmologist and founder of KSA Vision Clinic with over 25 years of clinical experience. He has performed more than 55,000 eye procedures, including Flow3 laser correction, ICB lens implantation, and cataract surgery. Dr. Haavel is one of Estonia's most recognised refractive surgery specialists. He regularly presents at international ophthalmology conferences and practises evidence-based medicine. All medical claims on the KSA blog are reviewed and approved by him.",
+      et: "Dr. Ants Haavel on silmaarst ja KSA Silmakeskuse asutaja, kellel on üle 25 aasta kliinilist kogemust. Ta on läbi viinud üle 55 000 silmaoperatsiooni, sh Flow3 laserkorrektsioon, kuivsilma diagnostika ja ravi ning katarakti operatsioonid. Dr. Haavel on Eesti üks tunnustatumaid refraktiivsele kirurgiale spetsialiseerunud silmaarste. Ta on regulaarne delegaat rahvusvahelistel silmaarstide konverentsidel ning järgib oma töös tõenduspõhise meditsiini põhimõtteid. Kõik KSA blogi meditsiinilised väited on tema poolt üle vaadatud.",
+      ru: "Доктор Антс Хаавел — офтальмолог и основатель KSA Silmakeskus с более чем 25-летним клиническим опытом. Он провёл свыше 55 000 глазных операций, включая лазерную коррекцию Flow3, диагностику и лечение синдрома сухого глаза, а также операции по удалению катаракты. Доктор Хаавел является одним из наиболее признанных специалистов по рефракционной хирургии в Эстонии. Он регулярно выступает на международных офтальмологических конференциях и руководствуется принципами доказательной медицины. Все медицинские утверждения в блоге KSA проверены им лично.",
+      en: "Dr. Ants Haavel is an ophthalmologist and founder of KSA Vision Clinic with over 25 years of clinical experience. He has performed more than 55,000 eye procedures, including Flow3 laser correction, dry eye diagnostics and treatment, and cataract surgery. Dr. Haavel is one of Estonia's most recognised refractive surgery specialists. He regularly presents at international ophthalmology conferences and practises evidence-based medicine. All medical claims on the KSA blog are reviewed and approved by him.",
     },
     profileUrl: "https://ksa.ee/meeskond/",
     avatarUrl: "/uploads/authors/ants-haavel.jpg",
@@ -141,14 +141,14 @@ export const AUTHORS: AuthorProfile[] = [
     displayName: "KSA Silmakeskus",
     slug: "ksa-silmakeskus",
     role: {
-      et: "KSA Silmakeskuse meeskond",
-      ru: "Команда KSA Silmakeskus",
-      en: "KSA Vision Clinic Team",
+      et: "KSA Silmakeskus",
+      ru: "KSA Silmakeskus",
+      en: "KSA Vision Clinic",
     },
     bio: {
-      et: "KSA Silmakeskus on Eesti juhtiv silmakliinik, mis on spetsialiseerunud laserkorrektsiooni, ICB-protseduuri ja silmahaiguste ravile. Meie blogi jagab ekspertteadmisi silmade tervise kohta.",
-      ru: "KSA Silmakeskus — ведущая глазная клиника Эстонии, специализирующаяся на лазерной коррекции, процедуре ICB и лечении заболеваний глаз. Наш блог делится экспертными знаниями о здоровье глаз.",
-      en: "KSA Vision Clinic is Estonia's leading eye clinic, specialising in laser correction, ICB procedure and eye disease treatment. Our blog shares expert knowledge about eye health.",
+      et: "KSA Silmakeskus on Eesti juhtiv silmakliinik, mis on spetsialiseerunud Flow3 laserkorrektsioonile, kuivsilma diagnostikale ja ravile ning põhjalikele silmaläbivaatustele. Meie blogi jagab ekspertteadmisi silmade tervise kohta.",
+      ru: "KSA Silmakeskus — ведущая глазная клиника Эстонии, специализирующаяся на лазерной коррекции Flow3, диагностике и лечении синдрома сухого глаза, а также на комплексных обследованиях зрения. Наш блог делится экспертными знаниями о здоровье глаз.",
+      en: "KSA Vision Clinic is Estonia's leading eye clinic, specialising in Flow3 laser correction, dry eye diagnostics and treatment, and comprehensive eye examinations. Our blog shares expert knowledge about eye health.",
     },
   },
 ];

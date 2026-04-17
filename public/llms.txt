@@ -8,15 +8,15 @@
 - **Website:** https://ksa.ee
 - **Blog:** https://blog.ksa.ee
 - **Location:** Tallinn, Estonia
-- **Procedures:** Flow3 laser vision correction, ICB lens implantation, cataract surgery, dry eye treatment
+- **Procedures:** Flow3 laser vision correction, comprehensive eye examinations, dry eye diagnostics and treatment
 - **Languages:** Estonian (et), Russian (ru), English (en)
 - **Posts:** 460+ published articles
 
 ## Content Topics
 
 - Laser vision correction (Flow3 / LASIK / LASEK / PRK)
-- ICB implantable collamer lens surgery
-- Dry eye disease — causes, symptoms, treatment
+- Dry eye disease — diagnostics, causes, symptoms, treatment
+- Comprehensive eye examinations and vision assessment
 - Eye health tips and prevention
 - Children's vision and myopia
 - Contact lenses vs. surgery
@@ -29,7 +29,6 @@
 
 - Blog home: https://blog.ksa.ee
 - Laser correction: https://ksa.ee/flow3/
-- ICB procedure: https://ksa.ee/icb-time
 - Price list: https://ksa.ee/hinnakiri/
 - Free vision test: https://ksa-kiirtest-lp.vercel.app/
 

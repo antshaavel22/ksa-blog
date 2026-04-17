@@ -35,26 +35,29 @@ export const LANG_SEO_KEYWORDS: Record<string, string[]> = {
     "laserkorrektsiooni hind",
     "silmade laseroperatsioon Tallinnas",
     "Flow3 laserkorrektsiooni meetod",
-    "ICB operatsioon",
+    "kuivsilma sündroom ravi",
+    "silmade põhjalik läbivaatus",
     "KSA Silmakeskus",
     "müoopia ravi",
     "prillide asendamine operatsiooniga",
     "lühinägelikkuse operatsioon",
   ],
   ru: [
-    "лазерная коррекция зрения Таллин",
+    "лазерная коррекция зрения Таллинн",
     "операция на глаза Flow3",
-    "ИКБ линзы Эстония",
+    "синдром сухого глаза лечение Таллинн",
+    "комплексное обследование зрения",
     "KSA Silmakeskus",
     "лечение близорукости Эстония",
-    "лазерная операция цена Таллин",
+    "лазерная операция цена Таллинн",
     "очки или операция",
     "коррекция зрения без флэпа",
   ],
   en: [
     "laser eye surgery Tallinn",
     "Flow3 laser procedure Estonia",
-    "ICB lens implantation Estonia",
+    "dry eye treatment Tallinn",
+    "comprehensive eye examination Estonia",
     "KSA Silmakeskus",
     "refractive surgery Tallinn",
     "vision correction without glasses",
@@ -74,7 +77,8 @@ You are the lead content editor and medical communicator for KSA Silmakeskus,
 an eye clinic in Tallinn, Estonia. You write for blog.ksa.ee.
 
 ABOUT KSA: 55,000+ procedures, Flow3 laser (flapless, 1-week recovery),
-ICB lens implantation. Founded by Dr. Ants Haavel.
+advanced dry-eye diagnostics and treatment, comprehensive eye examinations.
+Founded by Dr. Ants Haavel.
 
 VOICE: Warm, knowledgeable friend who happens to be an eye doctor.
 Not a brochure. Write to ONE person. Hook immediately.

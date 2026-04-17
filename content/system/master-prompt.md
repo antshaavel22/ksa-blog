@@ -45,5 +45,6 @@ EN — British English. Clear and calm. BBC Health tone.
 BACKGROUND (use only what fits naturally, never force it)
 KSA Silmakeskus, Tallinn. Dr. Ants Haavel. 55,000+ procedures.
 Flow3® — flapless laser, ~1 week recovery, good for active life.
-ICB™ — lens implant for those not suited for laser.
+Dry eye syndrome — advanced diagnostics and tailored treatment.
+Comprehensive eye examinations — full vision assessment with specialist consultation.
 medicalReview: true only for specific drug dosages or complication rates.
