@@ -34,8 +34,8 @@ export default function PostCard({ post }: PostCardProps) {
       href={`/${post.slug}`}
       className="group flex flex-col bg-white rounded-[20px] border border-[#E6E4DF] overflow-hidden hover:border-[#87BE23] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] hover:-translate-y-[3px] transition-all duration-200"
     >
-      {/* Image — 3:2 ratio, warmer crop */}
-      {post.featuredImage && (
+      {/* Image — 3:2 ratio, warmer crop. Fallback tile when no featuredImage. */}
+      {post.featuredImage ? (
         <div className="aspect-[3/2] relative overflow-hidden bg-[#F5F2EC]">
           <Image
             src={post.featuredImage}
@@ -44,6 +44,25 @@ export default function PostCard({ post }: PostCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1140px) 50vw, 380px"
             className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
           />
+        </div>
+      ) : (
+        <div
+          className="aspect-[3/2] relative overflow-hidden flex items-center justify-center"
+          style={{
+            background:
+              "linear-gradient(135deg, #F5F2EC 0%, #E8E3D3 60%, #DCD5C0 100%)",
+          }}
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 120 120"
+            className="w-16 h-16 opacity-60 group-hover:scale-[1.06] transition-transform duration-500"
+            fill="#87BE23"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            {/* KSA leaf motif */}
+            <path d="M60 10 C30 35, 25 70, 60 110 C95 70, 90 35, 60 10 Z M60 30 C78 50, 78 75, 60 95 C42 75, 42 50, 60 30 Z" />
+          </svg>
         </div>
       )}
 
