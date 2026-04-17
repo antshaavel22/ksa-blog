@@ -63,7 +63,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <BlogNav />
+      <BlogNav lang={lang} />
       <main className="flex-1">
         {/* Hero — wide, warm, confident */}
         <section className="bg-[#E8E3D3] border-b border-[#D8D3C8] py-12 sm:py-16">

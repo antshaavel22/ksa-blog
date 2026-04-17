@@ -1,11 +1,16 @@
 import Link from "next/link";
 
-const BLOG_HOME = "https://blog.ksa.ee";
-
 const CTA: Record<string, { label: string; href: string }> = {
   et: { label: "Broneeri aeg", href: "https://ksa.ee/broneeri" },
   en: { label: "Book now",     href: "https://ksa.ee/en.html" },
   ru: { label: "Записаться",   href: "https://ksa.ee/ru.html" },
+};
+
+// Wordmark — "Blog" translated per language zone so readers stay in their language.
+const WORDMARK: Record<string, { first: string; second: string }> = {
+  et: { first: "KSA", second: "\u00A0Blog" },
+  en: { first: "KSA", second: "\u00A0Blog" },
+  ru: { first: "КСА", second: "\u00A0Блог" },
 };
 
 interface BlogNavProps {
@@ -14,6 +19,9 @@ interface BlogNavProps {
 
 export default function BlogNav({ lang = "et" }: BlogNavProps) {
   const cta = CTA[lang] ?? CTA.et;
+  const wordmark = WORDMARK[lang] ?? WORDMARK.et;
+  // Keep the reader in their language zone — homepage filters by ?keel=xx
+  const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
 
   return (
     <header className="border-b border-[#E6E4DF] bg-[#FEFEFE]/95 backdrop-blur-sm sticky top-0 z-50">
@@ -30,10 +38,10 @@ export default function BlogNav({ lang = "et" }: BlogNavProps) {
           ksa.ee
         </Link>
 
-        {/* Wordmark — always links to blog homepage */}
-        <Link href={BLOG_HOME} className="flex items-center">
-          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#000000]">KSA</span>
-          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#87BE23]">&nbsp;Blog</span>
+        {/* Wordmark — links to current-language blog homepage */}
+        <Link href={homeHref} className="flex items-center">
+          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#000000]">{wordmark.first}</span>
+          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#87BE23]">{wordmark.second}</span>
         </Link>
 
         {/* Primary CTA — language-aware */}
