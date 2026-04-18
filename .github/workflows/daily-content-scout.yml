@@ -8,10 +8,12 @@ name: Daily Content Scout
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
-  # DISABLED 2026-04-18 — scout failing daily, re-enable after facelift work is done
-  # schedule:
-  #   - cron: '0 5 * * *'   # 07:00 EET (UTC+2) · 06:00 EEST (UTC+3 summer)
-  workflow_dispatch:        # Manual trigger only from GitHub UI → Actions tab
+  schedule:
+    - cron: '0 5 * * *'   # 07:00 EET (UTC+2) · 06:00 EEST (UTC+3 summer)
+  workflow_dispatch:        # Manual trigger from GitHub UI → Actions tab
+
+permissions:
+  contents: write           # Required for git push from GITHUB_TOKEN
 
 jobs:
   scout:
