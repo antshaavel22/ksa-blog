@@ -402,29 +402,13 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         optimized: { sizeKB: compressedSizeKB, width: outW, height: outH, format: "webp" },
       });
 
-      // AUTO-SAVE the draft immediately with the new image URL.
-      // We CANNOT rely on React state here (setFeaturedImage is async),
-      // so we build the MDX content directly with the new URL injected.
-      if (newImageUrl && activePath) {
-        try {
-          const fmWithImage = setFmField(
-            setFmField(setFmField(frontmatter, "title", title), "date", postDate),
-            "featuredImage", newImageUrl
-          );
-          const newContent = buildMdx(fmWithImage, body);
-          const endpoint = isPublished
-            ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
-            : `/api/admin/draft?path=${encodeURIComponent(activePath)}`;
-          await fetch(endpoint, {
-            method: "PUT", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ content: newContent }),
-          });
-          setFrontmatter(fmWithImage); // keep state in sync
-          setSaved(true); setTimeout(() => setSaved(false), 3000);
-        } catch {
-          // Non-fatal — user can still save manually
-        }
-      }
+      // NO AUTO-SAVE. The image file is uploaded to GitHub (public/uploads/...),
+      // but the post frontmatter update stays local until the user clicks Save /
+      // Uuenda live. This avoids the classic bug where rapid image uploads race
+      // auto-saves against each other — each auto-save used a stale `body` React
+      // closure and wiped out earlier uploads' changes.
+      // File is safe on GitHub; only the reference needs saving, and that happens
+      // in buildFm() / buildMdx() at save time with fresh state.
     } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
     finally { setUploadingImage(false); e.target.value = ""; }
   }
@@ -1221,7 +1205,7 @@ function FormattingToolbar({
   body, setBody, onUploadBodyImage,
 }: {
   body: string;
-  setBody: (v: string) => void;
+  setBody: React.Dispatch<React.SetStateAction<string>>;
   onUploadBodyImage?: (file: File) => Promise<string | null>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -1281,17 +1265,24 @@ function FormattingToolbar({
   async function handleImageFile(file: File) {
     if (!onUploadBodyImage) return;
     const el = textareaRef.current;
-    const cursorPos = el?.selectionStart ?? body.length;
+    const cursorPos = el?.selectionStart ?? -1; // -1 = append to end
     setUploadingBodyImg(true);
     try {
       const url = await onUploadBodyImage(file);
       if (!url) return;
       const altText = file.name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ");
       const md = `\n![${altText}](${url})\n`;
-      const newBody = body.slice(0, cursorPos) + md + body.slice(cursorPos);
-      setBody(newBody);
+      // IMPORTANT: use functional setter — multiple rapid uploads race against
+      // each other if we read `body` from closure. Each call must compose on
+      // top of the latest state, not the state when this handler was scheduled.
+      let insertedAt = 0;
+      setBody(prev => {
+        const pos = cursorPos >= 0 && cursorPos <= prev.length ? cursorPos : prev.length;
+        insertedAt = pos + md.length;
+        return prev.slice(0, pos) + md + prev.slice(pos);
+      });
       requestAnimationFrame(() => {
-        if (el) { el.focus(); el.setSelectionRange(cursorPos + md.length, cursorPos + md.length); }
+        if (el) { el.focus(); el.setSelectionRange(insertedAt, insertedAt); }
       });
     } finally {
       setUploadingBodyImg(false);
@@ -2892,6 +2883,9 @@ function HelpTab() {
       </table>
       <div style={s.tip}>
         💡 <strong>Lihtne reegel:</strong> pane <strong>1500×1000 JPEG alla 1 MB</strong> — süsteem teeb ülejäänu. Pärast üleslaadimist saab pilti 3:2 kaadris lohistada, et õige osa oleks nähtav.
+      </div>
+      <div style={s.tip}>
+        ⚡ <strong>Mitu pilti korraga:</strong> laadi kõik pildid üles järjest — iga pildi üleslaadimine EI salvesta enam automaatselt, nii et saad töötada kiiresti. Kui kõik on paigas, klõpsa <strong>Salvesta</strong> või <strong>Uuenda live</strong> üks kord — kõik muudatused salvestuvad koos. Nii ei kao ükski pilt vahepeal ära.
       </div>
       <h3 style={s.h3}>Pildi allikas</h3>
       <p style={s.p}>Laadi oma pilt üles, või kleebi URL <strong>Pildiaadress</strong> lahtrisse. KSA pildid leiab: <span style={s.code}>ksa.ee/wp-content/uploads/…</span></p>

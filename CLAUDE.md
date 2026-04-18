@@ -107,7 +107,7 @@ categories:
 - Images stay at `ksa.ee/wp-content/uploads/` (no migration needed)
 - **AI facelift run:** 437 posts have Claude-improved titles + excerpts
 - **medicalReview queue:** `medical-review-queue.txt` — 222 posts flagged for Dr. Haavel
-- Daily content scout (GitHub Action, 7am EET) pushes 1 trilingual draft (ET+RU+EN) directly to main
+- Daily content scout DISABLED 2026-04-18 — Ants writes all drafts manually for fact/quality control (workflow_dispatch still available for ad-hoc runs)
 
 ## Sister Article System
 RU/EN translations link to their ET original via `translatedFrom` frontmatter:
@@ -268,6 +268,15 @@ Two Claude Code scheduled tasks run daily:
 - `toSlug()` in `lib/categories.ts` strips `&` and special chars — use for all category comparisons
 - Admin page is ~2800 lines; all UI in one file — read sections carefully before editing, changes can have wide blast radius
 
+## Changelog (session 2026-04-18)
+- **Admin login unblocked:** `proxy.ts` middleware was blocking `/api/admin/login` itself → chicken-and-egg 401. Added explicit exemption.
+- **Image upload race fix:** Uploading multiple images (featured or inline) silently lost all but one because each upload auto-saved with a stale `body` React closure. Removed the auto-save-on-image-upload entirely and made `handleImageFile` use functional `setBody(prev => ...)` so concurrent uploads compose correctly. One Save / Uuenda live at end commits everything. Applies to ET, RU, EN — same editor across languages.
+- **Juhend tab rewritten:** added optimal-image-size table (3:2 · 1500×1000 · <1MB · WebP), multi-image workflow tip, removed stale 7am auto-draft claim.
+- **Scout disabled:** daily content scout cron commented out. Workflow previously failing silently since early April (missing `contents: write` permission on GITHUB_TOKEN). Fixed permission + re-enabled temporarily, then disabled per Ants's decision to write all drafts manually.
+- **EN bulk publish:** 327 EN drafts moved from `content/drafts/en/` to `content/posts/` in one commit. EN pill 65 → ~392.
+- **Medical-review bulk-clear:** 64 of 99 Haiku-flagged posts cleared via cluster-based script (`scripts/clear-escalations-abc.ts`). 35 cluster-D posts remain in `medical-review-escalated.md` for manual review.
+- **Wall-of-text reformat:** `scripts/format-walls-of-text.ts` added paragraph breaks + H2 headings to 16 long unformatted posts via Sonnet with word-preservation check (multiset compare, ≤3 missing / ≤40 added tolerance). 5 posts flagged for manual fix.
+
 ## Changelog (session 2026-04-10, part 2)
 - **Editorial UX redesign:** Published tab — editorial grid cards with thumbnails (posts API now returns `featuredImage`/`category`), hover "✎ Redigeeri" overlay, admin nav tabs clean (no emoji, green underline for active)
 - **Quick date edit:** click date in grid/list → inline input → saves in-place via GitHub API
@@ -290,7 +299,7 @@ Two Claude Code scheduled tasks run daily:
 
 ## Changelog (session 2026-04-07)
 - **Image publish bug fixed:** `publishProd` uses clientContent from React state, never stale filesystem
-- **Auto-save on image upload:** draft saved to GitHub immediately after upload
+- **Auto-save on image upload:** draft saved to GitHub immediately after upload *(REMOVED 2026-04-18 — caused stale-state race when uploading multiple images. Now: upload images freely, one Save/Uuenda live at end commits all changes together.)*
 - **DragCrop component:** drag-to-reposition in 3:2 frame; `imageFocalPoint` saved to frontmatter
 - **PostPreview overlay:** full-screen preview before publish
 - **Kirjuta uus rewrite:** "Salvesta otse" (no AI) + "AI kirjutab" modes
