@@ -48,7 +48,7 @@ async function indexNow(urls: string[]) {
   const body = {
     host: HOST,
     key: KEY,
-    keyLocation: `https://${HOST}/${KEY}.txt`,
+    keyLocation: `https://${HOST}/indexnow`,
     urlList: urls,
   };
   try {
