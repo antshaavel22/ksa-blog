@@ -76,9 +76,20 @@ function getFmField(fm: string, key: string): string {
 }
 
 function setFmField(fm: string, key: string, value: string): string {
-  const quoted = `${key}: "${value.replace(/"/g, '\\"')}"`;
+  // If value contains double quotes, use YAML single-quoted style (simpler, no
+  // backslash-escape dance) — single quotes only need doubling inside. This
+  // avoids the classic "\"" truncation bug where titles like
+  //   'Understanding the "Setting Sun Eyes" Phenomenon'
+  // got corrupted to `title: "Understanding the \"` when a downstream regex
+  // matched across the backslash-escape boundary.
+  const hasDouble = value.includes('"');
+  const line = hasDouble
+    ? `${key}: '${value.replace(/'/g, "''")}'`
+    : `${key}: "${value}"`;
   const re = new RegExp(`^${key}:.*$`, "m");
-  return re.test(fm) ? fm.replace(re, quoted) : fm + `\n${quoted}`;
+  // Use function replacement so `$` chars in value can never be interpreted
+  // as backreferences (`$&`, `$'`, `$\``, etc.).
+  return re.test(fm) ? fm.replace(re, () => line) : fm + `\n${line}`;
 }
 
 // Write a YAML list field (e.g. categories) — replaces any existing key:…value with
