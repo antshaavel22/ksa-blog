@@ -2941,14 +2941,63 @@ function HelpTab() {
       <h3 style={s.h3}>YouTube video</h3>
       <p style={s.p}>Kleebi YouTube link redaktori ülaosas olevasse lahtrisse → <strong>Lisa video</strong>. Video ilmub teksti sisse.</p>
 
-      {/* Section 4 */}
-      <h2 style={s.h2}>4. Nipid</h2>
+      {/* Section 3.5 — Delete */}
+      <h2 style={s.h2}>4. Artikli kustutamine</h2>
+      <p style={s.p}>Blogis on kaks seisundit: <strong>mustand</strong> (ei ole avalikus blogis) ja <strong>avaldatud</strong> (nähtav blog.ksa.ee-s). Kustutamise loogika erineb vastavalt.</p>
+
+      <h3 style={s.h3}>A) Mustandi kustutamine</h3>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["1", "Ava Mustandid vahekaart", "Vali keel (ET · RU · EN)"],
+            ["2", "Klõpsa mustandil", "Avaneb redaktor"],
+            ["3", "Klõpsa prügikasti ikoon (🗑)", "Päises paremal"],
+            ["4", "Kinnita kustutamine", "Fail kaob jäädavalt"],
+          ].map(([n, action, result]) => (
+            <tr key={n}>
+              <td style={{ ...s.td, width: 28, fontWeight: 800, color: "#b91c1c" }}>{n}</td>
+              <td style={{ ...s.td, fontWeight: 600 }}>{action}</td>
+              <td style={{ ...s.td, color: "#9a9a9a" }}>{result}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3 style={s.h3}>B) Avaldatud artikli kustutamine</h3>
+      <p style={s.p}>Avaldatud artiklit ei saa otse kustutada — kaheastmeline protsess:</p>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["1", "Ava Avaldatud vahekaart", "Leia artikkel (Nimekiri või Koduleht vaade)"],
+            ["2", "Klõpsa artiklil — avaneb redaktor", ""],
+            ["3", "Klõpsa ↩ Eemalda (all paremal)", "Artikkel kaob blogist ja liigub tagasi mustanditesse"],
+            ["4", "Mine Mustandid vahekaardile", "Leia sama artikkel"],
+            ["5", "Ava see ja klõpsa 🗑", "Fail kaob jäädavalt"],
+          ].map(([n, action, result]) => (
+            <tr key={n}>
+              <td style={{ ...s.td, width: 28, fontWeight: 800, color: "#b91c1c" }}>{n}</td>
+              <td style={{ ...s.td, fontWeight: 600 }}>{action}</td>
+              <td style={{ ...s.td, color: "#9a9a9a" }}>{result}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={s.tip}>
+        💡 <strong>Millal ainult eemaldada (mitte kustutada)?</strong> Kui artikkel on ajutiselt ebatäpne või vajab ümbertöötamist — jätab see mustanditesse, et saad hiljem uuesti avaldada. Täielik kustutamine on pöördumatu.
+      </div>
+      <div style={s.tip}>
+        ⚠️ <strong>Ettevaatust:</strong> kustutatud artikli URL (blog.ksa.ee/slug) annab edaspidi 404. Kui artikkel on olnud avalikus blogis kaua, võib sellele olla väliseid linke — kaalu enne kustutamist, kas eemaldamine (mustandiks) on ohutum.
+      </div>
+
+      {/* Section 5 */}
+      <h2 style={s.h2}>5. Nipid</h2>
       <table style={s.table}>
         <tbody>
           {[
             ["Postitus vajab arsti kinnitust", "Lisa märge tekstis + teavita Antsu"],
             ["Viga avaldatud postituses", "Teavita Antsu — ta parandab faili otse"],
-            ["Mustand on halb", "Kustuta mustand → kirjuta uus"],
+            ["Mustand on halb", "Kustuta mustand (vt. 4A) → kirjuta uus"],
+            ["Avaldatud artikkel on dubleeritud või vale", "Eemalda → kustuta mustand (vt. 4B)"],
             ["Taha postitus ajutiselt peita", "Muuda kuupäev tulevikku — kaob avalikust vaatest"],
           ].map(([olukord, lahendus]) => (
             <tr key={olukord}>
@@ -2959,8 +3008,8 @@ function HelpTab() {
         </tbody>
       </table>
 
-      {/* Section 5 */}
-      <h2 style={s.h2}>5. Mida süsteem teeb automaatselt</h2>
+      {/* Section 6 */}
+      <h2 style={s.h2}>6. Mida süsteem teeb automaatselt</h2>
       <table style={s.table}>
         <tbody>
           {[
@@ -2986,7 +3035,7 @@ function HelpTab() {
 // force browsers with stale JS bundles to reload on their next visit. This is
 // the single belt between "I shipped a fix" and "the editor is actually using
 // it" — without this, a long-open tab can keep writing with old buggy code.
-const ADMIN_BUILD = "2026-04-18-2";
+const ADMIN_BUILD = "2026-04-18-3";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<"drafts" | "published" | "write" | "prompt" | "help">("drafts");
