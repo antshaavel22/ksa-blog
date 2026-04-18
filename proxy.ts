@@ -5,6 +5,7 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin/login")) return NextResponse.next();
+  if (pathname === "/api/admin/login") return NextResponse.next();
 
   const session = request.cookies.get("admin_session")?.value;
 
