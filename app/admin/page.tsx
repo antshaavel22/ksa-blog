@@ -2982,8 +2982,32 @@ function HelpTab() {
 
 // ─── Root Admin Page ──────────────────────────────────────────────────────────
 
+// Bumped whenever we ship a critical admin-side fix. Bump this constant to
+// force browsers with stale JS bundles to reload on their next visit. This is
+// the single belt between "I shipped a fix" and "the editor is actually using
+// it" — without this, a long-open tab can keep writing with old buggy code.
+const ADMIN_BUILD = "2026-04-18-2";
+
 export default function AdminPage() {
   const [tab, setTab] = useState<"drafts" | "published" | "write" | "prompt" | "help">("drafts");
+
+  // Force-reload when the deployed admin build is newer than the one loaded.
+  // Runs once on mount + every 5 min — picks up mid-session deploys too.
+  useEffect(() => {
+    function check() {
+      const stored = localStorage.getItem("ksa_admin_build");
+      if (stored && stored !== ADMIN_BUILD) {
+        localStorage.setItem("ksa_admin_build", ADMIN_BUILD);
+        // Hard reload, bypassing cache
+        window.location.reload();
+        return;
+      }
+      if (!stored) localStorage.setItem("ksa_admin_build", ADMIN_BUILD);
+    }
+    check();
+    const iv = setInterval(check, 5 * 60 * 1000);
+    return () => clearInterval(iv);
+  }, []);
 
   async function logout() {
     await fetch("/api/admin/logout");

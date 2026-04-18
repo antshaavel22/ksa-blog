@@ -16,7 +16,12 @@ import path from "path";
 import matter from "gray-matter";
 
 const ROOT = path.join(process.cwd(), "content");
-const FIX = process.argv.includes("--fix-quotes");
+// Auto-repair by default. The build must never fail because one field is
+// malformed — we'd rather deploy with a [BROKEN] placeholder title that Silvia
+// can fix later than block the entire site for every other post. Pass
+// --strict to disable auto-repair.
+const STRICT = process.argv.includes("--strict");
+const FIX = !STRICT;
 
 type Failure = {
   file: string;
@@ -95,14 +100,14 @@ function main() {
     process.exit(0);
   }
 
-  console.log(`\n❌ ${failures.length} file(s) have invalid frontmatter — the Vercel build will FAIL until these are fixed:\n`);
+  console.log(`\n❌ ${failures.length} file(s) have invalid frontmatter that could not be auto-repaired:\n`);
   for (const f of failures) {
     console.log(`  ✗ ${f.file}`);
     console.log(`    reason: ${f.reason}`);
     console.log(`    first 200 chars:\n      ${f.headBlock.slice(0, 200).replace(/\n/g, "\n      ")}`);
     console.log();
   }
-  console.log("Run with --fix-quotes to auto-repair common title-quote truncations.\n");
+  console.log("These need manual fixing. Edit the file directly or delete the corrupted field.\n");
   process.exit(1);
 }
 
