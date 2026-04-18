@@ -33,9 +33,18 @@ export default async function CategoryPage({ params }: PageProps) {
 
   const displayName = category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
+  // Majority language of posts in this category → page chrome language
+  const langCounts = posts.reduce<Record<string, number>>((acc, p) => {
+    const l = p.lang ?? "et";
+    acc[l] = (acc[l] ?? 0) + 1;
+    return acc;
+  }, {});
+  const lang = (Object.entries(langCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "et") as "et" | "ru" | "en";
+  const articlesLabel = lang === "ru" ? "статей" : lang === "en" ? "articles" : "artiklit";
+
   return (
     <>
-      <BlogNav />
+      <BlogNav lang={lang} />
       <main className="flex-1">
         <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-12">
           <div className="max-w-[1200px] mx-auto px-6">
@@ -47,7 +56,7 @@ export default async function CategoryPage({ params }: PageProps) {
             <h1 className="text-3xl font-semibold tracking-tight text-[#1a1a1a] mb-2">
               {displayName}
             </h1>
-            <p className="text-[#5a6b6c] text-sm">{posts.length} artiklit</p>
+            <p className="text-[#5a6b6c] text-sm">{posts.length} {articlesLabel}</p>
           </div>
         </section>
 
@@ -59,7 +68,7 @@ export default async function CategoryPage({ params }: PageProps) {
           </div>
         </section>
       </main>
-      <BlogFooter />
+      <BlogFooter lang={lang} />
     </>
   );
 }

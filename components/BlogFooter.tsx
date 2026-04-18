@@ -39,7 +39,40 @@ const SOCIALS = [
   { href: "https://www.tiktok.com/@ksa_silmakeskus", label: "TikTok", Icon: IconTikTok },
 ];
 
-export default function BlogFooter() {
+type Lang = "et" | "ru" | "en";
+
+const TAGLINE: Record<Lang, string> = {
+  et: "Hea nägemine on üks inimese supervõimetest.",
+  ru: "Хорошее зрение — одна из суперспособностей человека.",
+  en: "Good vision is one of humanity's superpowers.",
+};
+
+const LINKS: Record<Lang, Array<{ href: string; label: string }>> = {
+  et: [
+    { href: "https://ksa.ee/broneeri", label: "Broneeri aeg" },
+    { href: "https://ksa.ee/hinnakiri", label: "Hinnakiri" },
+    { href: "https://ksa.ee/kontakt", label: "Kontakt" },
+    { href: "https://ksa.ee/privaatsuspoliitika", label: "Privaatsuspoliitika" },
+    { href: "https://ksa.ee/kupsised", label: "Küpsised" },
+  ],
+  ru: [
+    { href: "https://ksa.ee/ru/zapis", label: "Записаться" },
+    { href: "https://ksa.ee/ru/tseny", label: "Цены" },
+    { href: "https://ksa.ee/ru/kontakty", label: "Контакты" },
+    { href: "https://ksa.ee/ru/politika-konfidentsialnosti", label: "Политика конфиденциальности" },
+    { href: "https://ksa.ee/ru/cookie", label: "Cookie" },
+  ],
+  en: [
+    { href: "https://ksa.ee/en/book", label: "Book an appointment" },
+    { href: "https://ksa.ee/en/price-list", label: "Prices" },
+    { href: "https://ksa.ee/en/contact", label: "Contact" },
+    { href: "https://ksa.ee/en/privacy-policy", label: "Privacy policy" },
+    { href: "https://ksa.ee/en/cookies", label: "Cookies" },
+  ],
+};
+
+export default function BlogFooter({ lang = "et" }: { lang?: string }) {
+  const l = (lang === "ru" || lang === "en" ? lang : "et") as Lang;
   return (
     <footer className="border-t border-[#E6E4DF] bg-[#F9F7F4] mt-auto">
       <div className="max-w-[1140px] mx-auto px-6 py-10">
@@ -51,7 +84,7 @@ export default function BlogFooter() {
               KSA <span className="text-[#87BE23]">Silmakeskus</span>
             </div>
             <p className="text-[12px] font-light text-[#9A9A9A] max-w-xs">
-              Hea nägemine on üks inimese supervõimetest.
+              {TAGLINE[l]}
             </p>
           </div>
 
@@ -79,13 +112,7 @@ export default function BlogFooter() {
             <a href="https://ksa.ee" className="hover:text-[#000000] transition-colors">ksa.ee</a>
           </p>
           <div className="flex flex-wrap gap-6">
-            {[
-              { href: "https://ksa.ee/broneeri", label: "Broneeri aeg" },
-              { href: "https://ksa.ee/hinnakiri", label: "Hinnakiri" },
-              { href: "https://ksa.ee/kontakt", label: "Kontakt" },
-              { href: "https://ksa.ee/privaatsuspoliitika", label: "Privaatsuspoliitika" },
-              { href: "https://ksa.ee/kupsised", label: "Küpsised" },
-            ].map(({ href, label }) => (
+            {LINKS[l].map(({ href, label }) => (
               <a
                 key={label}
                 href={href}

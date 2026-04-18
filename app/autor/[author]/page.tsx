@@ -60,9 +60,17 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
   const roleLabel = author.role[lang];
   const bioText = author.bio[lang];
 
+  const t = {
+    author: lang === "ru" ? "Автор" : lang === "en" ? "Author" : "Autor",
+    articles: lang === "ru" ? "статей" : lang === "en" ? "articles" : "artiklit",
+    notFound: lang === "ru" ? "Статьи не найдены." : lang === "en" ? "No articles found." : "Artikleid ei leitud.",
+    prev: lang === "ru" ? "← Предыдущая" : lang === "en" ? "← Previous" : "← Eelmine",
+    next: lang === "ru" ? "Следующая →" : lang === "en" ? "Next →" : "Järgmine →",
+  };
+
   return (
     <>
-      <BlogNav />
+      <BlogNav lang={lang} />
       <main className="flex-1">
         {/* Author hero */}
         <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-10 sm:py-14">
@@ -71,7 +79,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
             <nav className="text-xs text-[#9a9a9a] mb-6">
               <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
               <span className="mx-2">›</span>
-              <span>Autor</span>
+              <span>{t.author}</span>
             </nav>
 
             <div className="flex items-start gap-5">
@@ -82,7 +90,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
 
               <div>
                 <span className="text-xs font-medium uppercase tracking-widest text-[#87be23]">
-                  Autor
+                  {t.author}
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1a1a1a] mt-1 mb-1">
                   {author.displayName}
@@ -123,11 +131,11 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
         {/* Post grid */}
         <section className="max-w-[1200px] mx-auto px-6 py-10">
           {posts.length === 0 ? (
-            <p className="text-[#9a9a9a] text-center py-20">Artikleid ei leitud.</p>
+            <p className="text-[#9a9a9a] text-center py-20">{t.notFound}</p>
           ) : (
             <>
               <p className="text-sm text-[#9a9a9a] mb-6">
-                {total} artiklit
+                {total} {t.articles}
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {posts.map((post) => (
@@ -143,7 +151,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                       href={`/autor/${slug}?keel=${lang}&leht=${page - 1}`}
                       className="px-5 py-2 rounded-full border border-[#e6e6e6] text-sm text-[#5a6b6c] hover:border-[#87be23] transition-colors"
                     >
-                      ← Eelmine
+                      {t.prev}
                     </Link>
                   )}
                   <span className="px-4 py-2 text-sm text-[#9a9a9a]">
@@ -154,7 +162,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
                       href={`/autor/${slug}?keel=${lang}&leht=${page + 1}`}
                       className="px-5 py-2 rounded-full border border-[#e6e6e6] text-sm text-[#5a6b6c] hover:border-[#87be23] transition-colors"
                     >
-                      Järgmine →
+                      {t.next}
                     </Link>
                   )}
                 </div>
@@ -163,7 +171,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
           )}
         </section>
       </main>
-      <BlogFooter />
+      <BlogFooter lang={lang} />
     </>
   );
 }

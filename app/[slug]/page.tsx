@@ -297,7 +297,11 @@ export default async function PostPage({ params }: PageProps) {
           {/* Medical review notice */}
           {post.medicalReview && (
             <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-              Selle artikli sisu on meditsiiniliselt kontrollitud KSA Silmakeskuse spetsialistide poolt.
+              {post.lang === "ru"
+                ? "Содержание этой статьи проверено специалистами глазного центра KSA."
+                : post.lang === "en"
+                ? "The content of this article has been medically reviewed by KSA Vision Clinic specialists."
+                : "Selle artikli sisu on meditsiiniliselt kontrollitud KSA Silmakeskuse spetsialistide poolt."}
             </div>
           )}
 
@@ -321,7 +325,7 @@ export default async function PostPage({ params }: PageProps) {
           <RelatedPosts posts={related} lang={post.lang} />
         </div>
       </main>
-      <BlogFooter />
+      <BlogFooter lang={post.lang} />
     </>
   );
 }

@@ -61,6 +61,14 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);
   const posts = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
 
+  const t = {
+    all: lang === "ru" ? "Все" : lang === "en" ? "All" : "Kõik",
+    articles: lang === "ru" ? "статей" : lang === "en" ? "articles" : "artiklit",
+    notFound: lang === "ru" ? "Статьи не найдены." : lang === "en" ? "No articles found." : "Artikleid ei leitud.",
+    prev: lang === "ru" ? "← Предыдущая" : lang === "en" ? "← Previous" : "← Eelmine",
+    next: lang === "ru" ? "Следующая →" : lang === "en" ? "Next →" : "Järgmine →",
+  };
+
   return (
     <>
       <BlogNav lang={lang} />
@@ -121,7 +129,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                   : "bg-[#F0EDE8] text-[#5A6B6C] hover:bg-[#E8E3D3] hover:text-[#000000]"
               }`}
             >
-              Kõik <span className="opacity-60">({langFiltered.length})</span>
+              {t.all} <span className="opacity-60">({langFiltered.length})</span>
             </Link>
             {categories
               .filter((cat) =>
@@ -160,11 +168,11 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
         {/* Post grid */}
         <section className="max-w-[1140px] mx-auto px-6 py-10">
           {posts.length === 0 ? (
-            <p className="text-[#9A9A9A] text-center py-24 font-light">Artikleid ei leitud.</p>
+            <p className="text-[#9A9A9A] text-center py-24 font-light">{t.notFound}</p>
           ) : (
             <>
               <p className="text-[12px] font-light text-[#9A9A9A] mb-7 tracking-wide">
-                {total} artiklit{kategooria ? ` · ${kategooria}` : ""}
+                {total} {t.articles}{kategooria ? ` · ${getCategoryLabel(kategooria, lang as "et" | "ru" | "en")}` : ""}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -181,7 +189,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                       href={`/?keel=${lang}${kategooria ? `&kategooria=${kategooria}` : ""}&leht=${page - 1}`}
                       className="px-5 py-2 rounded-[32px] border border-[#E6E4DF] text-[13px] font-medium text-[#5A6B6C] hover:border-[#87BE23] hover:text-[#000000] transition-all"
                     >
-                      ← Eelmine
+                      {t.prev}
                     </Link>
                   )}
                   <span className="px-4 py-2 text-[13px] font-light text-[#9A9A9A]">
@@ -192,7 +200,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                       href={`/?keel=${lang}${kategooria ? `&kategooria=${kategooria}` : ""}&leht=${page + 1}`}
                       className="px-5 py-2 rounded-[32px] border border-[#E6E4DF] text-[13px] font-medium text-[#5A6B6C] hover:border-[#87BE23] hover:text-[#000000] transition-all"
                     >
-                      Järgmine →
+                      {t.next}
                     </Link>
                   )}
                 </div>
@@ -201,7 +209,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
           )}
         </section>
       </main>
-      <BlogFooter />
+      <BlogFooter lang={lang} />
     </>
   );
 }

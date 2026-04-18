@@ -35,7 +35,7 @@ export default function ShareButton({ title, url, lang = "et" }: ShareButtonProp
       setCopied(true);
       setTimeout(() => { setCopied(false); setOpen(false); }, 1800);
     } catch {
-      prompt("Kopeeri link:", url);
+      prompt(c.copyLink + ":", url);
     }
   }
 
