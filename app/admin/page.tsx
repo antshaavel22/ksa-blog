@@ -2823,7 +2823,7 @@ function HelpTab() {
 
       {/* Section 1 */}
       <h2 style={s.h2}>1. Mustandi avaldamine</h2>
-      <p style={s.p}>Iga hommikul kell 7 genereerib süsteem automaatselt uue mustandi. Need ilmuvad <strong>Mustandid</strong> vahekaardil.</p>
+      <p style={s.p}>Mustandid asuvad <strong>Mustandid</strong> vahekaardil. Kõik mustandid kirjutab Ants käsitsi — nii on kvaliteet ja faktid kontrolli all.</p>
       <table style={s.table}>
         <tbody>
           {[
@@ -2873,8 +2873,30 @@ function HelpTab() {
 
       {/* Section 3 */}
       <h2 style={s.h2}>3. Pilt ja video</h2>
-      <h3 style={s.h3}>Pilt</h3>
-      <p style={s.p}>Kleebi pildi URL <strong>Pildiaadress</strong> lahtrisse. KSA pildid leiab: <span style={s.code}>ksa.ee/wp-content/uploads/…</span></p>
+      <h3 style={s.h3}>Kaanepilt — optimaalne suurus</h3>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["Kuvasuhe", "3:2 (nt 1500 × 1000 px)"],
+            ["Maksimaalne laius", "1400 px (süsteem pakib suurema automaatselt kokku)"],
+            ["Formaat", "WebP eelistatud, aga JPEG/PNG sobib (teisendatakse WebP-ks)"],
+            ["Faili suurus enne üleslaadimist", "Alla 1 MB piisab — süsteem pakib ~150–300 KB-ni"],
+            ["Kvaliteet", "80–85% (süsteem kasutab 0.82)"],
+          ].map(([k, v]) => (
+            <tr key={k}>
+              <td style={{ ...s.td, fontWeight: 600, width: "45%" }}>{k}</td>
+              <td style={s.td}>{v}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={s.tip}>
+        💡 <strong>Lihtne reegel:</strong> pane <strong>1500×1000 JPEG alla 1 MB</strong> — süsteem teeb ülejäänu. Pärast üleslaadimist saab pilti 3:2 kaadris lohistada, et õige osa oleks nähtav.
+      </div>
+      <h3 style={s.h3}>Pildi allikas</h3>
+      <p style={s.p}>Laadi oma pilt üles, või kleebi URL <strong>Pildiaadress</strong> lahtrisse. KSA pildid leiab: <span style={s.code}>ksa.ee/wp-content/uploads/…</span></p>
+      <h3 style={s.h3}>Pilt teksti sees</h3>
+      <p style={s.p}>Redaktoris kasuta tööriistariba nuppu <strong>🖼 Pilt</strong> — laadib üles ja lisab pildi kursori asukohta.</p>
       <h3 style={s.h3}>YouTube video</h3>
       <p style={s.p}>Kleebi YouTube link redaktori ülaosas olevasse lahtrisse → <strong>Lisa video</strong>. Video ilmub teksti sisse.</p>
 
@@ -2901,8 +2923,8 @@ function HelpTab() {
       <table style={s.table}>
         <tbody>
           {[
-            ["Iga päev kell 7", "Otsib uued silmatervise uudised → genereerib mustandi"],
             ["Iga avaldamine", "Sitemap uueneb, Schema JSON-LD lisatakse automaatselt"],
+            ["Pildi üleslaadimine", "Pakitakse WebP-ks (~150–300 KB), säilitab fookuspunkti"],
             ["Tuleviku kuupäev", "Postitus ilmub õigel päeval ilma sinupoolse tegevuseta"],
           ].map(([trigger, action]) => (
             <tr key={trigger}>
