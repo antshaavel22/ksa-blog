@@ -2,13 +2,71 @@
 
 import { useEffect, useState } from "react";
 
+type Lang = "et" | "ru" | "en";
+
+const T: Record<Lang, {
+  body: string;
+  policy: string;
+  accept: string;
+  decline: string;
+}> = {
+  et: {
+    body: "Kasutame küpsiseid (Google Analytics), et mõista, kuidas külastajad meie blogis liiguvad. Andmeid kasutatakse ainult statistika eesmärgil.",
+    policy: "Privaatsuspoliitika",
+    accept: "Nõustun",
+    decline: "Keeldu",
+  },
+  ru: {
+    body: "Мы используем файлы cookie (Google Analytics), чтобы понимать, как посетители пользуются нашим блогом. Данные используются только в статистических целях.",
+    policy: "Политика конфиденциальности",
+    accept: "Согласен",
+    decline: "Отклонить",
+  },
+  en: {
+    body: "We use cookies (Google Analytics) to understand how visitors use our blog. Data is collected for statistics only.",
+    policy: "Privacy policy",
+    accept: "Accept",
+    decline: "Decline",
+  },
+};
+
+function detectLang(): Lang {
+  if (typeof document === "undefined") return "et";
+  // 1. <html lang> set by the page — most reliable when a post sets it
+  const htmlLang = document.documentElement.lang?.toLowerCase().slice(0, 2);
+  if (htmlLang === "ru" || htmlLang === "en" || htmlLang === "et") return htmlLang;
+  // 2. data-lang on body — set by post pages at mount time
+  const bodyLang = document.body?.dataset?.lang?.toLowerCase();
+  if (bodyLang === "ru" || bodyLang === "en" || bodyLang === "et") return bodyLang;
+  // 3. browser preference as last resort
+  const nav = navigator.language?.toLowerCase().slice(0, 2);
+  if (nav === "ru" || nav === "en") return nav;
+  return "et";
+}
+
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const [lang, setLang] = useState<Lang>("et");
 
   useEffect(() => {
     const consent = localStorage.getItem("ksa_cookie_consent");
-    if (!consent) setVisible(true);
+    if (consent) return;
+    // Wait a tick so post-page client components can set <html lang> / body[data-lang]
+    const t = setTimeout(() => {
+      setLang(detectLang());
+      setVisible(true);
+    }, 100);
+    return () => clearTimeout(t);
   }, []);
+
+  // Re-detect if the post page updates <html lang> after mount (SPA nav)
+  useEffect(() => {
+    if (!visible) return;
+    const obs = new MutationObserver(() => setLang(detectLang()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+    if (document.body) obs.observe(document.body, { attributes: true, attributeFilter: ["data-lang"] });
+    return () => obs.disconnect();
+  }, [visible]);
 
   function accept() {
     localStorage.setItem("ksa_cookie_consent", "accepted");
@@ -22,6 +80,7 @@ export default function CookieBanner() {
   }
 
   if (!visible) return null;
+  const t = T[lang];
 
   return (
     <div
@@ -45,15 +104,14 @@ export default function CookieBanner() {
       }}
     >
       <p style={{ margin: 0, flex: "1 1 260px", lineHeight: 1.5 }}>
-        Kasutame küpsiseid (Google Analytics), et mõista, kuidas külastajad meie blogis liiguvad.
-        Andmeid kasutatakse ainult statistika eesmärgil.{" "}
+        {t.body}{" "}
         <a
           href="https://ksa.ee/privaatsuspoliitika/"
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: "#87be23", textDecoration: "underline" }}
         >
-          Privaatsuspoliitika
+          {t.policy}
         </a>
       </p>
       <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
@@ -70,7 +128,7 @@ export default function CookieBanner() {
             fontFamily: "inherit",
           }}
         >
-          Keeldu
+          {t.decline}
         </button>
         <button
           onClick={accept}
@@ -86,7 +144,7 @@ export default function CookieBanner() {
             fontFamily: "inherit",
           }}
         >
-          Nõustun
+          {t.accept}
         </button>
       </div>
     </div>

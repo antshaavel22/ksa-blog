@@ -7,6 +7,7 @@ import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import ShareButton from "@/components/ShareButton";
 import AuthorBio from "@/components/AuthorBio";
+import PageLang from "@/components/PageLang";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
@@ -175,6 +176,9 @@ export default async function PostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      {/* Tell the browser the page language so CookieBanner localizes correctly */}
+      <PageLang lang={post.lang} />
 
       <BlogNav lang={post.lang} />
       <main className="flex-1">
