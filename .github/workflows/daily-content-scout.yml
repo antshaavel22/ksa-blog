@@ -8,9 +8,10 @@ name: Daily Content Scout
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
-  schedule:
-    - cron: '0 5 * * *'   # 07:00 EET (UTC+2) · 06:00 EEST (UTC+3 summer)
-  workflow_dispatch:        # Manual trigger from GitHub UI → Actions tab
+  # DISABLED 2026-04-18 — Ants writes all drafts manually for quality/fact control
+  # schedule:
+  #   - cron: '0 5 * * *'   # 07:00 EET (UTC+2) · 06:00 EEST (UTC+3 summer)
+  workflow_dispatch:        # Manual trigger only from GitHub UI → Actions tab
 
 permissions:
   contents: write           # Required for git push from GITHUB_TOKEN
