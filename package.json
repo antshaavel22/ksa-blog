@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3002",
+    "validate": "tsx scripts/validate-content.ts",
+    "prebuild": "tsx scripts/validate-content.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

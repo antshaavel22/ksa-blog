@@ -474,10 +474,34 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     } finally { setUploadingImage(false); }
   }
 
+  // Round-trip content through the server-side YAML parser (same gray-matter
+  // instance Next.js build uses). Returns null if valid, an error string if not.
+  // This is the last line of defence: invalid frontmatter NEVER reaches GitHub
+  // and therefore never breaks a Vercel build.
+  async function validateContent(content: string): Promise<string | null> {
+    try {
+      const res = await fetch("/api/admin/validate-frontmatter", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      const d = await res.json() as { ok?: boolean; error?: string };
+      return d.ok ? null : (d.error ?? "Tundmatu viga frontmatter'is");
+    } catch {
+      // If validation API itself is unreachable, don't block saves — fall through
+      return null;
+    }
+  }
+
   async function save() {
     if (saving) return; // prevent concurrent saves
     setSaving(true); setSaved(false);
     const content = buildMdx(buildFm(), body);
+    const badYaml = await validateContent(content);
+    if (badYaml) {
+      alert("⚠️ Ei saa salvestada — frontmatter on katki:\n\n" + badYaml + "\n\nTõenäoliselt sisaldab pealkiri või mõni muu väli veidrat jutumärki. Paranda tekst ja proovi uuesti.");
+      setSaving(false);
+      return;
+    }
     try {
       const endpoint = isPublished
         ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
@@ -497,6 +521,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   async function updateLive() {
     setUpdating(true); setSaved(false);
     const content = buildMdx(buildFm(), body);
+    const badYaml = await validateContent(content);
+    if (badYaml) {
+      alert("⚠️ Ei saa live'i uuendada — frontmatter on katki:\n\n" + badYaml + "\n\nTõenäoliselt sisaldab pealkiri või mõni muu väli veidrat jutumärki. Paranda tekst ja proovi uuesti.");
+      setUpdating(false);
+      return;
+    }
     try {
       const res = await fetch(`/api/admin/post?path=${encodeURIComponent(activePath)}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
@@ -522,6 +552,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     // Build the final content from current React state — this is the source of truth.
     // We pass it directly to the publish API so it never has to read from the stale filesystem.
     const finalContent = buildMdx(buildFm(), body);
+    const badYaml = await validateContent(finalContent);
+    if (badYaml) {
+      setError("⚠️ Ei saa avaldada — frontmatter on katki: " + badYaml + ". Paranda pealkiri/tekst ja proovi uuesti.");
+      setPublishing(false);
+      return;
+    }
     // Also save to GitHub draft (keeps draft in sync before publish deletes it)
     await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
       method: "PUT", headers: { "Content-Type": "application/json" },
