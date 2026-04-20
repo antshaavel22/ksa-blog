@@ -7,11 +7,6 @@ import { getAuthorByKey } from "@/lib/authors";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 
-function readingTime(excerpt: string): string {
-  const words = excerpt.trim().split(/\s+/).length;
-  const mins = Math.max(1, Math.round(words / 200));
-  return `${mins} min`;
-}
 
 interface PostCardProps {
   post: PostMeta;
@@ -92,10 +87,7 @@ export default function PostCard({ post }: PostCardProps) {
             ? <span className="text-[11px] text-[#9A9A9A] font-light">{dateFormatted}</span>
             : <span />}
           <div className="flex items-center gap-3">
-            {post.excerpt && (
-              <span className="text-[11px] text-[#9A9A9A] font-light">{readingTime(post.excerpt)}</span>
-            )}
-            {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
+{BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
               <span className="text-[11px] text-[#9A9A9A] font-light">{authorDisplayName}</span>
             )}
           </div>

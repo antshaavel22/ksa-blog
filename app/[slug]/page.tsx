@@ -230,12 +230,6 @@ export default async function PostPage({ params }: PageProps) {
                     )}
                   </>
                 )}
-                {post.content && (
-                  <>
-                    <span>·</span>
-                    <span>{Math.max(1, Math.round(post.content.trim().split(/\s+/).length / 200))} min</span>
-                  </>
-                )}
               </div>
               <ShareButton title={post.title} url={canonicalUrl} lang={post.lang} />
             </div>

@@ -48,10 +48,6 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
     ? getCategoryLabel(toSlug(post.categories[0]), (lang as "et" | "ru" | "en"))
     : null;
 
-  const readingTime = post.excerpt
-    ? Math.max(1, Math.round(post.excerpt.split(/\s+/).length / 40))
-    : 2;
-
   return (
     <Link href={`/${post.slug}`} className="group block no-underline">
       <article className="
@@ -95,8 +91,7 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
 
           {/* Footer */}
           <div className="flex items-center justify-between mt-3">
-            <span className="text-[0.7rem] text-[#c0bdb8]">{readingTime} min</span>
-            <span className="text-[0.75rem] font-bold text-[#87be23] group-hover:underline">
+<span className="text-[0.75rem] font-bold text-[#87be23] group-hover:underline">
               {READ_MORE[lang] ?? READ_MORE.et}
             </span>
           </div>
