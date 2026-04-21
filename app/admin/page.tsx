@@ -253,6 +253,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [renamingImage, setRenamingImage] = useState(false);
   const [imageRenameInput, setImageRenameInput] = useState("");
+  const [coverSeoName, setCoverSeoName] = useState(""); // optional pre-upload SEO name for cover photo
 
   // Review panel state
   const [langChecked, setLangChecked] = useState(false);
@@ -390,9 +391,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       const { blob, width: outW, height: outH } = await compressImageClient(file);
       const compressedSizeKB = Math.round(blob.size / 1024);
 
+      // Use SEO name if Mia typed one, otherwise fall back to original file name
+      const nameToUse = coverSeoName.trim() || file.name;
       const formData = new FormData();
-      formData.append("image", blob, file.name.replace(/\.[^.]+$/, "") + ".webp");
-      formData.append("originalName", file.name);
+      formData.append("image", blob, nameToUse.replace(/\.[^.]+$/, "") + ".webp");
+      formData.append("originalName", nameToUse);
       formData.append("originalSizeKB", String(originalSizeKB));
       formData.append("originalWidth", String(originalWidth));
 
@@ -421,7 +424,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       // File is safe on GitHub; only the reference needs saving, and that happens
       // in buildFm() / buildMdx() at save time with fresh state.
     } catch (err) { alert("Üleslaadimine ebaõnnestus: " + (err as Error).message); }
-    finally { setUploadingImage(false); e.target.value = ""; }
+    finally { setUploadingImage(false); e.target.value = ""; setCoverSeoName(""); }
   }
 
   // Upload an inline body image (called from FormattingToolbar image button)
@@ -796,6 +799,22 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
                 </span>
               )}
             </label>
+            {/* SEO name field — optional, set before uploading */}
+            <div style={{ marginBottom: 6 }}>
+              <input
+                type="text"
+                value={coverSeoName}
+                onChange={e => setCoverSeoName(e.target.value.toLowerCase().replace(/[äöüõ]/g, (c: string) => ({ ä: "a", ö: "o", ü: "u", õ: "o" })[c] ?? c).replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-"))}
+                placeholder="pildi-seo-nimi (valikuline — enne üleslaadimist)"
+                style={{
+                  width: "100%", padding: "6px 10px", border: "1.5px solid #e6e6e6",
+                  borderRadius: 8, fontSize: 12, outline: "none", fontFamily: "inherit",
+                  boxSizing: "border-box", color: "#1a1a1a",
+                }}
+                onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+                onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+              />
+            </div>
             <div style={{ display: "flex", gap: 6 }}>
               {/* Upload from computer */}
               <label
