@@ -2961,8 +2961,14 @@ function HelpTab() {
       <p style={s.p}>Laadi oma pilt üles, või kleebi URL <strong>Pildiaadress</strong> lahtrisse. KSA pildid leiab: <span style={s.code}>ksa.ee/wp-content/uploads/…</span></p>
       <h3 style={s.h3}>Pilt teksti sees</h3>
       <p style={s.p}>Redaktoris kasuta tööriistariba nuppu <strong>🖼 Pilt</strong> — laadib üles ja lisab pildi kursori asukohta.</p>
+      <h3 style={s.h3}>Pildi SEO nimi</h3>
+      <p style={s.p}>Enne pildi üleslaadimist kirjuta <strong>pildi-seo-nimi</strong> lahtrisse (nt <span style={s.code}>ksa-laseroperatsioon-kornea</span>). Pilt saab automaatselt SEO-sõbraliku faili nime kujul <span style={s.code}>ksa-laseroperatsioon-kornea-ksa-silmakeskus.webp</span>. Kui jätad tühjaks, kasutatakse faili originaalnime.</p>
       <h3 style={s.h3}>YouTube video</h3>
       <p style={s.p}>Kleebi YouTube link redaktori ülaosas olevasse lahtrisse → <strong>Lisa video</strong>. Video ilmub teksti sisse.</p>
+      <h3 style={s.h3}>Rendia video</h3>
+      <p style={s.p}>Lisa Rendia patsiendiharidusvideo artiklisse MDX komponendiga: <span style={s.code}>{"<RendiaEmbed id=\"UUID\" />"}</span>. UUID leiad Rendia Embed Managerist (<strong>{"</>"}  nupust</strong>). Eelvaates näed tumedat kohahoidjat — päris video ilmub avaldatud lehel.</p>
+      <h3 style={s.h3}>Otsing blogis</h3>
+      <p style={s.p}>Blogi otsinguikoon (🔍) on igas lehe päises — viib <span style={s.code}>blog.ksa.ee/otsing</span> lehele, kus saab otsida kõigist 930+ artiklist pealkirja, väljavõtte, kategooria ja märksõnade järgi. Keelefilter (ET / RU / EN) on samuti olemas.</p>
 
       {/* Section 3.5 — Delete */}
       <h2 style={s.h2}>4. Artikli kustutamine</h2>
