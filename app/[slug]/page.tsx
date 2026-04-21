@@ -6,6 +6,7 @@ import BlogBookingCTA from "@/components/BlogBookingCTA";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import VimeoEmbed from "@/components/VimeoEmbed";
+import RendiaEmbed from "@/components/RendiaEmbed";
 import ShareButton from "@/components/ShareButton";
 import AuthorBio from "@/components/AuthorBio";
 import PageLang from "@/components/PageLang";
@@ -256,7 +257,7 @@ export default async function PostPage({ params }: PageProps) {
 
           {/* Post content */}
           <div className="prose-ksa">
-            <MDXRemote source={post.content} components={{ YouTubeEmbed, VimeoEmbed }} />
+            <MDXRemote source={post.content} components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }} />
           </div>
 
           {/* LLM search queries — hidden visually, readable by crawlers & AI agents */}
