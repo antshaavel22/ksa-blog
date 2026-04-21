@@ -1,37 +1,46 @@
 "use client";
 
 /**
- * RendiaEmbed — responsive 16:9 Rendia patient-education video embed for MDX posts.
+ * RendiaEmbed — Rendia patient-education video embed for MDX posts.
  *
- * Rendia's whitelabel embed requires the current page URL to be base64-encoded
- * in the src path. This Client Component reads the live URL at render time.
+ * Rendia's embed mechanism: a <var data-presentation="UUID"> placeholder
+ * that hub.rendia.com/whitelabel/embed.js transforms into a video player.
  *
  * Usage in MDX:
- *   <RendiaEmbed id="abc123" />
- *   <RendiaEmbed id="abc123" title="Kuidas katarakti ravitakse" />
- *   <RendiaEmbed id="abc123" caption="Allikas: Rendia / PatientPoint" />
+ *   <RendiaEmbed id="3e00363f-4c2d-417e-4c88-4cc44d954a81" />
+ *   <RendiaEmbed id="3e00363f-4c2d-417e-4c88-4cc44d954a81" caption="Allikas: Rendia" />
  *
- * The `id` is the Rendia video ID (UUID or short ID from fyi.rendia.com links).
+ * The `id` is the UUID from the data-presentation attribute in the Rendia embed code.
+ * (Click the </> button in Rendia's Embed Manager and copy the data-presentation value.)
  *
- * NOTE: blog.ksa.ee must be whitelisted by Rendia (contact Terrie Brown or Janice Mitchell)
- * for embeds to display. Currently silmatervis.ksa.ee is whitelisted — blog.ksa.ee may need adding.
+ * ⚠️ blog.ksa.ee must be whitelisted by Rendia for embeds to display.
+ *    Contact: Terrie Brown (Terrie.Brown@patientpoint.com) to add the domain.
+ *    Currently whitelisted: silmatervis.ksa.ee
  */
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
-const BLOG_BASE = "https://blog.ksa.ee";
+const RENDIA_SCRIPT = "//hub.rendia.com/whitelabel/embed.js";
 
 interface RendiaEmbedProps {
-  /** Rendia video ID — UUID or short ID */
+  /** UUID from the data-presentation attribute in Rendia's embed code */
   id: string;
-  /** Accessible iframe title. Defaults to "Rendia video" */
-  title?: string;
   /** Optional caption shown below the video */
   caption?: string;
 }
 
-export default function RendiaEmbed({ id, title = "Rendia video", caption }: RendiaEmbedProps) {
-  const pathname = usePathname();
+export default function RendiaEmbed({ id, caption }: RendiaEmbedProps) {
+  useEffect(() => {
+    if (!id) return;
+    // Load Rendia embed.js once per page — it auto-scans for var[data-presentation]
+    if (!document.querySelector(`script[src="${RENDIA_SCRIPT}"]`)) {
+      const script = document.createElement("script");
+      script.src = RENDIA_SCRIPT;
+      script.type = "text/javascript";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, [id]);
 
   if (!id) {
     return (
@@ -41,24 +50,17 @@ export default function RendiaEmbed({ id, title = "Rendia video", caption }: Ren
     );
   }
 
-  // Rendia whitelabel embed format:
-  // https://share.rendia.com/whitelabel/load/{base64(pageUrl)}/{videoId}
-  const pageUrl = `${BLOG_BASE}${pathname}`;
-  const encodedUrl = btoa(pageUrl);
-  const src = `https://share.rendia.com/whitelabel/load/${encodedUrl}/${id}`;
-
   return (
-    <figure className="my-8">
-      <div className="aspect-video relative rounded-xl overflow-hidden bg-[#0a0a0a]">
-        <iframe
-          src={src}
-          title={title}
-          allow="autoplay; fullscreen"
-          allowFullScreen
-          loading="lazy"
-          className="absolute inset-0 w-full h-full border-0"
-        />
-      </div>
+    <figure className="my-8 rounded-xl overflow-hidden">
+      {/* Rendia transforms this <var> into their video player via embed.js */}
+      <var
+        style={{ width: "100%", paddingBottom: "56.25%", display: "block" }}
+        data-presentation={id}
+      >
+        <a href={`http://fyi.rendia.com/${id}`} style={{ display: "none" }}>
+          View Video
+        </a>
+      </var>
       {caption && (
         <figcaption className="mt-2 text-center text-sm text-[#9a9a9a]">
           {caption}
