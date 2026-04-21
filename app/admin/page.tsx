@@ -1592,6 +1592,10 @@ function mdToHtml(md: string): string {
       if (!videoId) return "";
       return `<div style="position:relative;padding-bottom:56.25%;height:0;margin:2rem 0;border-radius:16px;overflow:hidden"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
     })
+    // RendiaEmbed MDX component → placeholder (actual embed loads on published page)
+    .replace(/<RendiaEmbed\s+id=["']([^"']+)["'][^/]*\/?>/gi, (_, id) => {
+      return `<div style="position:relative;padding-bottom:56.25%;height:0;margin:2rem 0;border-radius:16px;overflow:hidden;background:#0a0a0a;display:flex;align-items:center;justify-content:center"><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px"><svg width="48" height="48" viewBox="0 0 24 24" fill="white" opacity="0.4"><path d="M8 5v14l11-7z"/></svg><span style="color:rgba(255,255,255,0.5);font-size:12px;font-family:sans-serif">Rendia video — nähtav avaldatud lehel</span><span style="color:rgba(255,255,255,0.3);font-size:11px;font-family:monospace">${id.slice(0, 8)}…</span></div></div>`;
+    })
     // Headings
     .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
