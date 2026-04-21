@@ -35,18 +35,31 @@ async function unpublishDev(postPath: string): Promise<string> {
   return `${targetDir}/${basename}`;
 }
 
+async function githubGetWithRetry(url: string, token: string, retries = 3): Promise<{ content: string; sha: string }> {
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+      cache: "no-store" as RequestCache,
+    });
+    if (res.ok) return res.json() as Promise<{ content: string; sha: string }>;
+    if (res.status === 404 && i < retries - 1) {
+      // GitHub API can temporarily return 404 for files that exist (rate limits / eventual consistency)
+      await new Promise(r => setTimeout(r, 800 * (i + 1)));
+      continue;
+    }
+    throw new Error(`GitHub read failed: ${res.status}`);
+  }
+  throw new Error("GitHub read failed after retries");
+}
+
 async function unpublishProd(postPath: string): Promise<string> {
   const token = process.env.GITHUB_TOKEN!;
   const repo = process.env.GITHUB_REPO!;
 
-  // 1. Read the published post
+  // 1. Read the published post (with retry — GitHub API can be flaky after batch operations)
   const getUrl = `https://api.github.com/repos/${repo}/contents/${postPath}`;
-  const getRes = await fetch(getUrl, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-  });
-  if (!getRes.ok) throw new Error(`Could not read post from GitHub: ${getRes.status}`);
-  const fileData = await getRes.json() as { content: string; sha: string };
-  const raw = Buffer.from(fileData.content, "base64").toString("utf-8");
+  const fileData = await githubGetWithRetry(getUrl, token);
+  const raw = Buffer.from(fileData.content.replace(/\n/g, ""), "base64").toString("utf-8");
   const postSha = fileData.sha;
 
   // 2. Add draft status
