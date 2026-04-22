@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 function addDraftStatus(content: string): string {
-  // Insert `status: "draft"` into frontmatter after the first `---` line
+  // If status already present, update it in-place (avoids duplicate key crash)
+  if (/^status:/m.test(content)) {
+    return content.replace(/^status:.*$/m, 'status: "draft"');
+  }
+  // Otherwise insert after the opening ---
   return content.replace(/^(---\r?\n)/, '$1status: "draft"\n');
 }
 
