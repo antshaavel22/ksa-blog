@@ -535,6 +535,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         method: "PUT", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content }),
       });
+      if (res.status === 401 || res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
+        alert("Sessioon aegus — palun logi uuesti sisse (/admin/login)");
+        return;
+      }
       const d = await res.json() as { ok?: boolean };
       if (d.ok) {
         setSaved(true); setTimeout(() => setSaved(false), 3000);
@@ -547,6 +551,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           });
         }, 1000);
       }
+    } catch (err) {
+      alert("Viga live uuendamisel: " + (err as Error).message);
     } finally { setUpdating(false); }
   }
 
@@ -567,27 +573,47 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       body: JSON.stringify({ content: finalContent }),
     });
     // Then publish — send the content directly so publish API uses it verbatim
-    const res = await fetch("/api/admin/publish", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: activePath, content: finalContent }),
-    });
-    const d = await res.json() as { ok?: boolean; slug?: string; needsRedeploy?: boolean; error?: string };
-    if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
-    else { setError(d.error ?? "Midagi läks valesti"); }
-    setPublishing(false);
+    try {
+      const res = await fetch("/api/admin/publish", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: activePath, content: finalContent }),
+      });
+      if (res.status === 401 || res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
+        setError("Sessioon aegus — palun logi uuesti sisse (/admin/login)");
+        return;
+      }
+      const d = await res.json() as { ok?: boolean; slug?: string; needsRedeploy?: boolean; error?: string };
+      if (d.ok) { setPublished(true); setPublishedSlug(d.slug ?? ""); onPublished(); }
+      else { setError(d.error ?? "Midagi läks valesti"); }
+    } catch (err) {
+      setError("Viga: " + (err as Error).message);
+    } finally {
+      setPublishing(false);
+    }
   }
 
   async function unpublish() {
     if (!confirm(`Kas oled kindel, et soovid postituse "${title}" eemaldada avalikust vaatest?\nPostitus liigub tagasi mustandite alla.`)) return;
     setUnpublishing(true); setError("");
-    const res = await fetch("/api/admin/unpublish", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: activePath }),
-    });
-    const d = await res.json() as { ok?: boolean; draftPath?: string; error?: string };
-    if (d.ok) { setUnpublished(true); setTimeout(() => { onBack(); }, 1800); }
-    else { setError(d.error ?? "Eemaldamine ebaõnnestus"); }
-    setUnpublishing(false);
+    try {
+      const res = await fetch("/api/admin/unpublish", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: activePath }),
+      });
+      // If the session expired the server returns a login redirect (non-JSON HTML).
+      // Detect that before calling .json() so the button doesn't freeze forever.
+      if (res.status === 401 || res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
+        setError("Sessioon aegus — palun logi uuesti sisse (/admin/login)");
+        return;
+      }
+      const d = await res.json() as { ok?: boolean; draftPath?: string; error?: string };
+      if (d.ok) { setUnpublished(true); setTimeout(() => { onBack(); }, 1800); }
+      else { setError(d.error ?? "Eemaldamine ebaõnnestus"); }
+    } catch (err) {
+      setError("Viga: " + (err as Error).message);
+    } finally {
+      setUnpublishing(false);
+    }
   }
 
   async function deleteDraft() {
