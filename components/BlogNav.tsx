@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const CTA: Record<string, { label: string; href: string }> = {
   et: { label: "Broneeri aeg", href: "https://ksa.ee/broneeri" },
@@ -6,11 +7,10 @@ const CTA: Record<string, { label: string; href: string }> = {
   ru: { label: "Записаться",   href: "https://ksa.ee/ru.html" },
 };
 
-// Wordmark — "Blog" translated per language zone so readers stay in their language.
-const WORDMARK: Record<string, { first: string; second: string }> = {
-  et: { first: "KSA", second: "\u00A0Blog" },
-  en: { first: "KSA", second: "\u00A0Blog" },
-  ru: { first: "КСА", second: "\u00A0Блог" },
+const BLOG_LABEL: Record<string, string> = {
+  et: "blog",
+  en: "blog",
+  ru: "блог",
 };
 
 interface BlogNavProps {
@@ -19,7 +19,7 @@ interface BlogNavProps {
 
 export default function BlogNav({ lang = "et" }: BlogNavProps) {
   const cta = CTA[lang] ?? CTA.et;
-  const wordmark = WORDMARK[lang] ?? WORDMARK.et;
+  const blogLabel = BLOG_LABEL[lang] ?? BLOG_LABEL.et;
   // Keep the reader in their language zone — homepage filters by ?keel=xx
   const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
 
@@ -38,10 +38,16 @@ export default function BlogNav({ lang = "et" }: BlogNavProps) {
           ksa.ee
         </Link>
 
-        {/* Wordmark — links to current-language blog homepage */}
-        <Link href={homeHref} className="flex items-center">
-          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#000000]">{wordmark.first}</span>
-          <span className="text-[15px] font-semibold tracking-[-0.03em] text-[#87BE23]">{wordmark.second}</span>
+        {/* Logo — links to current-language blog homepage */}
+        <Link href={homeHref} className="flex flex-col items-center gap-0 leading-none">
+          <Image
+            src="/ksa-logo.svg"
+            alt="KSA Silmakeskus"
+            width={44}
+            height={34}
+            priority
+          />
+          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#5a6b6c] mt-[1px]">{blogLabel}</span>
         </Link>
 
         {/* Search icon */}
