@@ -8,9 +8,9 @@ const CTA: Record<string, { label: string; href: string }> = {
 };
 
 const BLOG_LABEL: Record<string, string> = {
-  et: "blog",
-  en: "blog",
-  ru: "блог",
+  et: "Blog",
+  en: "Blog",
+  ru: "Блог",
 };
 
 interface BlogNavProps {
@@ -20,7 +20,6 @@ interface BlogNavProps {
 export default function BlogNav({ lang = "et" }: BlogNavProps) {
   const cta = CTA[lang] ?? CTA.et;
   const blogLabel = BLOG_LABEL[lang] ?? BLOG_LABEL.et;
-  // Keep the reader in their language zone — homepage filters by ?keel=xx
   const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
 
   return (
@@ -38,16 +37,23 @@ export default function BlogNav({ lang = "et" }: BlogNavProps) {
           ksa.ee
         </Link>
 
-        {/* Logo — links to current-language blog homepage */}
-        <Link href={homeHref} className="flex flex-col items-center gap-0 leading-none">
+        {/* Wordmark: ksa mark + thin divider + "Blog" */}
+        <Link href={homeHref} className="flex items-center gap-2.5 group">
+          {/* ksa lettermark only (no SILMAKESKUS) */}
           <Image
-            src="/ksa-logo.svg"
+            src="/ksa-mark.svg"
             alt="KSA Silmakeskus"
-            width={44}
-            height={34}
+            width={38}
+            height={24}
             priority
+            className="shrink-0"
           />
-          <span className="text-[9px] font-semibold tracking-[0.12em] uppercase text-[#5a6b6c] mt-[1px]">{blogLabel}</span>
+          {/* Vertical divider */}
+          <span className="w-px h-[18px] bg-[#D8D5CE] shrink-0" aria-hidden="true" />
+          {/* Blog label */}
+          <span className="text-[13px] font-semibold tracking-[0.06em] text-[#5a6b6c] group-hover:text-[#87be23] transition-colors">
+            {blogLabel}
+          </span>
         </Link>
 
         {/* Search icon */}
@@ -62,7 +68,7 @@ export default function BlogNav({ lang = "et" }: BlogNavProps) {
           </svg>
         </Link>
 
-        {/* Primary CTA — language-aware */}
+        {/* Primary CTA */}
         <Link
           href={cta.href}
           className="text-[13px] font-semibold px-5 py-[9px] rounded-[32px] bg-[#87BE23] text-white hover:bg-[#74A31E] transition-all duration-150 shadow-[0_4px_16px_rgba(135,190,35,0.22)] hover:shadow-[0_6px_20px_rgba(135,190,35,0.32)] hover:-translate-y-px active:scale-[0.97] whitespace-nowrap"
