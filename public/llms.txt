@@ -30,7 +30,7 @@
 - Blog home: https://blog.ksa.ee
 - Laser correction: https://ksa.ee/flow3/
 - Price list: https://ksa.ee/hinnakiri/
-- Free vision test: https://ksa-kiirtest-lp.vercel.app/
+- Free vision test: https://kiirtest.ksa.ee/
 
 ## Authors
 

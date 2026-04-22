@@ -31,7 +31,7 @@
 - Laser correction: https://ksa.ee/flow3/
 - ICB procedure: https://ksa.ee/icb-time
 - Price list: https://ksa.ee/hinnakiri/
-- Free vision test: https://ksa-kiirtest-lp.vercel.app/
+- Free vision test: https://kiirtest.ksa.ee/
 
 ## Authors
 

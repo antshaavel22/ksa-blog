@@ -7,10 +7,13 @@ interface KiirtestCTAProps {
   lang?: PostLang;
 }
 
+// Canonical kiirtest domain — has correct Flow3 conversion tracking label.
+// NEVER use ksa-kiirtest-lp.vercel.app here — that's an older deployment
+// with the old MBD conversion label (conversions lost to a deleted account).
 const KIIRTEST_URLS: Record<PostLang, string> = {
-  et: "https://ksa-kiirtest-lp.vercel.app/",
-  ru: "https://ksa-kiirtest-lp.vercel.app/ru.html",
-  en: "https://ksa-kiirtest-lp.vercel.app/en.html",
+  et: "https://kiirtest.ksa.ee/",
+  ru: "https://kiirtest.ksa.ee/ru",
+  en: "https://kiirtest.ksa.ee/en",
 };
 
 const COPY: Record<PostLang, { headline: string; sub: string; soft: string; softSub: string }> = {
