@@ -1,38 +1,22 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import ctaConfig from "@/data/cta-config.json";
 import type { Funnel } from "@/lib/posts";
 import { sendEvent, buildCtaUrl } from "@/lib/analytics";
-
-type CtaEntry = {
-  live: boolean;
-  eyebrow: string;
-  headline: string;
-  sub: string;
-  stats: [string, string][];
-  primaryLabel: string;
-  primaryStrike?: string | null;
-  primarySub?: string | null;
-  primaryHref: string;
-  secondaryLabel?: string | null;
-  secondarySub?: string | null;
-  secondaryHref?: string | null;
-  accent: string;
-  ladder: boolean;
-  campaign?: string | null;
-};
-
-const CONFIG = ctaConfig as unknown as Record<Funnel, CtaEntry>;
+import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaEntry } from "@/lib/cta-config";
 
 interface SmartCTAProps {
   funnel?: Funnel;
   slug: string;
   lang?: string;
+  /** Optional inline config (used by admin live preview). Defaults to bundled RAW_CONFIG. */
+  configOverride?: Record<Funnel, CtaEntry>;
 }
 
-export default function SmartCTA({ funnel = "flow3", slug, lang }: SmartCTAProps) {
-  const c = CONFIG[funnel] ?? CONFIG.general;
+export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride }: SmartCTAProps) {
+  const source = configOverride ?? RAW_CONFIG;
+  const raw = source[funnel] ?? source.general;
+  const c = resolveCtaEntry(raw, normalizeLang(lang));
   const ref = useRef<HTMLElement | null>(null);
   const viewed = useRef(false);
 
