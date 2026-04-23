@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { getAllPosts } from "@/lib/posts";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import PageLang from "@/components/PageLang";
 import PostCard from "@/components/PostCard";
 import SearchPageInput from "@/components/SearchPageInput";
 import Link from "next/link";
@@ -71,6 +72,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
   return (
     <>
+      <PageLang lang={lang} />
       <BlogNav lang={lang} />
       <main className="flex-1">
         {/* Search hero */}

@@ -2,6 +2,7 @@ import { getAllCategories, getPostsByCategory } from "@/lib/posts";
 import PostCard from "@/components/PostCard";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import PageLang from "@/components/PageLang";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -44,6 +45,7 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
+      <PageLang lang={lang} />
       <BlogNav lang={lang} />
       <main className="flex-1">
         <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-12">

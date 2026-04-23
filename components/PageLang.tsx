@@ -3,20 +3,18 @@
 import { useEffect } from "react";
 
 /**
- * Tiny client helper that tells the browser what language the current page is in.
- * CookieBanner (and future i18n-aware components) read this to localize themselves.
- *
- * Sets both:
- *   - document.documentElement.lang  (for accessibility / SEO sanity)
- *   - document.body.dataset.lang     (belt-and-braces for the banner)
- *
- * Must be a client component so it runs after hydration.
+ * Sets document.documentElement.lang for the current page and notifies listeners
+ * (ConsentBanner, Analytics) via ksa:lang-changed. Must be mounted on every route.
  */
 export default function PageLang({ lang }: { lang: string }) {
   useEffect(() => {
-    const l = (lang || "et").toLowerCase().slice(0, 2);
-    document.documentElement.lang = l;
+    const raw = (lang || "et").toLowerCase().slice(0, 2);
+    const l = raw === "ru" || raw === "en" ? raw : "et";
+    if (document.documentElement.lang !== l) {
+      document.documentElement.lang = l;
+    }
     if (document.body) document.body.dataset.lang = l;
+    window.dispatchEvent(new CustomEvent("ksa:lang-changed", { detail: l }));
   }, [lang]);
   return null;
 }

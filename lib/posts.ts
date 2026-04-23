@@ -42,6 +42,8 @@ export interface PostMeta {
   medicalTopicType?: "MedicalCondition" | "MedicalProcedure";
   /** Author key who medically reviewed this article. Falls back to author. */
   reviewedBy?: string;
+  /** CSS object-position value (e.g. "50% 30%") — controls hero image crop framing. */
+  imageFocalPoint?: string;
 }
 
 export interface Post extends PostMeta {

@@ -3,7 +3,45 @@
 import { useEffect, useRef } from "react";
 import type { Funnel } from "@/lib/posts";
 import { sendEvent, buildCtaUrl } from "@/lib/analytics";
-import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaEntry } from "@/lib/cta-config";
+import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaEntry, type CtaLang } from "@/lib/cta-config";
+
+const UI_LABELS: Record<CtaLang, {
+  recommended: string;
+  standardOnline: string;
+  todayOnline: string;
+  fastTrack: string;
+  bookOnline: string;
+  ladderFastName: string;
+  ladderFastMinutes: string;
+}> = {
+  et: {
+    recommended: "Soovitatud sulle",
+    standardOnline: "STANDARD · VEEBIS",
+    todayOnline: "TÄNA · ONLINE",
+    fastTrack: "FAST-TRACK",
+    bookOnline: "Broneeri veebis",
+    ladderFastName: "Kiirtest",
+    ladderFastMinutes: "20 minutit",
+  },
+  ru: {
+    recommended: "Рекомендуем вам",
+    standardOnline: "СТАНДАРТ · ОНЛАЙН",
+    todayOnline: "СЕГОДНЯ · ОНЛАЙН",
+    fastTrack: "БЫСТРЫЙ ТЕСТ",
+    bookOnline: "Записаться онлайн",
+    ladderFastName: "Быстрый тест",
+    ladderFastMinutes: "20 минут",
+  },
+  en: {
+    recommended: "Recommended for you",
+    standardOnline: "STANDARD · ONLINE",
+    todayOnline: "TODAY · ONLINE",
+    fastTrack: "FAST-TRACK",
+    bookOnline: "Book online",
+    ladderFastName: "Quick test",
+    ladderFastMinutes: "20 minutes",
+  },
+};
 
 interface SmartCTAProps {
   funnel?: Funnel;
@@ -16,7 +54,9 @@ interface SmartCTAProps {
 export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride }: SmartCTAProps) {
   const source = configOverride ?? RAW_CONFIG;
   const raw = source[funnel] ?? source.general;
-  const c = resolveCtaEntry(raw, normalizeLang(lang));
+  const normalizedLang = normalizeLang(lang);
+  const c = resolveCtaEntry(raw, normalizedLang);
+  const ui = UI_LABELS[normalizedLang];
   const ref = useRef<HTMLElement | null>(null);
   const viewed = useRef(false);
 
@@ -87,7 +127,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
               textTransform: "uppercase",
             }}
           >
-            Soovitatud sulle
+            {ui.recommended}
           </span>
         </div>
 
@@ -169,7 +209,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                   marginBottom: 12,
                 }}
               >
-                STANDARD · VEEBIS
+                {ui.standardOnline}
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
                 <span style={{ fontSize: 30, fontWeight: 400, letterSpacing: "-0.02em" }}>Flow3 uuring</span>
@@ -194,7 +234,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                   fontWeight: 500,
                 }}
               >
-                Broneeri veebis
+                {ui.bookOnline}
                 <Arrow />
               </div>
             </a>
@@ -227,7 +267,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                   borderRadius: 999,
                 }}
               >
-                FAST-TRACK
+                {ui.fastTrack}
               </div>
               <div
                 style={{
@@ -238,14 +278,14 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                   marginBottom: 12,
                 }}
               >
-                TÄNA · ONLINE
+                {ui.todayOnline}
               </div>
               <div style={{ fontSize: 30, fontWeight: 500, letterSpacing: "-0.02em", marginBottom: 6 }}>
-                Kiirtest
+                {ui.ladderFastName}
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
                 <span style={{ fontSize: 28, fontFamily: "var(--font-serif-v2)", fontWeight: 500 }}>19 €</span>
-                <span style={{ fontSize: 13, opacity: 0.55 }}>20 minutit</span>
+                <span style={{ fontSize: 13, opacity: 0.55 }}>{ui.ladderFastMinutes}</span>
               </div>
               <div style={{ fontSize: 13, opacity: 0.7, lineHeight: 1.5 }}>{c.secondarySub}</div>
               <div

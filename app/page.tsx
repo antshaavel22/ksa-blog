@@ -3,6 +3,7 @@ import { getCategoryLabel, CATEGORY_LABELS, toSlug } from "@/lib/categories";
 import PostCard from "@/components/PostCard";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import PageLang from "@/components/PageLang";
 import SearchInput from "@/components/SearchInput";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -97,6 +98,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
 
   return (
     <>
+      <PageLang lang={lang} />
       <BlogNav lang={lang} />
       <main className="flex-1">
         {/* ── Hero ── */}

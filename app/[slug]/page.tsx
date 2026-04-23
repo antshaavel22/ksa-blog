@@ -371,6 +371,7 @@ export default async function PostPage({ params }: PageProps) {
                     width: "100%",
                     height: "clamp(340px, 60vh, 620px)",
                     objectFit: "cover",
+                    objectPosition: post.imageFocalPoint || "50% 30%",
                     display: "block",
                   }}
                 />

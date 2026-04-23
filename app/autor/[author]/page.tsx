@@ -2,6 +2,7 @@ import { getAllPosts } from "@/lib/posts";
 import { getAuthorBySlug, AUTHORS, authorToSlug } from "@/lib/authors";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import PageLang from "@/components/PageLang";
 import PostCard from "@/components/PostCard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -70,6 +71,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
 
   return (
     <>
+      <PageLang lang={lang} />
       <BlogNav lang={lang} />
       <main className="flex-1">
         {/* Author hero */}

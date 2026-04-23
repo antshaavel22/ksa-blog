@@ -15,7 +15,27 @@
     "accent": "#86BC25",
     "ladder": true,
     "campaign": "Kevad 2026",
-    "validUntil": "2026-05-31"
+    "validUntil": "2026-05-31",
+    "ru": {
+      "eyebrow": "FLOW3 – СВОБОДА ОТ ОЧКОВ",
+      "headline": "Вы видите без очков — уже завтра утром.",
+      "sub": "Flow3 — самая точная лазерная процедура в Эстонии для близоруких 18–45 лет. 8 минут, один день.",
+      "stats": [["18–45", "возраст"], ["8 мин", "процедура"], ["1 неделя", "восстановление"]],
+      "primaryLabel": "Исследование Flow3 — 39 €",
+      "primarySub": "90 мин · Таллинн или Тарту · промокод BLOG39",
+      "secondaryLabel": "Kiirtest.ee — 19 € сегодня",
+      "secondarySub": "20 мин · онлайн · промокод KIIRTEST19"
+    },
+    "en": {
+      "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
+      "headline": "Wake up tomorrow seeing clearly — without glasses.",
+      "sub": "Flow3 is Estonia's most precise laser procedure for near-sighted adults 18–45. 8 minutes, one day.",
+      "stats": [["18–45", "age"], ["8 min", "procedure"], ["1 week", "recovery"]],
+      "primaryLabel": "Flow3 consultation — €39",
+      "primarySub": "90 min · Tallinn or Tartu · code BLOG39",
+      "secondaryLabel": "Kiirtest.ee — €19 today",
+      "secondarySub": "20 min · online · code KIIRTEST19"
+    }
   },
   "audit": {
     "live": true,
@@ -31,7 +51,23 @@
     "accent": "#86BC25",
     "ladder": false,
     "campaign": "Kevad 2026",
-    "validUntil": "2026-05-31"
+    "validUntil": "2026-05-31",
+    "ru": {
+      "eyebrow": "ПОЛНОЕ ОБСЛЕДОВАНИЕ ЗРЕНИЯ 45+",
+      "headline": "Когда зрение меняется — пора увидеть полную картину.",
+      "sub": "Обследование глазного дна, внутриглазного давления, катаракты и макулы. 120 минут полной диагностики.",
+      "stats": [["149 €", "обычно"], ["139 €", "читателям"], ["120 мин", "длительность"]],
+      "primaryLabel": "Записаться на аудит — 139 €",
+      "primarySub": "Промокод BLOG139 · Таллинн, Тарту, Пярну"
+    },
+    "en": {
+      "eyebrow": "COMPREHENSIVE EYE EXAM 45+",
+      "headline": "When vision starts to change, it's time to see the full picture.",
+      "sub": "Retina, intraocular pressure, cataract and macular examination. 120 minutes of complete diagnostics.",
+      "stats": [["€149", "regular"], ["€139", "for readers"], ["120 min", "duration"]],
+      "primaryLabel": "Book the audit — €139",
+      "primarySub": "Code BLOG139 · Tallinn, Tartu, Pärnu"
+    }
   },
   "kids": {
     "live": true,
@@ -44,7 +80,23 @@
     "primaryHref": "https://ksa.ee/nagemiskontroll-lastele/?source=blog&funnel=kids",
     "secondaryLabel": null,
     "accent": "#D97757",
-    "ladder": false
+    "ladder": false,
+    "ru": {
+      "eyebrow": "ОБСЛЕДОВАНИЕ ЗРЕНИЯ У ДЕТЕЙ",
+      "headline": "Каждый 6-й ребёнок видит хуже, чем должен — и большинство ещё об этом не знают.",
+      "sub": "Детское обследование включает школьную форму, рецепт на очки и игровой тест зрения. Подходит с 3 лет.",
+      "stats": [["3+", "лет"], ["45 мин", "длительность"], ["Школьная", "форма"]],
+      "primaryLabel": "Записать ребёнка — 69 €",
+      "primarySub": "Промокод BLOGKIDS · школьная форма и заключение офтальмолога"
+    },
+    "en": {
+      "eyebrow": "CHILDREN'S EYE EXAM",
+      "headline": "Every 6th child sees worse than they should — and most don't know it yet.",
+      "sub": "Children's exam includes the school form, prescription, and a playful vision test. Suitable from age 3.",
+      "stats": [["3+", "years"], ["45 min", "duration"], ["School", "form"]],
+      "primaryLabel": "Book for your child — €69",
+      "primarySub": "Code BLOGKIDS · school form and ophthalmologist's note included"
+    }
   },
   "dryeye": {
     "live": true,
@@ -57,7 +109,23 @@
     "primaryHref": "https://ksa.ee/hinnakiri/?source=blog&funnel=dryeye",
     "secondaryLabel": null,
     "accent": "#5B9AC9",
-    "ladder": false
+    "ladder": false,
+    "ru": {
+      "eyebrow": "ДИАГНОСТИКА СУХОГО ГЛАЗА",
+      "headline": "Если глаза горят после часа перед экраном — это не норма.",
+      "sub": "Углублённое обследование сухого глаза, терапия Rexon Eye OMR и пунктальные пробки. Одна причина — один план.",
+      "stats": [["OMR", "Rexon Eye"], ["Пробки", "пунктальные"], ["60 мин", "диагностика"]],
+      "primaryLabel": "Записаться на обследование — 89 €",
+      "primarySub": "Промокод BLOGDRY · включает OMR-анализ"
+    },
+    "en": {
+      "eyebrow": "DRY EYE DIAGNOSTICS",
+      "headline": "If your eyes burn after an hour at the screen — that's not normal.",
+      "sub": "In-depth dry eye exam, Rexon Eye OMR therapy, and punctum plugs. One cause, one plan.",
+      "stats": [["OMR", "Rexon Eye"], ["Punctum", "plugs"], ["60 min", "diagnostics"]],
+      "primaryLabel": "Book the dry eye exam — €89",
+      "primarySub": "Code BLOGDRY · includes OMR analysis"
+    }
   },
   "general": {
     "live": true,
@@ -71,6 +139,24 @@
     "secondaryLabel": "Vaata kõiki uuringuid",
     "secondaryHref": "https://ksa.ee/hinnakiri",
     "accent": "#86BC25",
-    "ladder": false
+    "ladder": false,
+    "ru": {
+      "eyebrow": "ЗАПИСАТЬСЯ НА ОБСЛЕДОВАНИЕ",
+      "headline": "Видят ли ваши глаза всю картину?",
+      "sub": "Полное обследование зрения в Таллинне, Тарту или Пярну. Каждое обследование начинается с подробной беседы.",
+      "stats": [["39 €", "Flow3"], ["139 €", "полное"], ["3", "города"]],
+      "primaryLabel": "Исследование Flow3 — 39 €",
+      "primarySub": "Промокод BLOG39 · сегодня 19 € через kiirtest.ee",
+      "secondaryLabel": "Все обследования"
+    },
+    "en": {
+      "eyebrow": "BOOK AN EYE EXAM",
+      "headline": "Do your eyes see the full picture?",
+      "sub": "A comprehensive eye examination in Tallinn, Tartu, or Pärnu. Every exam begins with a thorough conversation.",
+      "stats": [["€39", "Flow3"], ["€139", "comprehensive"], ["3", "cities"]],
+      "primaryLabel": "Flow3 consultation — €39",
+      "primarySub": "Code BLOG39 · today €19 via kiirtest.ee",
+      "secondaryLabel": "All examinations"
+    }
   }
 }

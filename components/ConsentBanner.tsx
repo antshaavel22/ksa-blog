@@ -71,18 +71,34 @@ const T: Record<Lang, {
   },
 };
 
-export default function ConsentBanner({ lang = "et" }: { lang?: Lang }) {
+function detectLang(): Lang {
+  if (typeof document === "undefined") return "et";
+  const htmlLang = document.documentElement.lang;
+  if (htmlLang === "ru" || htmlLang === "en") return htmlLang;
+  // Fallback: URL ?keel=ru|en (listing pages set this before LangSync mounts)
+  const params = new URLSearchParams(window.location.search);
+  const keel = params.get("keel");
+  if (keel === "ru" || keel === "en") return keel;
+  return "et";
+}
+
+export default function ConsentBanner() {
+  const [lang, setLang] = useState<Lang>("et");
   const [decided, setDecided] = useState<boolean>(true); // assume decided until hydrated
   const [showSettings, setShowSettings] = useState(false);
   const [a, setA] = useState(false);
   const [m, setM] = useState(false);
 
   useEffect(() => {
+    setLang(detectLang());
+    const onLangChange = () => setLang(detectLang());
+    window.addEventListener("ksa:lang-changed", onLangChange);
+
     if (isDNT()) {
       // DNT = auto-reject everything. Record decision so banner doesn't reappear.
       writeConsent({ a: false, m: false });
       setDecided(true);
-      return;
+      return () => window.removeEventListener("ksa:lang-changed", onLangChange);
     }
     const existing = readConsent();
     if (existing) {
@@ -95,7 +111,10 @@ export default function ConsentBanner({ lang = "et" }: { lang?: Lang }) {
 
     const onOpen = () => setShowSettings(true);
     window.addEventListener("ksa:open-consent", onOpen);
-    return () => window.removeEventListener("ksa:open-consent", onOpen);
+    return () => {
+      window.removeEventListener("ksa:open-consent", onOpen);
+      window.removeEventListener("ksa:lang-changed", onLangChange);
+    };
   }, []);
 
   function save(state: Omit<ConsentState, "ts">) {

@@ -147,7 +147,7 @@ Editors: **Silvia Johanna Haavel** (ET), **Jana** (RU + EN)
 - **Silvia Johanna Haavel** — ET editor
 - **Jana** — RU + EN editor
 - **Mai** — building new booking system (active this week 2026-04-23)
-- **Kadri** — DNS, redirects, Search Console — **on vacation until 2026-04-27**, do not route tasks to her this week; send booking-LP / WP requests to Mai
+- **Kadri** — redirects, Search Console — **on vacation until 2026-04-27**, do not route tasks to her this week; send booking-LP / WP requests to Mai. DNS handled by Ants directly.
 
 ## Tracking & SEO
 - **GTM:** GTM-KCZVRJ8 + **GA4:** G-7R7T8GF37J — both in `app/layout.tsx`

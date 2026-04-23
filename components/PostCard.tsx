@@ -51,7 +51,7 @@ export default function PostCard({ post, large = false }: PostCardProps) {
               height={large ? 720 : 480}
               sizes={large ? "(max-width: 1280px) 100vw, 1280px" : "(max-width: 900px) 50vw, 400px"}
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              style={{ display: "block" }}
+              style={{ display: "block", objectPosition: post.imageFocalPoint || "50% 30%" }}
               priority={large}
             />
           ) : (

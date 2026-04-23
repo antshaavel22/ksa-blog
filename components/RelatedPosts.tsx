@@ -96,7 +96,7 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
               height={360}
               sizes="(max-width: 900px) 50vw, 400px"
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-              style={{ display: "block" }}
+              style={{ display: "block", objectPosition: post.imageFocalPoint || "50% 30%" }}
             />
           ) : (
             <div
