@@ -2,6 +2,15 @@
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
+import SmartCTA from "@/components/SmartCTA";
+import type { CtaEntry, CtaLang, CtaLangOverrides } from "@/lib/cta-config";
+import type { Funnel } from "@/lib/posts";
+import { AUTHORS } from "@/lib/authors";
+
+// Medical reviewers — only qualified clinicians appear in reviewedBy dropdown
+const REVIEWERS = AUTHORS.filter(a =>
+  ["dr-ants-haavel", "dr-karl-erik-tillmann", "optometrist-liisi"].includes(a.slug)
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -264,6 +273,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   // Assignment state
   const [assignedTo, setAssignedTo] = useState(draft.assignedTo ?? "");
   const [deadline, setDeadline] = useState(draft.deadline ?? "");
+  const [reviewedBy, setReviewedBy] = useState("");
   const [notifying, setNotifying] = useState(false);
   const [notified, setNotified] = useState(false);
 
@@ -285,6 +295,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
           setSelectedCategories(getFmCategories(parsed.frontmatter));
+          setReviewedBy(getFmField(parsed.frontmatter, "reviewedBy"));
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -335,6 +346,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     }
     if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
     if (deadline) fm = setFmField(fm, "deadline", deadline);
+    if (reviewedBy) fm = setFmField(fm, "reviewedBy", reviewedBy);
     if (extraMedical) {
       fm = setFmField(fm, "medicalReview", "true");
       fm = setFmField(fm, "status", "medical_review");
@@ -557,6 +569,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   }
 
   async function publish() {
+    if (!reviewedBy) {
+      setError("⚠️ Ei saa avaldada — meditsiiniline läbivaataja (reviewedBy) on kohustuslik. Vali sticky-riba allservas.");
+      return;
+    }
     setPublishing(true); setError("");
     // Build the final content from current React state — this is the source of truth.
     // We pass it directly to the publish API so it never has to read from the stale filesystem.
@@ -1211,6 +1227,25 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               fontSize: 13, background: "white", color: "#1a1a1a", outline: "none", cursor: "pointer",
             }}
           />
+          <span style={{ fontSize: 13, fontWeight: 700, color: reviewedBy ? "#5a6b6c" : "#b91c1c" }}>
+            Läbi vaadanud{!reviewedBy && " *"}:
+          </span>
+          <select
+            value={reviewedBy}
+            onChange={e => setReviewedBy(e.target.value)}
+            style={{
+              padding: "7px 12px",
+              border: `1.5px solid ${reviewedBy ? "#e6e6e6" : "#fca5a5"}`,
+              borderRadius: 10,
+              fontSize: 13, background: reviewedBy ? "white" : "#fef2f2",
+              color: "#1a1a1a", outline: "none", cursor: "pointer",
+            }}
+          >
+            <option value="">— kohustuslik —</option>
+            {REVIEWERS.map(r => (
+              <option key={r.slug} value={r.displayName}>{r.displayName}</option>
+            ))}
+          </select>
           {assignedTo && (
             <button onClick={notifyAssignee} disabled={notifying} style={{
               padding: "7px 14px", border: "1.5px solid #e6e6e6", borderRadius: 10,
@@ -2111,6 +2146,7 @@ function PublishedTab() {
           ))}
         </div>
       </div>
+      <Stats7dTile />
       {/* Search row */}
       <div style={{ marginBottom: 20 }}>
         <input
@@ -3084,16 +3120,22 @@ function HelpTab() {
   );
 }
 
+// ─── CTA Tab ──────────────────────────────────────────────────────────────────
+
+function CTATab() {
+  return <CTATabInner />;
+}
+
 // ─── Root Admin Page ──────────────────────────────────────────────────────────
 
 // Bumped whenever we ship a critical admin-side fix. Bump this constant to
 // force browsers with stale JS bundles to reload on their next visit. This is
 // the single belt between "I shipped a fix" and "the editor is actually using
 // it" — without this, a long-open tab can keep writing with old buggy code.
-const ADMIN_BUILD = "2026-04-18-3";
+const ADMIN_BUILD = "2026-04-23-1";
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "published" | "write" | "prompt" | "help">("drafts");
+  const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "prompt" | "help">("drafts");
 
   // Force-reload when the deployed admin build is newer than the one loaded.
   // Runs once on mount + every 5 min — picks up mid-session deploys too.
@@ -3147,6 +3189,7 @@ export default function AdminPage() {
             { id: "drafts", label: "Mustandid" },
             { id: "published", label: "Avaldatud" },
             { id: "write", label: "Kirjuta uus" },
+            { id: "cta", label: "CTA-d" },
             { id: "prompt", label: "Sisureeglid" },
             { id: "help", label: "Juhend" },
           ] as const).map(t => (
@@ -3173,7 +3216,380 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+    </div>
+  );
+}
+
+type StatsRow = { slug: string; views: number; cta_views: number; cta_clicks: number; ctr_pct: number };
+
+function Stats7dTile() {
+  const [rows, setRows] = useState<StatsRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/stats-7d")
+      .then(r => r.json())
+      .then((d: { rows?: StatsRow[] }) => setRows(d.rows ?? []))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalViews = rows.reduce((s, r) => s + (r.views ?? 0), 0);
+  const totalCtaViews = rows.reduce((s, r) => s + (r.cta_views ?? 0), 0);
+  const totalCtaClicks = rows.reduce((s, r) => s + (r.cta_clicks ?? 0), 0);
+  const overallCtr = totalCtaViews > 0 ? Math.round((totalCtaClicks / totalCtaViews) * 1000) / 10 : 0;
+  const top = expanded ? rows : rows.slice(0, 5);
+
+  return (
+    <div style={{
+      background: "white", border: "1.5px solid #f0f0ec", borderRadius: 12,
+      padding: 16, marginBottom: 20,
+    }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#9a9a9a", fontWeight: 600 }}>
+            Viimased 7 päeva
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 500, marginTop: 4, color: "#1a1a1a" }}>
+            {loading ? "…" : `${totalViews} vaatamist · ${overallCtr}% CTR`}
+          </div>
+        </div>
+        {rows.length > 5 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            style={{ background: "none", border: 0, color: "#87be23", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+          >
+            {expanded ? "Näita vähem" : `Näita kõiki (${rows.length})`}
+          </button>
+        )}
+      </div>
+      {!loading && rows.length === 0 && (
+        <div style={{ fontSize: 13, color: "#9a9a9a" }}>
+          Statistika saadaval pärast esimesi külastusi (või Supabase pole konfigureeritud).
+        </div>
+      )}
+      {top.length > 0 && (
+        <div style={{ display: "grid", gap: 6 }}>
+          {top.map(r => (
+            <div key={r.slug} style={{
+              display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 12,
+              fontSize: 12, color: "#5a6b6c",
+              padding: "6px 10px", background: "#fafaf7", borderRadius: 8,
+            }}>
+              <span style={{ fontFamily: "monospace", color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.slug}</span>
+              <span>{r.views} vaat.</span>
+              <span>{r.cta_clicks}/{r.cta_views} CTA</span>
+              <span style={{ fontWeight: 600, color: r.ctr_pct >= 5 ? "#87be23" : "#5a6b6c" }}>{r.ctr_pct}%</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CTA Tab Inner ────────────────────────────────────────────────────────────
+
+const FUNNEL_ORDER: Funnel[] = ["flow3", "audit", "kids", "dryeye", "general"];
+const FUNNEL_LABELS: Record<Funnel, string> = {
+  flow3: "Flow3",
+  audit: "Audit",
+  kids: "Lapsed",
+  dryeye: "Kuiv silm",
+  general: "Üldine",
+};
+
+function CTATabInner() {
+  const [config, setConfig] = useState<Record<Funnel, CtaEntry> | null>(null);
+  const [initial, setInitial] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [funnel, setFunnel] = useState<Funnel>("flow3");
+  const [lang, setLang] = useState<CtaLang>("et");
+  const [previewSlug] = useState("preview");
+
+  useEffect(() => {
+    fetch("/api/admin/cta-config")
+      .then(r => r.json())
+      .then((d: { config?: Record<Funnel, CtaEntry>; error?: string }) => {
+        if (d.config) {
+          setConfig(d.config);
+          setInitial(JSON.stringify(d.config));
+        } else {
+          setError(d.error ?? "Viga laadimisel");
+        }
+      })
+      .catch(e => setError((e as Error).message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const dirty = config ? JSON.stringify(config) !== initial : false;
+
+  function updateEntry(f: Funnel, patch: Partial<CtaEntry>) {
+    if (!config) return;
+    setConfig({ ...config, [f]: { ...config[f], ...patch } });
+  }
+
+  function updateOverride(f: Funnel, l: "ru" | "en", patch: Partial<CtaLangOverrides>) {
+    if (!config) return;
+    const cur = config[f][l] ?? {};
+    const next = { ...cur, ...patch };
+    // drop undefined/empty fields so fallback kicks in
+    const cleaned: CtaLangOverrides = {};
+    (Object.keys(next) as (keyof CtaLangOverrides)[]).forEach(k => {
+      const v = next[k];
+      if (v !== undefined && v !== "" && v !== null) (cleaned as Record<string, unknown>)[k] = v;
+    });
+    setConfig({
+      ...config,
+      [f]: { ...config[f], [l]: Object.keys(cleaned).length > 0 ? cleaned : undefined },
+    });
+  }
+
+  async function save() {
+    if (!config) return;
+    setSaving(true); setError(""); setSaved(false);
+    try {
+      const res = await fetch("/api/admin/cta-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config }),
+      });
+      const d = await res.json() as { ok?: boolean; error?: string; needsRedeploy?: boolean };
+      if (d.ok) {
+        setInitial(JSON.stringify(config));
+        setSaved(true);
+        setTimeout(() => setSaved(false), 4000);
+      } else {
+        setError(d.error ?? "Salvestamine ebaõnnestus");
+      }
+    } catch (e) { setError((e as Error).message); }
+    finally { setSaving(false); }
+  }
+
+  if (loading) return <div style={{ padding: 60, textAlign: "center", color: "#9a9a9a" }}>Laen…</div>;
+  if (!config) return <div style={{ padding: 60, textAlign: "center", color: "#b91c1c" }}>⚠ {error || "Konfiguratsiooni ei leitud"}</div>;
+
+  const entry = config[funnel];
+  const overrides: CtaLangOverrides = (lang === "et" ? {} : (entry[lang] ?? {}));
+
+  // value resolver for the form: ET reads base, RU/EN read override (empty if unset)
+  const v = (key: keyof CtaLangOverrides): string => {
+    if (lang === "et") {
+      const val = entry[key as keyof CtaEntry];
+      return typeof val === "string" ? val : "";
+    }
+    const val = overrides[key];
+    return typeof val === "string" ? val : "";
+  };
+
+  function setField(key: keyof CtaLangOverrides, value: string) {
+    if (lang === "et") {
+      updateEntry(funnel, { [key]: value } as Partial<CtaEntry>);
+    } else {
+      updateOverride(funnel, lang as "ru" | "en", { [key]: value });
+    }
+  }
+
+  // stats editing
+  const statsSource: [string, string][] = (lang === "et"
+    ? entry.stats
+    : (overrides.stats ?? entry.stats)) ?? [];
+
+  function setStat(i: number, which: 0 | 1, val: string) {
+    const next: [string, string][] = statsSource.map(s => [...s] as [string, string]);
+    while (next.length < 3) next.push(["", ""]);
+    next[i][which] = val;
+    // trim trailing empty rows
+    while (next.length > 0 && !next[next.length - 1][0] && !next[next.length - 1][1]) next.pop();
+    if (lang === "et") {
+      updateEntry(funnel, { stats: next });
+    } else {
+      updateOverride(funnel, lang as "ru" | "en", { stats: next.length > 0 ? next : undefined });
+    }
+  }
+
+  const statRows: [string, string][] = statsSource.length > 0
+    ? [...statsSource, ...Array(Math.max(0, 3 - statsSource.length)).fill(["", ""])]
+    : [["", ""], ["", ""], ["", ""]];
+
+  const input: React.CSSProperties = {
+    width: "100%", padding: "8px 10px", fontSize: 13, border: "1px solid #e6e6e6",
+    borderRadius: 8, background: "white", outline: "none", fontFamily: "inherit",
+    color: "#1a1a1a", boxSizing: "border-box",
+  };
+  const label: React.CSSProperties = {
+    display: "block", fontSize: 11, fontWeight: 600, color: "#5a6b6c",
+    textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4,
+  };
+  const fallbackHint = lang !== "et" ? " (tühjaks jättes kasutab ET)" : "";
+
+  return (
+    <div style={{ padding: "24px 20px 120px", maxWidth: 1600, margin: "0 auto" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 800, color: "#1a1a1a" }}>
+            🎯 CTA-d — artikli footeri kutse
+          </h2>
+          <p style={{ margin: 0, fontSize: 13, color: "#9a9a9a", lineHeight: 1.5, maxWidth: 640 }}>
+            Muuda pealkirju, hindu ja koode. Muudatused jõuavad artiklitele ~2 minuti jooksul (Vercel rebuild).
+            RU/EN tühjad väljad langevad tagasi ET väärtustele.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          {saved && <span style={{ fontSize: 13, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud — Vercel rebuildib</span>}
+          {error && <span style={{ fontSize: 13, color: "#b91c1c" }}>⚠ {error}</span>}
+          <button onClick={save} disabled={saving || !dirty} style={{
+            padding: "10px 22px", border: "none", borderRadius: 12,
+            background: saving || !dirty ? "#c5dfa0" : "#87be23", color: "white",
+            fontSize: 14, fontWeight: 700, cursor: saving || !dirty ? "not-allowed" : "pointer",
+          }}>{saving ? "Salvestab…" : dirty ? "Salvesta" : "Muudatusi pole"}</button>
+        </div>
+      </div>
+
+      {/* Funnel pills */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {FUNNEL_ORDER.map(f => (
+          <button key={f} onClick={() => setFunnel(f)} style={{
+            padding: "6px 14px", border: `1px solid ${funnel === f ? "#87be23" : "#e6e6e6"}`,
+            borderRadius: 999, background: funnel === f ? "#edf7d6" : "white",
+            color: funnel === f ? "#3d6b00" : "#5a6b6c", fontSize: 13, fontWeight: 600,
+            cursor: "pointer",
+          }}>
+            {FUNNEL_LABELS[f]}
+            {!config[f].live && <span style={{ marginLeft: 8, fontSize: 10, opacity: 0.6 }}>off</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* Language tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 20, borderBottom: "1px solid #e6e6e6" }}>
+        {(["et", "ru", "en"] as const).map(l => (
+          <button key={l} onClick={() => setLang(l)} style={{
+            padding: "8px 16px", border: "none", background: "none",
+            borderBottom: lang === l ? "3px solid #87be23" : "3px solid transparent",
+            color: lang === l ? "#87be23" : "#9a9a9a",
+            fontSize: 13, fontWeight: 700, cursor: "pointer",
+            textTransform: "uppercase", letterSpacing: "0.06em",
+          }}>{l}</button>
+        ))}
+      </div>
+
+      {/* Two-column: form + preview */}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(420px, 1fr) minmax(520px, 1.3fr)", gap: 24 }}>
+        {/* Form */}
+        <div style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid #e6e6e6" }}>
+          {/* Shared settings (ET only) */}
+          {lang === "et" && (
+            <div style={{ marginBottom: 20, paddingBottom: 16, borderBottom: "1px solid #f0f0ec" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+                Jagatud seaded
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#1a1a1a" }}>
+                  <input type="checkbox" checked={!!entry.live} onChange={e => updateEntry(funnel, { live: e.target.checked })} />
+                  <span>Live (näita artiklitel)</span>
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#1a1a1a" }}>
+                  <input type="checkbox" checked={!!entry.ladder} onChange={e => updateEntry(funnel, { ladder: e.target.checked })} />
+                  <span>Ladder (kahe kaardi paigutus)</span>
+                </label>
+                <div>
+                  <label style={label}>Accent-värv</label>
+                  <input type="text" value={entry.accent ?? ""} onChange={e => updateEntry(funnel, { accent: e.target.value })} style={input} />
+                </div>
+                <div>
+                  <label style={label}>Primary strike (läbikriipsutatud hind)</label>
+                  <input type="text" value={entry.primaryStrike ?? ""} onChange={e => updateEntry(funnel, { primaryStrike: e.target.value || null })} style={input} />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={label}>Primary href (broneerimislink)</label>
+                  <input type="text" value={entry.primaryHref ?? ""} onChange={e => updateEntry(funnel, { primaryHref: e.target.value })} style={input} />
+                </div>
+                <div style={{ gridColumn: "1 / -1" }}>
+                  <label style={label}>Secondary href</label>
+                  <input type="text" value={entry.secondaryHref ?? ""} onChange={e => updateEntry(funnel, { secondaryHref: e.target.value || null })} style={input} />
+                </div>
+                <div>
+                  <label style={label}>Campaign (utm_campaign)</label>
+                  <input type="text" value={entry.campaign ?? ""} onChange={e => updateEntry(funnel, { campaign: e.target.value || null })} style={input} />
+                </div>
+                <div>
+                  <label style={label}>Valid until (YYYY-MM-DD)</label>
+                  <input type="text" value={entry.validUntil ?? ""} onChange={e => updateEntry(funnel, { validUntil: e.target.value || null })} style={input} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Lang-specific fields */}
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+            Tekstid — {lang.toUpperCase()}{fallbackHint}
+          </div>
+
+          <div style={{ display: "grid", gap: 12 }}>
+            <div>
+              <label style={label}>Eyebrow</label>
+              <input type="text" value={v("eyebrow")} onChange={e => setField("eyebrow", e.target.value)} style={input} />
+            </div>
+            <div>
+              <label style={label}>Headline</label>
+              <textarea value={v("headline")} onChange={e => setField("headline", e.target.value)} rows={2} style={{ ...input, fontFamily: "inherit", resize: "vertical" }} />
+            </div>
+            <div>
+              <label style={label}>Sub (alateksti)</label>
+              <textarea value={v("sub")} onChange={e => setField("sub", e.target.value)} rows={2} style={{ ...input, fontFamily: "inherit", resize: "vertical" }} />
+            </div>
+
+            <div>
+              <label style={label}>Stats (kuni 3 paari)</label>
+              <div style={{ display: "grid", gap: 6 }}>
+                {statRows.slice(0, 3).map(([val, lbl], i) => (
+                  <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                    <input type="text" placeholder={`Stat ${i + 1} väärtus`} value={val} onChange={e => setStat(i, 0, e.target.value)} style={input} />
+                    <input type="text" placeholder={`Stat ${i + 1} silt`} value={lbl} onChange={e => setStat(i, 1, e.target.value)} style={input} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={label}>Primary label (peamine nupp)</label>
+              <input type="text" value={v("primaryLabel")} onChange={e => setField("primaryLabel", e.target.value)} style={input} />
+            </div>
+            <div>
+              <label style={label}>Primary sub (all-tekst)</label>
+              <input type="text" value={v("primarySub")} onChange={e => setField("primarySub", e.target.value)} style={input} />
+            </div>
+            <div>
+              <label style={label}>Secondary label</label>
+              <input type="text" value={v("secondaryLabel")} onChange={e => setField("secondaryLabel", e.target.value)} style={input} />
+            </div>
+            <div>
+              <label style={label}>Secondary sub</label>
+              <input type="text" value={v("secondarySub")} onChange={e => setField("secondarySub", e.target.value)} style={input} />
+            </div>
+          </div>
+        </div>
+
+        {/* Preview */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+            Elav eelvaade — {lang.toUpperCase()}
+          </div>
+          <div style={{ borderRadius: 14, overflow: "hidden", border: "1px solid #e6e6e6", background: "#1a1a1a" }}>
+            <SmartCTA funnel={funnel} slug={previewSlug} lang={lang} configOverride={config} />
+          </div>
+          <p style={{ marginTop: 10, fontSize: 12, color: "#9a9a9a", lineHeight: 1.5 }}>
+            Eelvaade kasutab sama SmartCTA komponenti nagu artiklid. Muudatused kuvatakse kohe, kuid salvestamata.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

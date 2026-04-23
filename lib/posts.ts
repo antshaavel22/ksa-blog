@@ -7,6 +7,7 @@ const postsDirectory = path.join(process.cwd(), "content/posts");
 
 export type PostLang = "et" | "ru" | "en";
 export type CtaType = "kiirtest-inline" | "kiirtest-soft" | "none";
+export type Funnel = "flow3" | "audit" | "kids" | "dryeye" | "general";
 
 export interface FaqItem {
   q: string;
@@ -33,6 +34,14 @@ export interface PostMeta {
   hideAuthor?: boolean;
   translatedFrom?: string;
   expertReviewer?: string;
+  funnel?: Funnel;
+  ctaOverride?: string;
+  /** Schema.org medical entity referenced by this article (displayed via `about`). */
+  medicalTopic?: string;
+  /** Optional type for medicalTopic; defaults to "MedicalCondition". */
+  medicalTopicType?: "MedicalCondition" | "MedicalProcedure";
+  /** Author key who medically reviewed this article. Falls back to author. */
+  reviewedBy?: string;
 }
 
 export interface Post extends PostMeta {

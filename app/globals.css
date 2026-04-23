@@ -1,8 +1,105 @@
 @import "tailwindcss";
 
-/* ─── KSA Brand Design System — aligned with ksa.ee 2025 CVI ─── */
+/* =============================================================
+   KSA v2 Design Tokens (2026-04 redesign)
+   Replaces legacy ksa.ee 2025 CVI tokens below. Legacy vars kept
+   temporarily for in-flight components; remove after full swap.
+   ============================================================= */
+:root {
+  /* Brand: lime green */
+  --lime:        #86BC25;
+  --lime-dark:   #6FA01E;
+  --lime-darker: #5A8518;
+  --lime-light:  #a8d45a;
+  --lime-wash:   #f4f9e8;
+  --lime-50:     #eef5d9;
+
+  /* Neutrals: ink */
+  --ink:    #1a1a1a;
+  --ink-80: #333333;
+  --ink-60: #555555;
+  --ink-40: #888888;
+  --ink-20: #bbbbbb;
+  --ink-10: #dddddd;
+  --ink-05: #eeeeee;
+
+  /* Surfaces */
+  --beige:       #f5f0e6;
+  --beige-light: #faf7f0;
+  --line:        #e8e4dc;
+
+  /* Non-lime CTA accents */
+  --accent-warm: #D97757; /* Kids */
+  --accent-blue: #5B9AC9; /* Dry eye */
+
+  /* Typography */
+  --font-sans-v2:  var(--font-geist-sans), -apple-system, system-ui, sans-serif;
+  --font-serif-v2: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --fs-display: clamp(56px, 9vw, 112px);
+  --fs-h1:      clamp(40px, 5.5vw, 64px);
+  --fs-h2:      32px;
+  --fs-h3:      22px;
+  --fs-lede:    22px;
+  --fs-body:    18px;
+  --fs-ui:      15px;
+  --fs-small:   13px;
+  --fs-label:   11px;
+
+  --lh-tight:   1.08;
+  --lh-snug:    1.2;
+  --lh-body:    1.6;
+  --lh-prose:   1.75;
+
+  --tr-tight:   -0.028em;
+  --tr-body:    -0.005em;
+
+  /* Radii */
+  --r-sm:   8px;
+  --r-md:   14px;
+  --r-card: 18px;
+  --r-lg:   20px;
+  --r-pill: 999px;
+
+  /* Section rhythm */
+  --sp-section: 72px;
+  --sp-block:   48px;
+  --sp-item:    24px;
+
+  /* Shadows */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.05);
+  --shadow-card: 0 2px 16px rgba(0,0,0,.06);
+  --shadow-pop:  0 16px 48px rgba(0,0,0,.18);
+
+  /* Layout */
+  --container: 1280px;
+  --narrow:    720px;
+  --gutter:    40px;
+}
+
+/* ─── KSA Brand Design System — aligned with ksa.ee 2025 CVI (LEGACY) ─── */
 @theme inline {
-  /* Colours — exact match to ksa.ee */
+  /* v2 tokens exposed to Tailwind utilities */
+  --color-lime:          #86BC25;
+  --color-lime-dark:     #6FA01E;
+  --color-lime-darker:   #5A8518;
+  --color-lime-wash:     #f4f9e8;
+  --color-ink:           #1a1a1a;
+  --color-ink-80:        #333333;
+  --color-ink-60:        #555555;
+  --color-ink-40:        #888888;
+  --color-ink-20:        #bbbbbb;
+  --color-ink-10:        #dddddd;
+  --color-ink-05:        #eeeeee;
+  --color-beige:         #f5f0e6;
+  --color-beige-light:   #faf7f0;
+  --color-line:          #e8e4dc;
+  --color-accent-warm:   #D97757;
+  --color-accent-blue:   #5B9AC9;
+  --font-serif:          var(--font-fraunces);
+  --radius-card:         18px;
+
+  /* Legacy (pre-v2) — kept until all components migrated */
   --color-background:     #FEFEFE;
   --color-foreground:     #000000;
   --color-surface:        #F9F7F4;
@@ -31,7 +128,148 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Article prose — ksa.ee reading experience ─────────────────── */
+/* =============================================================
+   v2 prose — Blog Article reading experience
+   720px column · Geist body · Fraunces dropcap + pullquote
+   ============================================================= */
+.prose-v2 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  color: var(--ink-80);
+}
+.prose-v2 p {
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--ink-80);
+  margin: 0 0 1.4em;
+  letter-spacing: -0.003em;
+  font-weight: 400;
+}
+.prose-v2 p.lede,
+.prose-v2 p:first-of-type {
+  font-size: 22px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin-bottom: 1.5em;
+  font-weight: 400;
+}
+.prose-v2 p:first-of-type::first-letter {
+  font-family: var(--font-serif-v2);
+  font-size: 84px;
+  float: left;
+  line-height: 0.85;
+  margin: 6px 12px 0 -4px;
+  font-weight: 400;
+  color: var(--lime-darker);
+}
+.prose-v2 h2 {
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.028em;
+  margin: 2.4em 0 0.5em;
+  font-weight: 500;
+  color: var(--ink);
+}
+.prose-v2 h3 {
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.018em;
+  margin: 2em 0 0.4em;
+  font-weight: 500;
+  color: var(--ink);
+}
+.prose-v2 ul,
+.prose-v2 ol {
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--ink-80);
+  padding-left: 22px;
+  margin: 0 0 1.4em;
+}
+.prose-v2 ul { list-style: disc; }
+.prose-v2 ol { list-style: decimal; }
+.prose-v2 li { margin-bottom: 0.5em; }
+.prose-v2 strong { font-weight: 600; color: var(--ink); }
+.prose-v2 em { font-style: italic; }
+.prose-v2 blockquote {
+  margin: 2.2em -20px;
+  padding: 6px 0 6px 24px;
+  border-left: 3px solid var(--lime);
+  font-family: var(--font-serif-v2);
+  font-weight: 300;
+  font-style: italic;
+  font-size: 28px;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  background: none;
+  border-radius: 0;
+}
+.prose-v2 blockquote cite {
+  display: block;
+  font-family: var(--font-sans-v2);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-40);
+  margin-top: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.prose-v2 a {
+  color: var(--lime-darker);
+  border-bottom: 1px solid var(--lime-light);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.prose-v2 a:hover {
+  color: var(--lime-dark);
+  border-bottom-color: var(--lime-dark);
+}
+.prose-v2 figure { margin: 2.4em -40px; }
+.prose-v2 figure img {
+  width: 100%;
+  border-radius: 14px;
+  display: block;
+}
+.prose-v2 figcaption {
+  font-size: 13px;
+  color: var(--ink-40);
+  margin-top: 12px;
+  padding: 0 4px;
+  font-style: italic;
+  line-height: 1.5;
+}
+.prose-v2 img {
+  width: 100%;
+  border-radius: 14px;
+  display: block;
+  margin: 2em 0;
+}
+.prose-v2 table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2em 0;
+  font-size: 15px;
+}
+.prose-v2 th {
+  background: var(--beige-light);
+  font-weight: 600;
+  padding: 10px 12px;
+  text-align: left;
+  border: 1px solid var(--line);
+}
+.prose-v2 td {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+}
+@media (max-width: 720px) {
+  .prose-v2 figure { margin: 2em -20px; }
+  .prose-v2 blockquote { margin: 2em 0; font-size: 22px; }
+  .prose-v2 p:first-of-type::first-letter { font-size: 64px; }
+}
+
+/* ─── Article prose — ksa.ee reading experience (LEGACY) ──────────── */
 .prose-ksa {
   overflow-wrap: break-word;
   word-break: break-word;

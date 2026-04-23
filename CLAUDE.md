@@ -142,6 +142,13 @@ ndhaldur / KSA Silmakeskus   → slug: ksa-silmakeskus
 ```
 Editors: **Silvia Johanna Haavel** (ET), **Jana** (RU + EN)
 
+## Team & Routing
+- **Dr. Ants Haavel** — owner, medical sign-off
+- **Silvia Johanna Haavel** — ET editor
+- **Jana** — RU + EN editor
+- **Mai** — building new booking system (active this week 2026-04-23)
+- **Kadri** — DNS, redirects, Search Console — **on vacation until 2026-04-27**, do not route tasks to her this week; send booking-LP / WP requests to Mai
+
 ## Tracking & SEO
 - **GTM:** GTM-KCZVRJ8 + **GA4:** G-7R7T8GF37J — both in `app/layout.tsx`
 - Schema JSON-LD on every post: BlogPosting + BreadcrumbList + FAQPage
@@ -267,6 +274,11 @@ Two Claude Code scheduled tasks run daily:
 - Login page uses `window.location.href = "/admin"` (NOT `router.push`) — required for reliable cookie redirect
 - `toSlug()` in `lib/categories.ts` strips `&` and special chars — use for all category comparisons
 - Admin page is ~2800 lines; all UI in one file — read sections carefully before editing, changes can have wide blast radius
+
+## Changelog (session 2026-04-23)
+- **Phase 7 complete (analytics + consent):** ConsentBanner (cookie-based, DNT-aware, 3 categories) replaced legacy CookieBanner. GTM/GA4 gated via `hasAnalyticsConsent()`. SmartCTA fires `cta_view`/`cta_click`/`funnel_outbound` with UTM params via navigator.sendBeacon. BlogAnalytics fires `article_view` + scroll_depth (25/50/75/100). Events landing in Supabase `blog_events` (project hjnvvulgbccbvwapxtgv). Admin `Stats7dTile` pulls from `blog_events_7d_by_slug` view via service role. Env vars `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` set in Vercel prod+preview.
+- **⚠ ROTATE Supabase service-role key** — exposed in screenshot during env-var setup. Rotate via Supabase → API Keys → Secret keys → ⋯ → Rotate, update Vercel, redeploy.
+- **CTA primaryHref fix:** `ksa.ee/broneeri` WP router ignored funnel param and sent everyone to Audit LP. Updated `data/cta-config.json`: flow3 → `/vabane-prillidest/flow3-silmauuring/`, audit → `/lp/broneeri-aeg-audit-silmauuring/`, kids → `/nagemiskontroll-lastele/`, dryeye → `/hinnakiri/` (temp). Three `/lp/broneeri-aeg-*` LPs to be built by Mai alongside new booking system.
 
 ## Changelog (session 2026-04-22)
 - **RendiaEmbed component:** New `components/RendiaEmbed.tsx` — patient-education video embed for MDX posts. Rendia uses `<var data-presentation="UUID">` + `hub.rendia.com/whitelabel/embed.js` (NOT an iframe). Component is `"use client"` and injects the script once per page via `useEffect`. Usage: `<RendiaEmbed id="UUID" caption="Allikas: Rendia" />`. Registered in `app/[slug]/page.tsx` MDXRemote components. Admin Eelvaade shows a dark placeholder with a play icon. **Note:** blog.ksa.ee must be whitelisted by Rendia for embeds to display — email sent to Terrie.Brown@patientpoint.com; currently whitelisted: silmatervis.ksa.ee.
