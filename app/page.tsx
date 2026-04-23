@@ -201,51 +201,42 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
           </div>
         </section>
 
-        {/* ── Category filter (sticky) ── */}
-        <div
-          className="sticky z-40"
-          style={{
-            top: 72,
-            padding: "32px 0 24px",
-            borderBottom: "1px solid var(--line)",
-            background: "#fff",
-          }}
-        >
+        {/* ── Category filter ── */}
+        <div className="cat-filter-bar">
           <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
-            <div
-              className="flex flex-wrap items-center"
-              style={{ gap: 8, overflowX: "auto" }}
-            >
-              <CategoryPill
-                href={lang === "et" ? "/" : `/?keel=${lang}`}
-                active={!kategooria}
-                label={t.all}
-                count={langFiltered.length}
-              />
-              {categories
-                .filter(
-                  (cat) =>
-                    cat.slug !== "uncategorized" &&
-                    cat.slug in CATEGORY_LABELS &&
-                    langFiltered.some((p) => p.categories.some((c) => toSlug(c) === cat.slug))
-                )
-                .slice(0, 10)
-                .map((cat) => {
-                  const count = langFiltered.filter((p) =>
-                    p.categories.some((c) => toSlug(c) === cat.slug)
-                  ).length;
-                  return (
-                    <CategoryPill
-                      key={cat.slug}
-                      href={`/?keel=${lang}&kategooria=${cat.slug}`}
-                      active={kategooria === cat.slug}
-                      label={getCategoryLabel(cat.slug, lang)}
-                      count={count}
-                    />
-                  );
-                })}
+            <div className="cat-filter-row">
+              <div className="cat-pills">
+                <CategoryPill
+                  href={lang === "et" ? "/" : `/?keel=${lang}`}
+                  active={!kategooria}
+                  label={t.all}
+                  count={langFiltered.length}
+                />
+                {categories
+                  .filter(
+                    (cat) =>
+                      cat.slug !== "uncategorized" &&
+                      cat.slug in CATEGORY_LABELS &&
+                      langFiltered.some((p) => p.categories.some((c) => toSlug(c) === cat.slug))
+                  )
+                  .slice(0, 10)
+                  .map((cat) => {
+                    const count = langFiltered.filter((p) =>
+                      p.categories.some((c) => toSlug(c) === cat.slug)
+                    ).length;
+                    return (
+                      <CategoryPill
+                        key={cat.slug}
+                        href={`/?keel=${lang}&kategooria=${cat.slug}`}
+                        active={kategooria === cat.slug}
+                        label={getCategoryLabel(cat.slug, lang)}
+                        count={count}
+                      />
+                    );
+                  })}
+              </div>
 
-              <div style={{ marginLeft: "auto" }}>
+              <div className="cat-search">
                 <Suspense>
                   <SearchInput lang={lang} kategooria={kategooria} />
                 </Suspense>
