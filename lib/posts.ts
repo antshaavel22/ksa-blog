@@ -36,6 +36,12 @@ export interface PostMeta {
   expertReviewer?: string;
   funnel?: Funnel;
   ctaOverride?: string;
+  /** Schema.org medical entity referenced by this article (displayed via `about`). */
+  medicalTopic?: string;
+  /** Optional type for medicalTopic; defaults to "MedicalCondition". */
+  medicalTopicType?: "MedicalCondition" | "MedicalProcedure";
+  /** Author key who medically reviewed this article. Falls back to author. */
+  reviewedBy?: string;
 }
 
 export interface Post extends PostMeta {

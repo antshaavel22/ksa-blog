@@ -41,23 +41,44 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : `https://blog.ksa.ee${post.featuredImage}`
     : "https://ksa.ee/wp-content/uploads/2024/09/ksa-silmanipid.png";
 
+  const title = post.seoTitle ?? post.title;
+  const description = post.seoExcerpt ?? post.excerpt;
+
+  // Build hreflang map: only include existing language versions + x-default (et).
+  const currentUrl = `https://blog.ksa.ee/${slug}`;
+  const langMap: Record<string, string> = {
+    [post.lang ?? "et"]: currentUrl,
+  };
+  for (const s of getSisterPosts(post)) {
+    if (s.lang && !langMap[s.lang]) {
+      langMap[s.lang] = `https://blog.ksa.ee/${s.slug}`;
+    }
+  }
+  // x-default points to ET version (use current if post is ET, else the ET sister).
+  langMap["x-default"] = langMap.et ?? currentUrl;
+
   return {
-    title: post.seoTitle ?? post.title,
-    description: post.seoExcerpt ?? post.excerpt,
+    title,
+    description,
     openGraph: {
-      title: post.seoTitle ?? post.title,
-      description: post.seoExcerpt ?? post.excerpt,
-      images: [{ url: ogImage, width: 1200, height: 630 }],
+      title,
+      description,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.title }],
       type: "article",
       publishedTime: post.date,
       locale: post.lang === "ru" ? "ru_RU" : post.lang === "en" ? "en_GB" : "et_EE",
+      url: currentUrl,
+      siteName: "KSA Blogi",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
     },
     alternates: {
-      canonical: `https://blog.ksa.ee/${slug}`,
-      languages: Object.fromEntries([
-        [post.lang ?? "et", `https://blog.ksa.ee/${slug}`],
-        ...getSisterPosts(post).map((s) => [s.lang, `https://blog.ksa.ee/${s.slug}`]),
-      ]),
+      canonical: currentUrl,
+      languages: langMap,
     },
     other: { "content-language": post.lang ?? "et" },
   };
@@ -109,9 +130,30 @@ export default async function PostPage({ params }: PageProps) {
       ? "flow3"
       : "general");
 
+  // Reviewer: explicit `reviewedBy` key, else fall back to author.
+  const reviewerProfile = post.reviewedBy
+    ? getAuthorByKey(post.reviewedBy)
+    : authorProfile;
+  const reviewerName = reviewerProfile?.displayName ?? authorName;
+  const reviewerRole = reviewerProfile?.role?.[lang];
+  const reviewerCreds = reviewerProfile?.credentials?.[lang];
+
+  function personNode(profile: typeof authorProfile, name: string): object {
+    const node: Record<string, unknown> = { "@type": "Person", name };
+    if (profile?.profileUrl) node.url = profile.profileUrl;
+    if (profile?.role?.[lang]) node.jobTitle = profile.role[lang];
+    if (profile?.credentials?.[lang]) {
+      node.hasCredential = {
+        "@type": "EducationalOccupationalCredential",
+        credentialCategory: profile.credentials[lang],
+      };
+    }
+    return node;
+  }
+
   const schemaGraph: object[] = [
     {
-      "@type": "BlogPosting",
+      "@type": ["BlogPosting", "MedicalWebPage"],
       "@id": canonicalUrl,
       headline: post.seoTitle ?? post.title,
       description: post.seoExcerpt ?? post.excerpt,
@@ -119,14 +161,32 @@ export default async function PostPage({ params }: PageProps) {
       dateModified: post.date,
       inLanguage: post.lang,
       url: canonicalUrl,
-      author: { "@type": "Person", name: authorName },
+      author: personNode(authorProfile, authorName),
+      reviewedBy: personNode(reviewerProfile, reviewerName),
+      lastReviewed: post.date,
       publisher: {
-        "@type": "Organization",
+        "@type": "MedicalOrganization",
         name: "KSA Silmakeskus",
         url: "https://ksa.ee",
         logo: { "@type": "ImageObject", url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg" },
       },
       ...(post.featuredImage ? { image: { "@type": "ImageObject", url: post.featuredImage } } : {}),
+      ...(post.medicalTopic
+        ? {
+            about: {
+              "@type": post.medicalTopicType ?? "MedicalCondition",
+              name: post.medicalTopic,
+            },
+          }
+        : {}),
+      ...(reviewerRole || reviewerCreds
+        ? {
+            reviewedByAffiliation: {
+              "@type": "MedicalOrganization",
+              name: "KSA Silmakeskus",
+            },
+          }
+        : {}),
     },
     {
       "@type": "BreadcrumbList",
@@ -457,8 +517,8 @@ export default async function PostPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* ── Smart CTA (funnel-driven) ── */}
-        {lang === "et" && <SmartCTA funnel={resolvedFunnel} />}
+        {/* ── Smart CTA (funnel-driven; ET fallback copy until Phase 8 trilingual editor) ── */}
+        <SmartCTA funnel={resolvedFunnel} />
 
         {post.medicalReview && (
           <div className="mx-auto" style={{ maxWidth: 720, padding: "16px 24px 0" }}>
