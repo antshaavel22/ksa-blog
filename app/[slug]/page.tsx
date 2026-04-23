@@ -1,8 +1,7 @@
 import { getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/lib/posts";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
-import KiirtestCTA from "@/components/KiirtestCTA";
-import BlogBookingCTA from "@/components/BlogBookingCTA";
+import SmartCTA from "@/components/SmartCTA";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import VimeoEmbed from "@/components/VimeoEmbed";
@@ -104,6 +103,11 @@ export default async function PostPage({ params }: PageProps) {
     ? getCategoryLabel(toSlug(primaryCategoryRaw), lang)
     : "";
   const readMin = readMinutes(post.content);
+  const resolvedFunnel =
+    post.funnel ??
+    (post.ctaType === "kiirtest-inline" || post.ctaType === "kiirtest-soft"
+      ? "flow3"
+      : "general");
 
   const schemaGraph: object[] = [
     {
@@ -314,13 +318,6 @@ export default async function PostPage({ params }: PageProps) {
           </figure>
         )}
 
-        {/* Inline CTA (legacy — replaced by SmartCTA in Phase 5) */}
-        {post.ctaType === "kiirtest-inline" && (
-          <div className="mx-auto" style={{ maxWidth: 720, padding: "24px 24px 0" }}>
-            <KiirtestCTA ctaType="kiirtest-inline" lang={post.lang} />
-          </div>
-        )}
-
         {/* ── Body ── */}
         <article className="prose-v2" style={{ padding: "40px 0 72px" }}>
           <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
@@ -460,8 +457,8 @@ export default async function PostPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* Flow3 footer CTA (legacy — replaced by SmartCTA in Phase 5) */}
-        <BlogBookingCTA lang={post.lang} />
+        {/* ── Smart CTA (funnel-driven) ── */}
+        {lang === "et" && <SmartCTA funnel={resolvedFunnel} />}
 
         {post.medicalReview && (
           <div className="mx-auto" style={{ maxWidth: 720, padding: "16px 24px 0" }}>
