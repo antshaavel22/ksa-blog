@@ -3,16 +3,16 @@ import Image from "next/image";
 import { PostMeta } from "@/lib/posts";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
 import { BLOG_CONFIG } from "@/lib/config";
-import { getAuthorByKey } from "@/lib/authors";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 
-
 interface PostCardProps {
   post: PostMeta;
+  /** Featured posts get the 16:9 wide card with larger type. */
+  large?: boolean;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, large = false }: PostCardProps) {
   const dateLocale = post.lang === "ru" ? ru : post.lang === "en" ? enUS : et;
   const dateFormatted = post.date
     ? format(new Date(post.date), "d. MMMM yyyy", { locale: dateLocale })
@@ -21,75 +21,123 @@ export default function PostCard({ post }: PostCardProps) {
   const primaryCategory = primaryCategoryRaw
     ? getCategoryLabel(toSlug(primaryCategoryRaw), (post.lang as "et" | "ru" | "en") ?? "et")
     : "";
-  const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
-  const authorDisplayName = authorProfile?.displayName ?? post.author ?? "";
 
   return (
     <Link
       href={`/${post.slug}`}
-      className="group flex flex-col bg-white rounded-[20px] border border-[#E6E4DF] overflow-hidden hover:border-[#87BE23] hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)] hover:-translate-y-[3px] transition-all duration-200"
+      className="group block h-full"
+      style={{ textDecoration: "none", color: "inherit" }}
     >
-      {/* Image — 3:2 ratio, warmer crop. Fallback tile when no featuredImage. */}
-      {post.featuredImage ? (
-        <div className="aspect-[3/2] relative overflow-hidden bg-[#F5F2EC]">
-          <Image
-            src={post.featuredImage}
-            alt={post.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1140px) 50vw, 380px"
-            className="object-cover group-hover:scale-[1.04] transition-transform duration-500 ease-out"
-          />
-        </div>
-      ) : (
+      <div
+        className="flex h-full flex-col overflow-hidden transition-[border-color] duration-200"
+        style={{
+          background: "#fff",
+          border: "1px solid var(--line)",
+          borderRadius: 18,
+        }}
+      >
         <div
-          className="aspect-[3/2] relative overflow-hidden flex items-center justify-center"
+          className="overflow-hidden"
           style={{
-            background:
-              "linear-gradient(135deg, #F5F2EC 0%, #E8E3D3 60%, #DCD5C0 100%)",
+            aspectRatio: large ? "16/9" : "4/3",
+            background: "var(--beige-light)",
           }}
-          aria-hidden="true"
         >
-          <svg
-            viewBox="0 0 120 120"
-            className="w-16 h-16 opacity-60 group-hover:scale-[1.06] transition-transform duration-500"
-            fill="#87BE23"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* KSA leaf motif */}
-            <path d="M60 10 C30 35, 25 70, 60 110 C95 70, 90 35, 60 10 Z M60 30 C78 50, 78 75, 60 95 C42 75, 42 50, 60 30 Z" />
-          </svg>
+          {post.featuredImage ? (
+            <Image
+              src={post.featuredImage}
+              alt={post.title}
+              width={large ? 1280 : 640}
+              height={large ? 720 : 480}
+              sizes={large ? "(max-width: 1280px) 100vw, 1280px" : "(max-width: 900px) 50vw, 400px"}
+              className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              style={{ display: "block" }}
+              priority={large}
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center"
+              aria-hidden="true"
+              style={{
+                background:
+                  "linear-gradient(135deg, var(--lime-wash) 0%, var(--beige-light) 100%)",
+              }}
+            >
+              <svg
+                viewBox="0 0 120 120"
+                width={large ? 96 : 64}
+                height={large ? 96 : 64}
+                fill="var(--lime)"
+                style={{ opacity: 0.55 }}
+              >
+                <path d="M60 10 C30 35, 25 70, 60 110 C95 70, 90 35, 60 10 Z M60 30 C78 50, 78 75, 60 95 C42 75, 42 50, 60 30 Z" />
+              </svg>
+            </div>
+          )}
         </div>
-      )}
 
-      <div className="flex flex-col flex-1 p-6">
-        {/* Category label */}
-        {primaryCategory && (
-          <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#87BE23] mb-2.5">
-            {primaryCategory}
-          </span>
-        )}
+        <div
+          className="flex flex-1 flex-col"
+          style={{
+            padding: large ? "28px 32px 32px" : "22px 24px 26px",
+            gap: 12,
+          }}
+        >
+          {primaryCategory && (
+            <div
+              style={{
+                fontSize: large ? 11 : 10,
+                letterSpacing: "0.14em",
+                color: "var(--lime-dark)",
+                fontWeight: 600,
+                textTransform: "uppercase",
+              }}
+            >
+              {primaryCategory}
+            </div>
+          )}
 
-        {/* Title */}
-        <h2 className="text-[15px] font-semibold leading-[1.4] tracking-[-0.01em] text-[#000000] mb-2.5 group-hover:text-[#87BE23] transition-colors line-clamp-3">
-          {post.title}
-        </h2>
+          <h3
+            style={{
+              fontSize: large ? 28 : 19,
+              fontWeight: 500,
+              lineHeight: large ? 1.15 : 1.28,
+              letterSpacing: "-0.018em",
+              margin: 0,
+              color: "var(--ink)",
+            }}
+          >
+            {post.title}
+          </h3>
 
-        {/* Excerpt */}
-        {post.excerpt && (
-          <p className="text-[13px] font-light text-[#5A6B6C] leading-[1.6] line-clamp-2 mb-4 flex-1">
-            {post.excerpt}
-          </p>
-        )}
+          {post.excerpt && (
+            <p
+              style={{
+                fontSize: large ? 16 : 14,
+                color: "var(--ink-60)",
+                lineHeight: 1.55,
+                margin: 0,
+              }}
+            >
+              {post.excerpt}
+            </p>
+          )}
 
-        {/* Meta footer */}
-        <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-[#F0EDE8]">
-          {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted
-            ? <span className="text-[11px] text-[#9A9A9A] font-light">{dateFormatted}</span>
-            : <span />}
-          <div className="flex items-center gap-3">
-{BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
-              <span className="text-[11px] text-[#9A9A9A] font-light">{authorDisplayName}</span>
+          <div
+            className="flex items-center justify-between"
+            style={{
+              marginTop: "auto",
+              paddingTop: 8,
+              fontSize: 12,
+              color: "var(--ink-40)",
+            }}
+          >
+            {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted ? (
+              <span>{dateFormatted}</span>
+            ) : (
+              <span />
             )}
+            <span />
           </div>
         </div>
       </div>

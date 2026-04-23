@@ -1,0 +1,72 @@
+{
+  "flow3": {
+    "live": true,
+    "label": "Flow3 silmauuring",
+    "accent": "#86BC25",
+    "title": "Näe ilma prillideta — 3 tunni pärast.",
+    "body": "Flow3 on 90-minutiline uuring, mis vastab ühele küsimusele: kas laseroperatsioon sulle sobib? Kui jah — läheme edasi. Kui ei — oled saanud põhjalikuima silmakontrolli, mis Eestis olemas.",
+    "regPrice": 69,
+    "blogPrice": 39,
+    "code": "BLOG39",
+    "btnPrimary": "Broneeri Flow3 — 39 €",
+    "bookUrl": "https://ksa.ee/broneeri?source=blog&funnel=flow3",
+    "ladder": true,
+    "fastPrice": 19,
+    "fastCode": "KIIRTEST19",
+    "fastLabel": "Või kiirtest.ksa.ee — 19 € täna",
+    "fastUrl": "https://kiirtest.ksa.ee?source=blog",
+    "campaign": "Kevad 2026",
+    "validUntil": "2026-05-31"
+  },
+  "audit": {
+    "live": true,
+    "label": "Põhjalik silmauuring",
+    "accent": "#c9851a",
+    "title": "45+? Sinu silmad väärivad rohkemat kui rutiinikontrolli.",
+    "body": "Põhjalik uuring: glaukoom, katarakt, AMD, diabeet, silmapõhi. Kaks tundi, üks arst, üks raport. Ravikindlustus ei hüvita — aga lugejale säästame 10€.",
+    "regPrice": 149,
+    "blogPrice": 139,
+    "code": "BLOG139",
+    "btnPrimary": "Broneeri põhjalik — 139 €",
+    "bookUrl": "https://ksa.ee/broneeri?source=blog&funnel=audit",
+    "ladder": false,
+    "campaign": "Kevad 2026",
+    "validUntil": "2026-05-31"
+  },
+  "kids": {
+    "live": true,
+    "label": "Laste silmauuring",
+    "accent": "#5a9fd4",
+    "title": "Sinu laps ei kurda — tema silm kurdab.",
+    "body": "Laste silmauuring + koolivorm kaasa. Tööl kooliaasta alguseks.",
+    "regPrice": 69,
+    "blogPrice": 69,
+    "code": "",
+    "btnPrimary": "Broneeri laste uuring",
+    "bookUrl": "https://ksa.ee/broneeri?source=blog&funnel=kids",
+    "ladder": false,
+    "campaign": "",
+    "validUntil": ""
+  },
+  "dryeye": {
+    "live": true,
+    "label": "Kuiva silma diagnostika",
+    "accent": "#b865c4",
+    "title": "Tilgad ei aita? Põhjus ei ole silmas.",
+    "body": "Kuiva silma diagnostika + Rexon-Eye OMR-ravi. Esmalt leiame põhjuse, siis ravime.",
+    "regPrice": 89,
+    "blogPrice": 89,
+    "code": "",
+    "btnPrimary": "Broneeri diagnostika — 89 €",
+    "bookUrl": "https://ksa.ee/broneeri?source=blog&funnel=dryeye",
+    "ladder": false,
+    "campaign": "",
+    "validUntil": ""
+  },
+  "general": {
+    "live": true,
+    "label": "Flow3 silmauuring",
+    "accent": "#86BC25",
+    "_note": "general = fallback to flow3 copy/config. Same values."
+  }
+}

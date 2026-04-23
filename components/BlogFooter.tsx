@@ -1,129 +1,175 @@
 import Link from "next/link";
 
-function IconFacebook() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-    </svg>
-  );
-}
-
-function IconInstagram() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-    </svg>
-  );
-}
-
-function IconYouTube() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-    </svg>
-  );
-}
-
-function IconTikTok() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.74a4.85 4.85 0 0 1-1.01-.05z"/>
-    </svg>
-  );
-}
-
-const SOCIALS = [
-  { href: "https://www.facebook.com/ksasilmakeskus/", label: "Facebook", Icon: IconFacebook },
-  { href: "https://www.instagram.com/ksa_silmakeskus", label: "Instagram", Icon: IconInstagram },
-  { href: "https://www.youtube.com/@KSASilmakeskus", label: "YouTube", Icon: IconYouTube },
-  { href: "https://www.tiktok.com/@ksa_silmakeskus", label: "TikTok", Icon: IconTikTok },
-];
-
 type Lang = "et" | "ru" | "en";
 
 const TAGLINE: Record<Lang, string> = {
-  et: "Hea nägemine on üks inimese supervõimetest.",
-  ru: "Хорошее зрение — одна из суперспособностей человека.",
-  en: "Good vision is one of humanity's superpowers.",
+  et: "Eesti suurim erasilmakeskus. Siin jagame teadmisi, kogemusi ja uudiseid.",
+  ru: "Крупнейший частный глазной центр Эстонии. Мы делимся знаниями, опытом и новостями.",
+  en: "Estonia's largest private eye centre. We share knowledge, experiences and news.",
 };
 
-const LINKS: Record<Lang, Array<{ href: string; label: string }>> = {
+const COL_LABELS: Record<Lang, { cat: string; ksa: string }> = {
+  et: { cat: "Kategooriad", ksa: "KSA.ee" },
+  ru: { cat: "Категории", ksa: "KSA.ee" },
+  en: { cat: "Categories", ksa: "KSA.ee" },
+};
+
+const CAT_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
   et: [
-    { href: "https://ksa.ee/broneeri", label: "Broneeri aeg" },
-    { href: "https://ksa.ee/hinnakiri", label: "Hinnakiri" },
-    { href: "https://ksa.ee/kontakt", label: "Kontakt" },
-    { href: "https://ksa.ee/privaatsuspoliitika", label: "Privaatsuspoliitika" },
-    { href: "https://ksa.ee/kupsised", label: "Küpsised" },
+    { label: "Flow protseduur", href: "/?kategooria=flow-protseduur" },
+    { label: "Silmad & tervis", href: "/?kategooria=silmad-ja-tervis" },
+    { label: "KSA Silmakeskus", href: "/?kategooria=ksa-silmakeskus" },
+    { label: "Edulood", href: "/?kategooria=edulood" },
+    { label: "Elustiil", href: "/?kategooria=elustiil" },
   ],
   ru: [
-    { href: "https://ksa.ee/ru/zapis", label: "Записаться" },
-    { href: "https://ksa.ee/ru/tseny", label: "Цены" },
-    { href: "https://ksa.ee/ru/kontakty", label: "Контакты" },
-    { href: "https://ksa.ee/ru/politika-konfidentsialnosti", label: "Политика конфиденциальности" },
-    { href: "https://ksa.ee/ru/cookie", label: "Cookie" },
+    { label: "Процедура Flow", href: "/?keel=ru&kategooria=flow-protseduur" },
+    { label: "Глаза и здоровье", href: "/?keel=ru&kategooria=silmad-ja-tervis" },
+    { label: "KSA Vision Center", href: "/?keel=ru&kategooria=ksa-silmakeskus" },
   ],
   en: [
-    { href: "https://ksa.ee/en/book", label: "Book an appointment" },
-    { href: "https://ksa.ee/en/price-list", label: "Prices" },
-    { href: "https://ksa.ee/en/contact", label: "Contact" },
-    { href: "https://ksa.ee/en/privacy-policy", label: "Privacy policy" },
-    { href: "https://ksa.ee/en/cookies", label: "Cookies" },
+    { label: "Flow Procedure", href: "/?keel=en&kategooria=flow-protseduur" },
+    { label: "Eyes & Health", href: "/?keel=en&kategooria=silmad-ja-tervis" },
+    { label: "KSA Vision Center", href: "/?keel=en&kategooria=ksa-silmakeskus" },
+  ],
+};
+
+const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
+  et: [
+    { label: "Flow3", href: "https://ksa.ee/flow3" },
+    { label: "Uuringud", href: "https://ksa.ee/uuringud" },
+    { label: "Hinnakiri", href: "https://ksa.ee/hinnakiri" },
+    { label: "Broneeri", href: "https://ksa.ee/broneeri" },
+  ],
+  ru: [
+    { label: "Flow3", href: "https://ksa.ee/ru.html" },
+    { label: "Услуги", href: "https://ksa.ee/ru.html" },
+    { label: "Цены", href: "https://ksa.ee/ru.html" },
+    { label: "Записаться", href: "https://ksa.ee/ru.html" },
+  ],
+  en: [
+    { label: "Flow3", href: "https://ksa.ee/en.html" },
+    { label: "Services", href: "https://ksa.ee/en.html" },
+    { label: "Pricing", href: "https://ksa.ee/en.html" },
+    { label: "Book", href: "https://ksa.ee/en.html" },
+  ],
+};
+
+const LEGAL: Record<Lang, Array<{ label: string; href: string }>> = {
+  et: [
+    { label: "Privaatsus", href: "https://ksa.ee/privaatsuspoliitika" },
+    { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
+    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
+  ],
+  ru: [
+    { label: "Конфиденциальность", href: "https://ksa.ee/ru.html" },
+    { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
+    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
+  ],
+  en: [
+    { label: "Privacy", href: "https://ksa.ee/en.html" },
+    { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
+    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
   ],
 };
 
 export default function BlogFooter({ lang = "et" }: { lang?: string }) {
-  const l = (lang === "ru" || lang === "en" ? lang : "et") as Lang;
-  return (
-    <footer className="border-t border-[#E6E4DF] bg-[#F9F7F4] mt-auto">
-      <div className="max-w-[1140px] mx-auto px-6 py-10">
+  const l: Lang = (lang === "ru" || lang === "en" ? lang : "et") as Lang;
+  const cols = COL_LABELS[l];
+  const year = new Date().getFullYear();
 
-        {/* Top row: wordmark + tagline + socials */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8">
+  return (
+    <footer style={{ background: "var(--ink)", color: "#fff" }} className="mt-auto">
+      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "56px 40px 32px" }}>
+        <div
+          className="grid gap-10"
+          style={{ gridTemplateColumns: "1.5fr 1fr 1fr", marginBottom: 36 }}
+        >
           <div>
-            <div className="text-[15px] font-semibold tracking-[-0.02em] text-[#000000] mb-1">
-              KSA <span className="text-[#87BE23]">Silmakeskus</span>
+            <div className="flex items-center gap-2.5">
+              <svg width="28" height="28" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+                <circle cx="20" cy="20" r="17" stroke="#fff" strokeWidth="2.2" />
+                <circle cx="20" cy="20" r="6.5" fill="#fff" />
+                <circle cx="23" cy="17" r="2" fill="#1a1a1a" />
+              </svg>
+              <span style={{ fontWeight: 600, fontSize: 19, letterSpacing: "-0.02em" }}>ksa</span>
+              <span
+                style={{
+                  fontWeight: 400,
+                  fontSize: 14,
+                  opacity: 0.5,
+                  paddingLeft: 10,
+                  marginLeft: 4,
+                  borderLeft: "1px solid rgba(255,255,255,0.15)",
+                }}
+              >
+                {l === "ru" ? "Блог" : l === "en" ? "Blog" : "Blogi"}
+              </span>
             </div>
-            <p className="text-[12px] font-light text-[#9A9A9A] max-w-xs">
+            <p
+              style={{
+                fontSize: 13,
+                opacity: 0.55,
+                lineHeight: 1.6,
+                maxWidth: 300,
+                marginTop: 16,
+              }}
+            >
               {TAGLINE[l]}
             </p>
           </div>
 
-          {/* Social icons */}
-          <div className="flex items-center gap-5">
-            {SOCIALS.map(({ href, label, Icon }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="text-[#C0BDB8] hover:text-[#87BE23] transition-colors duration-150"
+          {[
+            { title: cols.cat, items: CAT_LINKS[l] },
+            { title: cols.ksa, items: KSA_LINKS[l] },
+          ].map((col, j) => (
+            <div key={j}>
+              <div
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  opacity: 0.4,
+                  fontWeight: 600,
+                  marginBottom: 14,
+                }}
               >
-                <Icon />
-              </a>
+                {col.title}
+              </div>
+              <ul
+                className="flex flex-col"
+                style={{ listStyle: "none", margin: 0, padding: 0, gap: 8, fontSize: 13, opacity: 0.75 }}
+              >
+                {col.items.map((x, k) => (
+                  <li key={k}>
+                    <Link href={x.href} className="transition-colors hover:opacity-100" style={{ color: "#fff" }}>
+                      {x.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="flex justify-between"
+          style={{
+            paddingTop: 20,
+            borderTop: "1px solid rgba(255,255,255,0.1)",
+            fontSize: 12,
+            opacity: 0.4,
+          }}
+        >
+          <span>© {year} KSA Silmakeskus</span>
+          <div className="flex gap-4">
+            {LEGAL[l].map((x) => (
+              <Link key={x.label} href={x.href} style={{ color: "#fff" }}>
+                {x.label}
+              </Link>
             ))}
           </div>
         </div>
-
-        {/* Bottom row: copyright + nav links */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#E6E4DF] pt-6">
-          <p className="text-[12px] font-light text-[#9A9A9A]">
-            © {new Date().getFullYear()} KSA Silmakeskus —{" "}
-            <a href="https://ksa.ee" className="hover:text-[#000000] transition-colors">ksa.ee</a>
-          </p>
-          <div className="flex flex-wrap gap-6">
-            {LINKS[l].map(({ href, label }) => (
-              <a
-                key={label}
-                href={href}
-                className="text-[12px] font-light text-[#9A9A9A] hover:text-[#000000] transition-colors"
-              >
-                {label}
-              </a>
-            ))}
-          </div>
-        </div>
-
       </div>
     </footer>
   );

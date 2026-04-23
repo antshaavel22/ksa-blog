@@ -7,6 +7,7 @@ const postsDirectory = path.join(process.cwd(), "content/posts");
 
 export type PostLang = "et" | "ru" | "en";
 export type CtaType = "kiirtest-inline" | "kiirtest-soft" | "none";
+export type Funnel = "flow3" | "audit" | "kids" | "dryeye" | "general";
 
 export interface FaqItem {
   q: string;
@@ -33,6 +34,8 @@ export interface PostMeta {
   hideAuthor?: boolean;
   translatedFrom?: string;
   expertReviewer?: string;
+  funnel?: Funnel;
+  ctaOverride?: string;
 }
 
 export interface Post extends PostMeta {

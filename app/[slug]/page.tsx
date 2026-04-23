@@ -8,7 +8,6 @@ import YouTubeEmbed from "@/components/YouTubeEmbed";
 import VimeoEmbed from "@/components/VimeoEmbed";
 import RendiaEmbed from "@/components/RendiaEmbed";
 import ShareButton from "@/components/ShareButton";
-import AuthorBio from "@/components/AuthorBio";
 import PageLang from "@/components/PageLang";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
@@ -25,11 +24,8 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-// ISR: pre-build all existing posts, but also render new ones on-demand.
-// A freshly published post is served within seconds of the first visit —
-// no need to wait for a full Vercel rebuild.
 export const dynamicParams = true;
-export const revalidate = 120; // rebuild cached pages every 2 min in background
+export const revalidate = 120;
 
 export async function generateStaticParams() {
   const posts = getAllPosts();
@@ -40,7 +36,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const post = getPostBySlug(slug);
   if (!post) return {};
-  // Make featuredImage URL absolute for OG tags
   const ogImage = post.featuredImage
     ? post.featuredImage.startsWith("http")
       ? post.featuredImage
@@ -65,10 +60,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         ...getSisterPosts(post).map((s) => [s.lang, `https://blog.ksa.ee/${s.slug}`]),
       ]),
     },
-    other: {
-      "content-language": post.lang ?? "et",
-    },
+    other: { "content-language": post.lang ?? "et" },
   };
+}
+
+function initialsFrom(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "KSA";
+  const first = parts[0][0];
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
+  return (first + last).toUpperCase();
+}
+
+const AUTHOR_EYEBROW: Record<string, string> = { et: "Autor", ru: "Автор", en: "Author" };
+const READ_MORE_CTA: Record<string, string> = { et: "Vaata kõiki artikleid →", ru: "Все статьи автора →", en: "See all articles →" };
+const READ_MIN: Record<string, string> = { et: "min lugemist", ru: "мин чтения", en: "min read" };
+
+function readMinutes(content: string): number {
+  const words = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 220));
 }
 
 export default async function PostPage({ params }: PageProps) {
@@ -81,13 +91,20 @@ export default async function PostPage({ params }: PageProps) {
   const dateFormatted = post.date
     ? format(new Date(post.date), "d. MMMM yyyy", { locale: dateLocale })
     : "";
-
+  const lang = (post.lang ?? "et") as "et" | "ru" | "en";
   const canonicalUrl = `https://blog.ksa.ee/${slug}`;
   const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
   const authorName = authorProfile?.displayName ?? post.author ?? "KSA Silmakeskus";
-  const reviewerProfile = post.expertReviewer ? getAuthorByKey(post.expertReviewer) : undefined;
+  const authorInitials = initialsFrom(authorName);
+  const authorRole = authorProfile?.role?.[lang] ?? "KSA Silmakeskus";
+  const authorBio = authorProfile?.bio?.[lang] ?? "";
+  const authorUrl = authorProfile ? `/autor/${authorProfile.slug}` : null;
+  const primaryCategoryRaw = post.categories[0] ?? "";
+  const primaryCategoryLabel = primaryCategoryRaw
+    ? getCategoryLabel(toSlug(primaryCategoryRaw), lang)
+    : "";
+  const readMin = readMinutes(post.content);
 
-  // ── Schema JSON-LD ──────────────────────────────────────────────────────────
   const schemaGraph: object[] = [
     {
       "@type": "BlogPosting",
@@ -98,228 +115,377 @@ export default async function PostPage({ params }: PageProps) {
       dateModified: post.date,
       inLanguage: post.lang,
       url: canonicalUrl,
-      author: {
-        "@type": "Person",
-        name: authorName,
-      },
+      author: { "@type": "Person", name: authorName },
       publisher: {
         "@type": "Organization",
         name: "KSA Silmakeskus",
         url: "https://ksa.ee",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg",
-        },
+        logo: { "@type": "ImageObject", url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg" },
       },
-      ...(post.featuredImage
-        ? { image: { "@type": "ImageObject", url: post.featuredImage } }
-        : {}),
+      ...(post.featuredImage ? { image: { "@type": "ImageObject", url: post.featuredImage } } : {}),
     },
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "KSA Blog",
-          item: "https://blog.ksa.ee",
-        },
-        ...(post.categories[0]
+        { "@type": "ListItem", position: 1, name: "KSA Blog", item: "https://blog.ksa.ee" },
+        ...(primaryCategoryRaw
           ? [
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: post.categories[0],
-                item: `https://blog.ksa.ee/kategooria/${post.categories[0]
-                  .toLowerCase()
-                  .replace(/\s+/g, "-")}`,
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
-                name: post.title,
-              },
+              { "@type": "ListItem", position: 2, name: primaryCategoryRaw, item: `https://blog.ksa.ee/kategooria/${toSlug(primaryCategoryRaw)}` },
+              { "@type": "ListItem", position: 3, name: post.title },
             ]
-          : [
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: post.title,
-              },
-            ]),
+          : [{ "@type": "ListItem", position: 2, name: post.title }]),
       ],
     },
   ];
-
-  // FAQPage schema — only when post has faqItems
   if (post.faqItems && post.faqItems.length > 0) {
     schemaGraph.push({
       "@type": "FAQPage",
       mainEntity: post.faqItems.map((item) => ({
         "@type": "Question",
         name: item.q,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.a,
-        },
+        acceptedAnswer: { "@type": "Answer", text: item.a },
       })),
     });
   }
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": schemaGraph,
-  };
+  const jsonLd = { "@context": "https://schema.org", "@graph": schemaGraph };
 
   return (
     <>
-      {/* Schema JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-
-      {/* Tell the browser the page language so CookieBanner localizes correctly */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageLang lang={post.lang} />
-
       <BlogNav lang={post.lang} />
-      <main className="flex-1">
-        <article className="max-w-[680px] mx-auto px-6 py-10">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-xs text-[#9a9a9a] mb-8">
-            <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
-            {post.categories[0] && (
-              <>
-                <span>›</span>
-                <Link
-                  href={`/kategooria/${toSlug(post.categories[0])}`}
-                  className="hover:text-[#87be23] transition-colors"
-                >
-                  {getCategoryLabel(toSlug(post.categories[0]), (post.lang as "et" | "ru" | "en") ?? "et")}
-                </Link>
-              </>
-            )}
-          </nav>
 
-          {/* Header */}
-          <header className="mb-8">
-            {post.categories[0] && (
-              <span className="text-xs font-medium uppercase tracking-wide text-[#87be23] block mb-3">
-                {getCategoryLabel(toSlug(post.categories[0]), (post.lang as "et" | "ru" | "en") ?? "et")}
-              </span>
-            )}
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#1a1a1a] leading-tight mb-4">
+      <main className="flex-1">
+        {/* ── Article header ── */}
+        <header style={{ padding: "72px 0 48px", borderBottom: "1px solid var(--line)" }}>
+          <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
+            <div
+              className="flex items-center"
+              style={{ gap: 12, fontSize: 12, color: "var(--ink-40)", marginBottom: 20 }}
+            >
+              <Link href={lang === "et" ? "/" : `/?keel=${lang}`} style={{ color: "var(--ink-40)" }}>
+                {lang === "ru" ? "Блог" : lang === "en" ? "Blog" : "Blogi"}
+              </Link>
+              {primaryCategoryLabel && (
+                <>
+                  <span>›</span>
+                  <Link
+                    href={`/kategooria/${toSlug(primaryCategoryRaw)}`}
+                    style={{
+                      color: "var(--lime-dark)",
+                      fontWeight: 600,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {primaryCategoryLabel}
+                  </Link>
+                </>
+              )}
+            </div>
+
+            <h1
+              style={{
+                fontSize: "clamp(40px, 5.5vw, 64px)",
+                lineHeight: 1.04,
+                letterSpacing: "-0.035em",
+                fontWeight: 400,
+                margin: "0 0 28px",
+              }}
+            >
               {post.title}
             </h1>
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3 text-sm text-[#9a9a9a]">
+
+            {post.excerpt && (
+              <p
+                style={{
+                  fontSize: 19,
+                  color: "var(--ink-60)",
+                  lineHeight: 1.55,
+                  margin: "0 0 36px",
+                  maxWidth: 640,
+                  letterSpacing: "-0.005em",
+                }}
+              >
+                {post.excerpt}
+              </p>
+            )}
+
+            <div
+              className="flex items-center"
+              style={{
+                gap: 16,
+                paddingTop: 24,
+                borderTop: "1px solid var(--line)",
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  background:
+                    "linear-gradient(135deg, var(--lime-wash) 0%, var(--beige-light) 100%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 16,
+                  fontWeight: 500,
+                  color: "var(--ink-60)",
+                  border: "1px solid var(--line)",
+                  flexShrink: 0,
+                  overflow: "hidden",
+                }}
+              >
+                {authorProfile?.avatarUrl ? (
+                  <Image
+                    src={authorProfile.avatarUrl}
+                    alt={authorName}
+                    width={48}
+                    height={48}
+                    style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  authorInitials
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "var(--ink)" }}>
+                  {authorUrl ? (
+                    <Link href={authorUrl} style={{ color: "inherit" }}>
+                      {authorName}
+                    </Link>
+                  ) : (
+                    authorName
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--ink-40)", marginTop: 2 }}>
+                  {authorRole}
+                </div>
+              </div>
+              <div
+                className="flex flex-col items-end"
+                style={{ fontSize: 12, color: "var(--ink-40)", gap: 3 }}
+              >
                 {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted && (
                   <span>{dateFormatted}</span>
                 )}
-                {BLOG_CONFIG.showAuthor && !post.hideAuthor && post.author && (
-                  <>
-                    <span>·</span>
-                    {authorProfile ? (
-                      <Link
-                        href={`/autor/${authorProfile.slug}`}
-                        className="hover:text-[#87be23] transition-colors"
-                      >
-                        {authorName}
-                      </Link>
-                    ) : (
-                      <span>{authorName}</span>
-                    )}
-                  </>
-                )}
+                <span>
+                  {readMin} {READ_MIN[lang]}
+                </span>
               </div>
-              <ShareButton title={post.title} url={canonicalUrl} lang={post.lang} />
+              <div style={{ marginLeft: 4 }}>
+                <ShareButton title={post.title} url={canonicalUrl} lang={post.lang} />
+              </div>
             </div>
-          </header>
-
-          {/* Featured image */}
-          {post.featuredImage && (
-            <div className="aspect-[16/9] relative rounded-xl overflow-hidden mb-8 bg-[#f5f3ee]">
-              <Image
-                src={post.featuredImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 680px) 100vw, 680px"
-              />
-            </div>
-          )}
-
-          {/* Inline CTA before content (Rule 1 — laser/ICB/Flow posts) */}
-          {post.ctaType === "kiirtest-inline" && (
-            <KiirtestCTA ctaType="kiirtest-inline" lang={post.lang} />
-          )}
-
-          {/* Post content */}
-          <div className="prose-ksa">
-            <MDXRemote source={post.content} components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }} />
           </div>
+        </header>
 
-          {/* LLM search queries — hidden visually, readable by crawlers & AI agents */}
-          {post.llmSearchQueries && post.llmSearchQueries.length > 0 && (
-            <div className="sr-only" aria-hidden="true">
-              {post.llmSearchQueries.map((q, i) => (
-                <span key={i}>{q}</span>
-              ))}
+        {/* ── Featured image ── */}
+        {post.featuredImage && (
+          <figure style={{ margin: 0, padding: "56px 0 16px" }}>
+            <div
+              className="mx-auto"
+              style={{ maxWidth: "var(--container)", padding: "0 40px" }}
+            >
+              <div
+                style={{
+                  overflow: "hidden",
+                  borderRadius: 20,
+                  background: "var(--beige-light)",
+                }}
+              >
+                <Image
+                  src={post.featuredImage}
+                  alt={post.title}
+                  width={1280}
+                  height={720}
+                  priority
+                  sizes="(max-width: 1280px) 100vw, 1280px"
+                  style={{
+                    width: "100%",
+                    height: "clamp(340px, 60vh, 620px)",
+                    objectFit: "cover",
+                    display: "block",
+                  }}
+                />
+              </div>
             </div>
-          )}
+          </figure>
+        )}
 
-          {/* Author bio card */}
-          {authorProfile && (
-            <AuthorBio
-              author={authorProfile}
-              lang={(post.lang as "et" | "ru" | "en") ?? "et"}
-              variant="author"
+        {/* Inline CTA (legacy — replaced by SmartCTA in Phase 5) */}
+        {post.ctaType === "kiirtest-inline" && (
+          <div className="mx-auto" style={{ maxWidth: 720, padding: "24px 24px 0" }}>
+            <KiirtestCTA ctaType="kiirtest-inline" lang={post.lang} />
+          </div>
+        )}
+
+        {/* ── Body ── */}
+        <article className="prose-v2" style={{ padding: "40px 0 72px" }}>
+          <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
+            <MDXRemote
+              source={post.content}
+              components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
             />
-          )}
 
-          {/* Expert reviewer bio card (optometrist or guest expert) */}
-          {reviewerProfile && (
-            <AuthorBio
-              author={reviewerProfile}
-              lang={(post.lang as "et" | "ru" | "en") ?? "et"}
-              variant="reviewer"
-            />
-          )}
+            {post.llmSearchQueries && post.llmSearchQueries.length > 0 && (
+              <div className="sr-only" aria-hidden="true">
+                {post.llmSearchQueries.map((q, i) => (
+                  <span key={i}>{q}</span>
+                ))}
+              </div>
+            )}
 
-          {/* Flow3 footer CTA — shown on all posts */}
-          <BlogBookingCTA lang={post.lang} />
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap" style={{ marginTop: 32, gap: 8 }}>
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      padding: "5px 12px",
+                      fontSize: 12,
+                      background: "var(--beige-light)",
+                      color: "var(--ink-60)",
+                      borderRadius: 999,
+                      border: "1px solid var(--line)",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </article>
 
-          {/* Medical review notice */}
-          {post.medicalReview && (
-            <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-              {post.lang === "ru"
-                ? "Содержание этой статьи проверено специалистами глазного центра KSA."
-                : post.lang === "en"
+        {/* ── Author card ── */}
+        {authorProfile && authorBio && (
+          <section
+            style={{
+              padding: "48px 0",
+              borderTop: "1px solid var(--line)",
+              borderBottom: "1px solid var(--line)",
+              background: "var(--beige-light)",
+            }}
+          >
+            <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
+              <div
+                className="grid items-start"
+                style={{ gridTemplateColumns: "80px 1fr", gap: 20 }}
+              >
+                <div
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    background:
+                      "linear-gradient(135deg, var(--lime-wash) 0%, var(--beige) 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 26,
+                    fontWeight: 400,
+                    color: "var(--lime-darker)",
+                    fontFamily: "var(--font-serif-v2)",
+                    border: "1px solid var(--line)",
+                    overflow: "hidden",
+                  }}
+                >
+                  {authorProfile.avatarUrl ? (
+                    <Image
+                      src={authorProfile.avatarUrl}
+                      alt={authorName}
+                      width={80}
+                      height={80}
+                      style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    authorInitials
+                  )}
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.14em",
+                      color: "var(--ink-40)",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {AUTHOR_EYEBROW[lang]}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 22,
+                      fontWeight: 500,
+                      letterSpacing: "-0.015em",
+                      margin: "0 0 4px",
+                    }}
+                  >
+                    {authorName}
+                  </div>
+                  <div style={{ fontSize: 13, color: "var(--ink-60)", marginBottom: 12 }}>
+                    {authorRole}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      color: "var(--ink-60)",
+                      lineHeight: 1.65,
+                      margin: "0 0 16px",
+                    }}
+                  >
+                    {authorBio}
+                  </p>
+                  {authorUrl && (
+                    <Link
+                      href={authorUrl}
+                      style={{
+                        fontSize: 13,
+                        color: "var(--lime-dark)",
+                        fontWeight: 500,
+                        borderBottom: "1px solid var(--lime-light)",
+                        paddingBottom: 1,
+                      }}
+                    >
+                      {READ_MORE_CTA[lang]}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Flow3 footer CTA (legacy — replaced by SmartCTA in Phase 5) */}
+        <BlogBookingCTA lang={post.lang} />
+
+        {post.medicalReview && (
+          <div className="mx-auto" style={{ maxWidth: 720, padding: "16px 24px 0" }}>
+            <div
+              style={{
+                padding: 16,
+                background: "var(--beige-light)",
+                border: "1px solid var(--line)",
+                borderRadius: 12,
+                fontSize: 13,
+                color: "var(--ink-60)",
+              }}
+            >
+              {lang === "ru"
+                ? "Содержание этой статьи проверено специалистами KSA Silmakeskus."
+                : lang === "en"
                 ? "The content of this article has been medically reviewed by KSA Vision Clinic specialists."
                 : "Selle artikli sisu on meditsiiniliselt kontrollitud KSA Silmakeskuse spetsialistide poolt."}
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 text-xs bg-[#f5f3ee] text-[#5a6b6c] rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </article>
-
-        {/* Related posts */}
-        <div className="max-w-[1200px] mx-auto px-6 pb-16">
-          <RelatedPosts posts={related} lang={post.lang} />
-        </div>
+        {/* ── Related posts ── */}
+        <RelatedPosts posts={related} lang={lang} />
       </main>
       <BlogFooter lang={post.lang} />
     </>
