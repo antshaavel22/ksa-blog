@@ -109,11 +109,8 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
             borderBottom: "1px solid var(--line)",
           }}
         >
-          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 40px" }}>
-            <div
-              className="grid items-end gap-12"
-              style={{ gridTemplateColumns: "1fr 360px" }}
-            >
+          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
+            <div className="hero-grid grid items-end">
               <div>
                 <div
                   style={{
@@ -214,7 +211,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
             background: "#fff",
           }}
         >
-          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 40px" }}>
+          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
             <div
               className="flex flex-wrap items-center"
               style={{ gap: 8, overflowX: "auto" }}
@@ -259,7 +256,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
 
         {/* ── Post grid ── */}
         <section style={{ padding: "56px 0 96px" }}>
-          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 40px" }}>
+          <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
             {pageSlice.length === 0 ? (
               <p
                 style={{
@@ -291,10 +288,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                   </div>
                 )}
 
-                <div
-                  className="grid"
-                  style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}
-                >
+                <div className="post-grid grid">
                   {grid.map((post) => (
                     <PostCard key={post.slug} post={post} />
                   ))}

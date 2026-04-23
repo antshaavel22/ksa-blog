@@ -81,10 +81,10 @@ export default function BlogFooter({ lang = "et" }: { lang?: string }) {
 
   return (
     <footer style={{ background: "var(--ink)", color: "#fff" }} className="mt-auto">
-      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "56px 40px 32px" }}>
+      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "56px var(--gutter) 32px" }}>
         <div
-          className="grid gap-10"
-          style={{ gridTemplateColumns: "1.5fr 1fr 1fr", marginBottom: 36 }}
+          className="footer-grid grid gap-10"
+          style={{ marginBottom: 36 }}
         >
           <div>
             <div className="flex items-center gap-2.5">

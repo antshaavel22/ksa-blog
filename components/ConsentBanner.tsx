@@ -204,10 +204,12 @@ export default function ConsentBanner() {
     <div
       role="dialog"
       aria-label={t.title}
+      className="consent-banner"
       style={{
         position: "fixed",
         right: 20,
         bottom: 20,
+        left: "auto",
         zIndex: 60,
         maxWidth: 380,
         background: "#fff",

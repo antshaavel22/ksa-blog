@@ -351,7 +351,7 @@ export default async function PostPage({ params }: PageProps) {
           <figure style={{ margin: 0, padding: "56px 0 16px" }}>
             <div
               className="mx-auto"
-              style={{ maxWidth: "var(--container)", padding: "0 40px" }}
+              style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}
             >
               <div
                 style={{

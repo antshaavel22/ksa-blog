@@ -19,7 +19,7 @@ export default function RelatedPosts({ posts, lang = "et" }: RelatedPostsProps) 
 
   return (
     <section style={{ padding: "72px 0 96px" }}>
-      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 40px" }}>
+      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
         <div className="flex items-baseline justify-between" style={{ marginBottom: 32 }}>
           <div>
             <div

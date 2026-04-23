@@ -77,6 +77,52 @@
   --gutter:    40px;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --gutter:     20px;
+    --sp-section: 48px;
+  }
+}
+
+/* Consent banner: fixed bottom-right → full-width on mobile */
+@media (max-width: 600px) {
+  .consent-banner {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    max-width: none !important;
+  }
+}
+
+/* Homepage hero grid: text left, lang switch right → stacks on mobile */
+.hero-grid {
+  grid-template-columns: 1fr 360px;
+  gap: 48px;
+}
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+
+/* Footer grid: 3 cols desktop → 1 col mobile */
+.footer-grid {
+  grid-template-columns: 1.5fr 1fr 1fr;
+}
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* Homepage post grid: 3-col desktop → 2-col tablet → 1-col mobile */
+.post-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .post-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .post-grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
 /* ─── KSA Brand Design System — aligned with ksa.ee 2025 CVI (LEGACY) ─── */
 @theme inline {
   /* v2 tokens exposed to Tailwind utilities */

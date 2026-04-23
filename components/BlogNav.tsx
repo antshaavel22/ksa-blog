@@ -37,12 +37,12 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
     >
       <div
         className="mx-auto flex items-center justify-between"
-        style={{ maxWidth: "var(--container)", height: 72, padding: "0 40px" }}
+        style={{ maxWidth: "var(--container)", height: 72, padding: "0 var(--gutter)" }}
       >
         <div className="flex items-center gap-5">
           <Link
             href="https://ksa.ee"
-            className="inline-flex items-center gap-1.5 transition-colors hover:text-black"
+            className="hidden sm:inline-flex items-center gap-1.5 transition-colors hover:text-black"
             style={{ fontSize: 13, color: "var(--ink-40)" }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

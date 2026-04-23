@@ -113,7 +113,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
       }}
     >
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: c.accent }} />
-      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 40px" }}>
+      <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
           <span style={{ fontSize: 11, letterSpacing: "0.14em", color: c.accent, fontWeight: 600 }}>
             {c.eyebrow}
