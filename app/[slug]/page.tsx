@@ -2,6 +2,7 @@ import { getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/l
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTA from "@/components/SmartCTA";
+import BlogAnalytics from "@/components/BlogAnalytics";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
 import VimeoEmbed from "@/components/VimeoEmbed";
@@ -518,7 +519,14 @@ export default async function PostPage({ params }: PageProps) {
         )}
 
         {/* ── Smart CTA (funnel-driven; ET fallback copy until Phase 8 trilingual editor) ── */}
-        <SmartCTA funnel={resolvedFunnel} />
+        <SmartCTA funnel={resolvedFunnel} slug={slug} lang={lang} />
+        <BlogAnalytics
+          slug={slug}
+          funnel={resolvedFunnel}
+          lang={lang}
+          author={post.author}
+          medicalTopic={post.medicalTopic}
+        />
 
         {post.medicalReview && (
           <div className="mx-auto" style={{ maxWidth: 720, padding: "16px 24px 0" }}>

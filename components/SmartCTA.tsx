@@ -1,5 +1,9 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import ctaConfig from "@/data/cta-config.json";
 import type { Funnel } from "@/lib/posts";
+import { sendEvent, buildCtaUrl } from "@/lib/analytics";
 
 type CtaEntry = {
   live: boolean;
@@ -16,22 +20,65 @@ type CtaEntry = {
   secondaryHref?: string | null;
   accent: string;
   ladder: boolean;
+  campaign?: string | null;
 };
 
 const CONFIG = ctaConfig as unknown as Record<Funnel, CtaEntry>;
 
 interface SmartCTAProps {
   funnel?: Funnel;
+  slug: string;
+  lang?: string;
 }
 
-export default function SmartCTA({ funnel = "flow3" }: SmartCTAProps) {
+export default function SmartCTA({ funnel = "flow3", slug, lang }: SmartCTAProps) {
   const c = CONFIG[funnel] ?? CONFIG.general;
+  const ref = useRef<HTMLElement | null>(null);
+  const viewed = useRef(false);
+
+  useEffect(() => {
+    if (!c?.live || !ref.current || viewed.current) return;
+    const el = ref.current;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !viewed.current) {
+            viewed.current = true;
+            sendEvent("cta_view", { slug, funnel, lang }, { variant: c.ladder ? "ladder" : "single" });
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [c, slug, funnel, lang]);
+
   if (!c?.live) return null;
 
   const darkText = funnel !== "kids" && funnel !== "dryeye";
+  const campaign = c.campaign?.trim() || funnel;
+  const primaryHref = buildCtaUrl(c.primaryHref, funnel, slug, campaign);
+  const secondaryHref = c.secondaryHref ? buildCtaUrl(c.secondaryHref, funnel, slug, campaign) : "#";
+
+  const handleClick = (target: string, href: string) => () => {
+    sendEvent("cta_click", { slug, funnel, lang }, { target });
+    try {
+      const hostname = new URL(href, typeof window !== "undefined" ? window.location.href : "https://blog.ksa.ee").hostname;
+      const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
+      if (hostname && hostname !== currentHost) {
+        sendEvent("funnel_outbound", { slug, funnel, lang }, { destination: hostname });
+      }
+    } catch {}
+  };
+
+  const primaryTarget = c.ladder ? "flow3_web" : funnel;
+  const secondaryTarget = c.ladder ? "kiirtest_fast" : `${funnel}_secondary`;
 
   return (
     <section
+      ref={ref}
       style={{
         padding: "64px 0",
         background: "var(--ink)",
@@ -117,7 +164,8 @@ export default function SmartCTA({ funnel = "flow3" }: SmartCTAProps) {
         {c.ladder ? (
           <div className="cta-ladder" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <a
-              href={c.primaryHref}
+              href={primaryHref}
+              onClick={handleClick(primaryTarget, primaryHref)}
               style={{
                 display: "block",
                 padding: "26px 28px",
@@ -168,7 +216,8 @@ export default function SmartCTA({ funnel = "flow3" }: SmartCTAProps) {
             </a>
 
             <a
-              href={c.secondaryHref ?? "#"}
+              href={secondaryHref}
+              onClick={handleClick(secondaryTarget, secondaryHref)}
               style={{
                 display: "block",
                 padding: "26px 28px",
@@ -234,7 +283,8 @@ export default function SmartCTA({ funnel = "flow3" }: SmartCTAProps) {
           <>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <a
-                href={c.primaryHref}
+                href={primaryHref}
+                onClick={handleClick(primaryTarget, primaryHref)}
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -253,7 +303,8 @@ export default function SmartCTA({ funnel = "flow3" }: SmartCTAProps) {
               </a>
               {c.secondaryLabel && (
                 <a
-                  href={c.secondaryHref ?? "#"}
+                  href={secondaryHref}
+                  onClick={handleClick(secondaryTarget, secondaryHref)}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",

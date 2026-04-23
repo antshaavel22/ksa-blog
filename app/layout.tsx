@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Fraunces } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
-import CookieBanner from "@/components/CookieBanner";
+import ConsentBanner from "@/components/ConsentBanner";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +40,7 @@ export default function RootLayout({
     <html lang="et" className={`${geist.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         {children}
-        <CookieBanner />
+        <ConsentBanner />
         <Analytics />
       </body>
     </html>

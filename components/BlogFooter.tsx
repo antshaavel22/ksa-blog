@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ConsentLink from "./ConsentLink";
 
 type Lang = "et" | "ru" | "en";
 
@@ -168,6 +169,7 @@ export default function BlogFooter({ lang = "et" }: { lang?: string }) {
                 {x.label}
               </Link>
             ))}
+            <ConsentLink lang={l} />
           </div>
         </div>
       </div>

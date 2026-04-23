@@ -1,46 +1,47 @@
 "use client";
 
 import { useEffect } from "react";
+import { hasAnalyticsConsent } from "@/lib/consent";
 
 const GTM_ID = "GTM-KCZVRJ8";
 const GA4_ID = "G-7R7T8GF37J";
 
 export default function Analytics() {
   useEffect(() => {
-    const consent = localStorage.getItem("ksa_cookie_consent");
-    if (consent === "accepted") loadAnalytics();
+    if (hasAnalyticsConsent()) loadAnalytics();
 
-    const handler = () => loadAnalytics();
-    window.addEventListener("ksa_consent_accepted", handler);
-    return () => window.removeEventListener("ksa_consent_accepted", handler);
+    const handler = () => {
+      if (hasAnalyticsConsent()) loadAnalytics();
+    };
+    window.addEventListener("ksa:consent-changed", handler);
+    return () => window.removeEventListener("ksa:consent-changed", handler);
   }, []);
 
   return null;
 }
 
 function loadAnalytics() {
-  if ((window as any).__ksa_analytics_loaded) return;
-  (window as any).__ksa_analytics_loaded = true;
+  if ((window as unknown as { __ksa_analytics_loaded?: boolean }).__ksa_analytics_loaded) return;
+  (window as unknown as { __ksa_analytics_loaded?: boolean }).__ksa_analytics_loaded = true;
 
-  // GTM
-  (function (w: any, d: Document, s: string, l: string, i: string) {
-    w[l] = w[l] || [];
-    w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+  (function (w: Record<string, unknown>, d: Document, s: string, l: string, i: string) {
+    const dl = (w[l] = (w[l] as unknown[]) || []) as unknown[];
+    dl.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
     const f = d.getElementsByTagName(s)[0] as HTMLElement;
     const j = d.createElement(s) as HTMLScriptElement;
     j.async = true;
     j.src = "https://www.googletagmanager.com/gtm.js?id=" + i;
     f.parentNode!.insertBefore(j, f);
-  })(window, document, "script", "dataLayer", GTM_ID);
+  })(window as unknown as Record<string, unknown>, document, "script", "dataLayer", GTM_ID);
 
-  // GA4
   const ga = document.createElement("script");
   ga.async = true;
   ga.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`;
   document.head.appendChild(ga);
 
-  (window as any).dataLayer = (window as any).dataLayer || [];
-  function gtag(...args: any[]) { (window as any).dataLayer.push(args); }
+  const w = window as unknown as { dataLayer: unknown[] };
+  w.dataLayer = w.dataLayer || [];
+  function gtag(...args: unknown[]) { w.dataLayer.push(args); }
   gtag("js", new Date());
   gtag("config", GA4_ID);
 }

@@ -2111,6 +2111,7 @@ function PublishedTab() {
           ))}
         </div>
       </div>
+      <Stats7dTile />
       {/* Search row */}
       <div style={{ marginBottom: 20 }}>
         <input
@@ -3174,6 +3175,76 @@ export default function AdminPage() {
       <DailyGreeting />
 
       {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+    </div>
+  );
+}
+
+type StatsRow = { slug: string; views: number; cta_views: number; cta_clicks: number; ctr_pct: number };
+
+function Stats7dTile() {
+  const [rows, setRows] = useState<StatsRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/admin/stats-7d")
+      .then(r => r.json())
+      .then((d: { rows?: StatsRow[] }) => setRows(d.rows ?? []))
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalViews = rows.reduce((s, r) => s + (r.views ?? 0), 0);
+  const totalCtaViews = rows.reduce((s, r) => s + (r.cta_views ?? 0), 0);
+  const totalCtaClicks = rows.reduce((s, r) => s + (r.cta_clicks ?? 0), 0);
+  const overallCtr = totalCtaViews > 0 ? Math.round((totalCtaClicks / totalCtaViews) * 1000) / 10 : 0;
+  const top = expanded ? rows : rows.slice(0, 5);
+
+  return (
+    <div style={{
+      background: "white", border: "1.5px solid #f0f0ec", borderRadius: 12,
+      padding: 16, marginBottom: 20,
+    }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#9a9a9a", fontWeight: 600 }}>
+            Viimased 7 päeva
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 500, marginTop: 4, color: "#1a1a1a" }}>
+            {loading ? "…" : `${totalViews} vaatamist · ${overallCtr}% CTR`}
+          </div>
+        </div>
+        {rows.length > 5 && (
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            style={{ background: "none", border: 0, color: "#87be23", fontSize: 12, cursor: "pointer", fontWeight: 600 }}
+          >
+            {expanded ? "Näita vähem" : `Näita kõiki (${rows.length})`}
+          </button>
+        )}
+      </div>
+      {!loading && rows.length === 0 && (
+        <div style={{ fontSize: 13, color: "#9a9a9a" }}>
+          Statistika saadaval pärast esimesi külastusi (või Supabase pole konfigureeritud).
+        </div>
+      )}
+      {top.length > 0 && (
+        <div style={{ display: "grid", gap: 6 }}>
+          {top.map(r => (
+            <div key={r.slug} style={{
+              display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: 12,
+              fontSize: 12, color: "#5a6b6c",
+              padding: "6px 10px", background: "#fafaf7", borderRadius: 8,
+            }}>
+              <span style={{ fontFamily: "monospace", color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.slug}</span>
+              <span>{r.views} vaat.</span>
+              <span>{r.cta_clicks}/{r.cta_views} CTA</span>
+              <span style={{ fontWeight: 600, color: r.ctr_pct >= 5 ? "#87be23" : "#5a6b6c" }}>{r.ctr_pct}%</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
