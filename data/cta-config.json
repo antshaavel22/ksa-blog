@@ -39,13 +39,13 @@
   },
   "audit": {
     "live": true,
-    "eyebrow": "PÕHJALIK SILMAUURING 45+",
-    "headline": "Kui nägemine muutub, on aeg põhjaliku pildi peale.",
-    "sub": "Silmapõhja, silmarõhu, kae ja kollatähni uuring. 120 minutit, täielik diagnostika.",
-    "stats": [["149 €", "tavahind"], ["139 €", "lugejatele"], ["120 min", "kestvus"]],
+    "eyebrow": "NÄGEMISE AUDIT — PÕHJALIKUIM NÄGEMISUURING",
+    "headline": "Säilita hea nägemine kogu eluks. Parim ennetus on hea diagnostika.",
+    "sub": "Mõõdame 500+ erinevat parameetrit silmadest. 60 minutit, täielik diagnostika.",
+    "stats": [["149 €", "tavahind"], ["139 €", "lugejatele"], ["60 min", "kestvus"]],
     "primaryLabel": "Broneeri audit — 139 €",
     "primaryStrike": "149 €",
-    "primarySub": "Sooduskood BLOG139 · Tallinn või Tartu",
+    "primarySub": "Sooduskood BLOG139 · Tallinn — Tartu",
     "primaryHref": "https://ksa.ee/lp/broneeri-aeg-audit-silmauuring/?source=blog&funnel=audit",
     "secondaryLabel": null,
     "accent": "#86BC25",
@@ -61,12 +61,12 @@
       "primarySub": "Промокод BLOG139 · Таллинн или Тарту"
     },
     "en": {
-      "eyebrow": "COMPREHENSIVE EYE EXAM 45+",
-      "headline": "When vision starts to change, it's time to see the full picture.",
-      "sub": "Retina, intraocular pressure, cataract and macular examination. 120 minutes of complete diagnostics.",
-      "stats": [["€149", "regular"], ["€139", "for readers"], ["120 min", "duration"]],
+      "eyebrow": "AUDIT YOUR VISION",
+      "headline": "Keep your good vision for life. The best vision diagnostics in town.",
+      "sub": "We record 500+ parameters from your eyes. 60 minutes of complete diagnostics.",
+      "stats": [["€149", "regular"], ["€139", "for readers"], ["60 min", "duration"]],
       "primaryLabel": "Book the audit — €139",
-      "primarySub": "Code BLOG139 · Tallinn or Tartu"
+      "primarySub": "Code BLOG139 · Tallinn — Tartu"
     }
   },
   "kids": {
