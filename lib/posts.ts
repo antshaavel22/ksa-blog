@@ -142,6 +142,23 @@ export function getSisterPosts(post: PostMeta): PostMeta[] {
   );
 }
 
+/**
+ * Adjacent posts in the same language, ordered by date descending.
+ * `prev` = newer (published after the current post)
+ * `next` = older (published before the current post)
+ * This matches the reading direction on the index page: scrolling down
+ * (→ right-arrow) reveals older articles. Either may be null at the ends.
+ */
+export function getAdjacentPosts(post: PostMeta): { prev: PostMeta | null; next: PostMeta | null } {
+  const all = getAllPosts(post.lang as PostLang);
+  const idx = all.findIndex((p) => p.slug === post.slug);
+  if (idx === -1) return { prev: null, next: null };
+  return {
+    prev: idx > 0 ? all[idx - 1] : null,
+    next: idx < all.length - 1 ? all[idx + 1] : null,
+  };
+}
+
 export function getRelatedPosts(post: PostMeta, limit = 3): PostMeta[] {
   const all = getAllPosts(post.lang as PostLang);
   return all

@@ -277,7 +277,20 @@ Two Claude Code scheduled tasks run daily:
 - `toSlug()` in `lib/categories.ts` strips `&` and special chars — use for all category comparisons
 - Admin page is ~2800 lines; all UI in one file — read sections carefully before editing, changes can have wide blast radius
 
+## Keyboard Navigation (article pages)
+`components/KeyboardNav.tsx` is mounted on every `app/[slug]/page.tsx` render. Shortcuts:
+
+| Key | Action |
+|---|---|
+| `→` | Next article in same language (older by date) |
+| `←` | Previous article in same language (newer by date) |
+| `↑` | Smooth scroll to top |
+| `↓` | Smooth scroll to `#smart-cta` (bottom CTA section) |
+
+Sequence is computed by `getAdjacentPosts(post)` in `lib/posts.ts` — same-language, date-desc ordered. Shortcuts are suppressed when the user is typing in `input`/`textarea`/`contenteditable` or when any modifier key (⌘/Ctrl/Alt/Shift) is held. SmartCTA's root `<section>` carries `id="smart-cta"` as the scroll target.
+
 ## Changelog (session 2026-04-24)
+- **Keyboard navigation on article pages:** New `components/KeyboardNav.tsx` (client component) — arrow keys cycle next/prev articles in same language, ↑ to top, ↓ to Smart CTA. `lib/posts.ts` exports `getAdjacentPosts()`. Documented in Juhend section 6 + a dedicated CLAUDE.md section above.
 - **Excerpt hygiene pass:** `scripts/fix-excerpts.mjs` scanned all 1003 posts. 76 had abrupt endings (30 RU, 25 EN, 21 ET). 42 truncated to last full sentence (preserved ≥40% content), 34 got `...` appended (content too short to truncate). 40 `seoExcerpt` fields also repaired. Re-run anytime after bulk content imports. **New content rule #6** in master rules: excerpts must end with sentence punctuation or `...`.
 - **Reelika EN duplicates removed:** Scout generated 3 near-identical EN articles (2026-01-13, 14, 16). Deleted 13 and 16, kept 14 (longest). Note: a 2021 original `reelika-tammeoru-get-your-eyes-in-top-shape-for-the-driving-test.mdx` also exists — kept as canonical.
 - **Unpublish API duplicate-key fix:** `addDraftStatus()` was blindly prepending `status: "draft"` to frontmatter — if file already had `status:` anywhere, this created a duplicate YAML key and crashed every build. Now checks for existing `status:` and replaces in-place. (commit 5b2849c)

@@ -1,4 +1,5 @@
-import { getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/lib/posts";
+import { getAdjacentPosts, getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/lib/posts";
+import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTA from "@/components/SmartCTA";
@@ -214,10 +215,13 @@ export default async function PostPage({ params }: PageProps) {
   }
   const jsonLd = { "@context": "https://schema.org", "@graph": schemaGraph };
 
+  const { prev, next } = getAdjacentPosts(post);
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <PageLang lang={post.lang} />
+      <KeyboardNav prevSlug={prev?.slug ?? null} nextSlug={next?.slug ?? null} />
       <BlogNav lang={post.lang} />
 
       <main className="flex-1">

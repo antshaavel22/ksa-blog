@@ -102,6 +102,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
 
   return (
     <section
+      id="smart-cta"
       ref={ref}
       style={{
         padding: "64px 0",

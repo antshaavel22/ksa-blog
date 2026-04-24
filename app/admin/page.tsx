@@ -3099,8 +3099,32 @@ function HelpTab() {
         </tbody>
       </table>
 
-      {/* Section 6 */}
-      <h2 style={s.h2}>6. Mida süsteem teeb automaatselt</h2>
+      {/* Section 6 — Keyboard shortcuts on blog.ksa.ee */}
+      <h2 style={s.h2}>6. Klaviatuuri otseteed artiklilehel</h2>
+      <p style={s.p}>
+        Kui loed artiklit blog.ksa.ee-s, liiguvad nooleklahvid lehel nii:
+      </p>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["→ (parem nool)", "Järgmine artikkel samas keeles (vanem)"],
+            ["← (vasak nool)", "Eelmine artikkel samas keeles (uuem)"],
+            ["↑ (üles)", "Tagasi lehe ülaosa"],
+            ["↓ (alla)", "Hüppa Smart CTA-le (broneerimiskast)"],
+          ].map(([key, action]) => (
+            <tr key={key}>
+              <td style={{ ...s.td, fontWeight: 700, fontFamily: "monospace", whiteSpace: "nowrap", width: "38%" }}>{key}</td>
+              <td style={s.td}>{action}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={s.tip}>
+        💡 Sequents järgib kuupäeva: parem nool = vanemad artiklid, vasak nool = uuemad. Otseteed ei tööta, kui kirjutad tekstikasti ega siis, kui hoiad all ⌘/Ctrl/Alt/Shift.
+      </div>
+
+      {/* Section 7 */}
+      <h2 style={s.h2}>7. Mida süsteem teeb automaatselt</h2>
       <table style={s.table}>
         <tbody>
           {[
