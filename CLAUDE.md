@@ -237,6 +237,42 @@ assignedTo, deadline, status  # editorial workflow
 5. **Russian spelling:** Tallinn = **Таллинн** (two н) — Estonian Russian local standard.
 6. **Excerpts never end mid-sentence.** Every `excerpt` and `seoExcerpt` must end either with full sentence punctuation (`.`, `!`, `?`, `…`) or with a literal ellipsis `...` signalling more text follows. Run `npx tsx scripts/fix-excerpts.mjs` to auto-repair all abrupt endings (truncates to last sentence if ≥40% content preserved, otherwise appends `...`).
 7. **No duplicate stories per language.** Before publishing a customer/founder story, check if the same subject already exists in that language folder. Scout can generate near-duplicates — delete extras, keep one canonical version per language.
+8. **Every post uses the standard blog format (below). Use the ✨ Vorminda button in the editor toolbar — it applies all rules in one click.**
+
+## Standard Blog Format (applied by the ✨ Vorminda button)
+
+Every published post must follow this structure. The **✨ Vorminda blogi reeglite järgi** button in the editor toolbar (next to H2 / H3 / • List / 🖼 Pilt) applies all of these rules in one click via `/api/admin/format-body`.
+
+**Frontmatter requirements:**
+- `excerpt` and `seoExcerpt` end with full sentence punctuation (`.`, `!`, `?`, `…`) or with `...` — never mid-word. (Rule #6.)
+- `reviewedBy` required before publish — see "Publish gate" below.
+- `categories` is a YAML block list, never a quoted string. (Use `setCategoriesField()`.)
+- `featuredImage` is a 3:2 image, WebP, ≤300KB after client-compression.
+
+**Body structure:**
+- Opens with a hook — NO "In this article we will…" / "Selles artiklis räägime…"
+- 3–5 `## H2` headings spaced every ~200–300 words of body text. Headings are in the post's language.
+- Paragraphs 40–90 words. Walls of text (>120 words) get split.
+- List-intro paragraphs get bold lead-ins: `**X.** Foo bar` instead of `X: Foo bar`.
+- Medical terms accompanied by plain-language explanation: `sarvkest (silma pealmine läbipaistev kiht)`.
+- 1–2 natural inbound links to ksa.ee per post; avoid keyword-stuffing.
+- Closing line is empowering, never a sales pitch.
+
+**Embeds — use MDX components, never raw HTML:**
+- Rendia video: `<RendiaEmbed id="UUID" caption="Allikas: Rendia" />` — NOT raw `<var data-presentation>` + `<script>` tags (those break MDX parse and Vercel build).
+- YouTube: `<YouTubeEmbed url="https://youtu.be/…" />`.
+
+**Published posts are written to `content/posts/`, draft in `content/drafts/[lang]/` is deleted in the same publish call.**
+
+## Publish Gate — why Avalda may appear to do nothing
+
+The "Avalda" button runs through three gates in order. If any fails, publish returns early without a visible toast. Editors sometimes click Avalda and see "nothing happen":
+
+1. **`langChecked`** — the "✓ Keelekontroll tehtud" checkbox in Kvaliteedikontroll panel must be ticked. If not ticked, the Avalda button doesn't even render.
+2. **`needsMedical === "no"`** — the "Kas arsti kontroll on vajalik?" radio must be set to "Ei". If "Jah", a separate "🏥 Suuna arsti lauale" button appears instead.
+3. **`reviewedBy` non-empty** — the "Läbi vaadanud" select in the bottom sticky bar must have a reviewer selected. If empty, the Avalda button renders as **🔒 Avalda (nõuab kontrollijat)** in grey, and clicking it shows an alert + scrolls focus to the select.
+
+The `reviewedBy` value is written into frontmatter as `reviewedBy: "Dr. Ants Haavel"` (or whichever reviewer). This is the medical sign-off field and is required by policy for every published article.
 
 ## Environment Variables (.env.local)
 ```

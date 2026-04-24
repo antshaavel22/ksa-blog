@@ -1203,14 +1203,40 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               🏥 Saadetud Dr. Haaveli lauale ✓
             </div>
           ) : (
-            <div style={{ display: "flex", gap: 10 }}>
-              {langChecked && needsMedical === "no" && (
-                <button onClick={publish} disabled={publishing} style={{
-                  padding: "11px 28px", border: "none", borderRadius: 12,
-                  background: publishing ? "#c5dfa0" : "#87be23", color: "white",
-                  fontSize: 15, fontWeight: 800, cursor: publishing ? "not-allowed" : "pointer",
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {langChecked && needsMedical === "no" && !reviewedBy && (
+                <div style={{
+                  background: "#fee2e2", border: "1.5px solid #fca5a5", borderRadius: 10,
+                  padding: "10px 14px", fontSize: 13, color: "#991b1b", fontWeight: 700,
                 }}>
-                  {publishing ? "Avaldan…" : "✓ Avalda"}
+                  ⚠ Enne avaldamist vali all sticky-riba väljal <u>&ldquo;Läbi vaadanud&rdquo;</u> meditsiiniline kontrollija.
+                </div>
+              )}
+              {langChecked && needsMedical === "no" && (
+                <button
+                  onClick={() => {
+                    if (!reviewedBy) {
+                      alert("⚠️ Ei saa avaldada — vali all sticky-riba väljal 'Läbi vaadanud' meditsiiniline kontrollija.");
+                      const el = document.querySelector('select[data-reviewedby]') as HTMLSelectElement | null;
+                      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+                      return;
+                    }
+                    publish();
+                  }}
+                  disabled={publishing}
+                  title={reviewedBy ? "Avalda postitus live'i" : "Vali enne avaldamist 'Läbi vaadanud' väli all"}
+                  style={{
+                    padding: "11px 28px", border: "none", borderRadius: 12,
+                    background: publishing
+                      ? "#c5dfa0"
+                      : reviewedBy ? "#87be23" : "#d4d4d0",
+                    color: "white",
+                    fontSize: 15, fontWeight: 800,
+                    cursor: publishing ? "not-allowed" : "pointer",
+                    alignSelf: "flex-start",
+                  }}
+                >
+                  {publishing ? "Avaldan…" : reviewedBy ? "✓ Avalda" : "🔒 Avalda (nõuab kontrollijat)"}
                 </button>
               )}
               {langChecked && needsMedical === "yes" && (
@@ -1265,6 +1291,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             Läbi vaadanud{!reviewedBy && " *"}:
           </span>
           <select
+            data-reviewedby
             value={reviewedBy}
             onChange={e => setReviewedBy(e.target.value)}
             style={{
