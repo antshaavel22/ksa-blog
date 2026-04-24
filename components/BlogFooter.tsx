@@ -26,7 +26,7 @@ const CAT_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
   ru: [
     { label: "Процедура Flow", href: "/?keel=ru&kategooria=flow-protseduur" },
     { label: "Глаза и здоровье", href: "/?keel=ru&kategooria=silmad-ja-tervis" },
-    { label: "KSA Vision Center", href: "/?keel=ru&kategooria=ksa-silmakeskus" },
+    { label: "Глазной центр KSA", href: "/?keel=ru&kategooria=ksa-silmakeskus" },
   ],
   en: [
     { label: "Flow Procedure", href: "/?keel=en&kategooria=flow-protseduur" },

@@ -546,7 +546,7 @@ export default async function PostPage({ params }: PageProps) {
               }}
             >
               {lang === "ru"
-                ? "Содержание этой статьи проверено специалистами KSA Silmakeskus."
+                ? "Содержание этой статьи проверено специалистами Глазного центра KSA."
                 : lang === "en"
                 ? "The content of this article has been medically reviewed by KSA Vision Clinic specialists."
                 : "Selle artikli sisu on meditsiiniliselt kontrollitud KSA Silmakeskuse spetsialistide poolt."}

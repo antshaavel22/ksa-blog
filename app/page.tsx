@@ -41,7 +41,7 @@ const T = {
     notFound: "Artikleid ei leitud.",
   },
   ru: {
-    label: "KSA Vision Center · Блог",
+    label: "Глазной центр KSA · Блог",
     title: "Блог",
     sub: "Каждая история начинается со зрения. Здесь мы делимся знаниями, опытом и новостями о здоровье глаз и свободе видеть.",
     langHeader: "Язык",

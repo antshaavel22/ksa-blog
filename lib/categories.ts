@@ -25,8 +25,8 @@ export const CATEGORY_LABELS: Record<string, { et: string; ru: string; en: strin
   "huvitavad-faktid":    { et: "Huvitavad faktid",          ru: "Интересные факты",      en: "Interesting Facts" },
   "interesting-facts":   { et: "Huvitavad faktid",          ru: "Интересные факты",      en: "Interesting Facts" },
   // KSA brand
-  "ksa-silmakeskus":     { et: "KSA Silmakeskus",           ru: "KSA Vision Center",     en: "KSA Vision Center" },
-  "ksa-vision-center":   { et: "KSA Silmakeskus",           ru: "KSA Vision Center",     en: "KSA Vision Center" },
+  "ksa-silmakeskus":     { et: "KSA Silmakeskus",           ru: "Глазной центр KSA",     en: "KSA Vision Center" },
+  "ksa-vision-center":   { et: "KSA Silmakeskus",           ru: "Глазной центр KSA",     en: "KSA Vision Center" },
   // Vision correction
   "nagemise-korrigeerimine": { et: "Nägemise korrigeerimine", ru: "Коррекция зрения",    en: "Vision Correction" },
   "vision-correction":   { et: "Nägemise korrigeerimine",   ru: "Коррекция зрения",      en: "Vision Correction" },

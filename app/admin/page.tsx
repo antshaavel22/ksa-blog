@@ -6,6 +6,7 @@ import SmartCTA from "@/components/SmartCTA";
 import type { CtaEntry, CtaLang, CtaLangOverrides } from "@/lib/cta-config";
 import type { Funnel } from "@/lib/posts";
 import { AUTHORS } from "@/lib/authors";
+import { enqueue, getQueue, clearQueue, removeFromQueue, type QueuedEdit } from "@/lib/batch-queue";
 
 // Medical reviewers — only qualified clinicians appear in reviewedBy dropdown
 const REVIEWERS = AUTHORS.filter(a =>
@@ -518,53 +519,42 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       return;
     }
     try {
-      const endpoint = isPublished
-        ? `/api/admin/post?path=${encodeURIComponent(activePath)}`
-        : `/api/admin/draft?path=${encodeURIComponent(activePath)}`;
-      const res = await fetch(endpoint, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      const d = await res.json() as { ok?: boolean; error?: string };
-      if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
-      else if (d.error) { alert("Salvestamine ebaõnnestus: " + d.error); }
+      if (isPublished) {
+        // Published posts: stage into batch queue instead of immediate GitHub write.
+        // Editor can Salvesta on many posts, then flush all in one commit via "Uuenda kõik".
+        enqueue({ path: activePath, content, title });
+        setSaved(true); setTimeout(() => setSaved(false), 3000);
+      } else {
+        // Drafts: save immediately (doesn't trigger a live rebuild anyway)
+        const res = await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+        const d = await res.json() as { ok?: boolean; error?: string };
+        if (d.ok) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
+        else if (d.error) { alert("Salvestamine ebaõnnestus: " + d.error); }
+      }
     } catch (err) {
       alert("Võrguühenduse viga: " + (err as Error).message);
     } finally { setSaving(false); }
   }
 
   async function updateLive() {
+    // With the batch-queue system, "Uuenda live" now stages the edit the same
+    // way Salvesta does. Editor flushes everything via the top-of-page banner.
     setUpdating(true); setSaved(false);
     const content = buildMdx(buildFm(), body);
     const badYaml = await validateContent(content);
     if (badYaml) {
-      alert("⚠️ Ei saa live'i uuendada — frontmatter on katki:\n\n" + badYaml + "\n\nTõenäoliselt sisaldab pealkiri või mõni muu väli veidrat jutumärki. Paranda tekst ja proovi uuesti.");
+      alert("⚠️ Ei saa järjekorda lisada — frontmatter on katki:\n\n" + badYaml + "\n\nTõenäoliselt sisaldab pealkiri või mõni muu väli veidrat jutumärki. Paranda tekst ja proovi uuesti.");
       setUpdating(false);
       return;
     }
     try {
-      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(activePath)}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-      if (res.status === 401 || res.redirected || !res.headers.get("content-type")?.includes("application/json")) {
-        alert("Sessioon aegus — palun logi uuesti sisse (/admin/login)");
-        return;
-      }
-      const d = await res.json() as { ok?: boolean };
-      if (d.ok) {
-        setSaved(true); setTimeout(() => setSaved(false), 3000);
-        // Show 120-second countdown (Vercel rebuild time)
-        setUpdateCountdown(120);
-        const tick = setInterval(() => {
-          setUpdateCountdown(prev => {
-            if (prev <= 1) { clearInterval(tick); return 0; }
-            return prev - 1;
-          });
-        }, 1000);
-      }
+      enqueue({ path: activePath, content, title });
+      setSaved(true); setTimeout(() => setSaved(false), 3000);
     } catch (err) {
-      alert("Viga live uuendamisel: " + (err as Error).message);
+      alert("Viga järjekorda lisamisel: " + (err as Error).message);
     } finally { setUpdating(false); }
   }
 
@@ -1082,7 +1072,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               { slug: "flow-protseduur",            et: "Flow Protseduur",            ru: "Процедура Flow",         en: "Flow Procedure" },
               { slug: "silmade-tervis-nipid",       et: "Silmade tervis & nipid",     ru: "Здоровье глаз",          en: "Eye Health & Tips" },
               { slug: "tehnoloogia",                et: "Tehnoloogia",                ru: "Технология",             en: "Technology" },
-              { slug: "ksa-silmakeskus",            et: "KSA Silmakeskus",            ru: "KSA Vision Center",      en: "KSA Vision Center" },
+              { slug: "ksa-silmakeskus",            et: "KSA Silmakeskus",            ru: "Глазной центр KSA",      en: "KSA Vision Center" },
             ] as const).map(cat => {
               const label = cat[currentLang as "et" | "ru" | "en"] ?? cat.et;
               const isActive = selectedCategories.includes(cat.slug);
@@ -1339,13 +1329,13 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               }} title="Salvesta muudatused ilma live uuendamata">
                 {saving ? "Salvestab…" : "💾 Salvesta"}
               </button>
-              <button onClick={updateLive} disabled={updating || updateCountdown > 0} style={{
+              <button onClick={updateLive} disabled={updating} style={{
                 padding: "11px 24px", border: "none", borderRadius: 12,
-                background: updating || updateCountdown > 0 ? "#c5dfa0" : "#87be23",
+                background: updating ? "#c5dfa0" : "#87be23",
                 color: "white", fontSize: 14, fontWeight: 800,
-                cursor: updating || updateCountdown > 0 ? "not-allowed" : "pointer",
-              }}>
-                {updating ? "Uuendan…" : updateCountdown > 0 ? `⏱ Live ~${updateCountdown}s` : "🔄 Uuenda live"}
+                cursor: updating ? "not-allowed" : "pointer",
+              }} title="Lisab muudatuse järjekorda — flušši ülevalt 'Uuenda kõik' nupust">
+                {updating ? "Lisan…" : "📦 Lisa järjekorda"}
               </button>
               <button onClick={unpublish} disabled={unpublishing} style={{
                 padding: "11px 20px", border: "2px solid #fca5a5", borderRadius: 12,
@@ -2122,11 +2112,8 @@ function PublishedTab() {
       const { content } = await readRes.json() as { content: string };
       // Update date field in frontmatter
       const updated = content.replace(/^date:\s*.+$/m, `date: "${newDate}"`);
-      const writeRes = await fetch(endpoint, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: updated }),
-      });
-      if (!writeRes.ok) throw new Error("Salvestamine ebaõnnestus");
+      // Stage into batch queue — flushed together via "Uuenda kõik"
+      enqueue({ path: post.path, content: updated, title: post.title });
       // Update local state so card reflects new date immediately
       setPosts(prev => prev.map(p => p.path === post.path ? { ...p, date: newDate } : p));
     } catch (err) {
@@ -3306,9 +3293,157 @@ export default function AdminPage() {
         </div>
       </div>
 
+      <BatchQueueBanner />
+
       <DailyGreeting />
 
       {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+    </div>
+  );
+}
+
+// ─── Batch-edit queue banner ──────────────────────────────────────────────────
+// Shows count of staged published-post edits + single-click flush via one
+// GitHub commit (= one Vercel rebuild). Dismissible individual rows, cancel all.
+
+function BatchQueueBanner() {
+  const [queue, setLocalQueue] = useState<QueuedEdit[]>([]);
+  const [flushing, setFlushing] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    setLocalQueue(getQueue());
+    function onChange() { setLocalQueue(getQueue()); }
+    window.addEventListener("ksa-batch-queue-change", onChange);
+    window.addEventListener("storage", onChange); // cross-tab sync
+    return () => {
+      window.removeEventListener("ksa-batch-queue-change", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+
+  async function flushAll() {
+    if (!queue.length || flushing) return;
+    if (!confirm(`Saadan ${queue.length} muudatust live'i ühe commitina. Vercel ehitab uuesti ~2 min. Jätkan?`)) return;
+    setFlushing(true);
+    try {
+      const res = await fetch("/api/admin/batch-update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          files: queue.map(q => ({ path: q.path, content: q.content })),
+          message: `Batch edit: ${queue.length} post${queue.length === 1 ? "" : "s"}`,
+        }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string; commit?: string };
+      if (!res.ok || !data.ok) {
+        alert(`Uuendamine ebaõnnestus: ${data.error ?? res.status}`);
+        return;
+      }
+      clearQueue();
+      setLocalQueue([]);
+      setOpen(false);
+      setCountdown(120);
+      const tick = setInterval(() => {
+        setCountdown(prev => { if (prev <= 1) { clearInterval(tick); return 0; } return prev - 1; });
+      }, 1000);
+    } catch (err) {
+      alert("Võrguviga: " + (err as Error).message);
+    } finally {
+      setFlushing(false);
+    }
+  }
+
+  function cancelAll() {
+    if (!confirm(`Tühistan ${queue.length} järjekorras muudatust. Kindel?`)) return;
+    clearQueue();
+    setLocalQueue([]);
+    setOpen(false);
+  }
+
+  if (countdown > 0) {
+    return (
+      <div style={{
+        background: "#e7f6d5", borderBottom: "1.5px solid #87be23",
+        padding: "10px 24px", color: "#3d6b00", fontSize: 13, fontWeight: 700,
+        display: "flex", alignItems: "center", gap: 10,
+      }}>
+        ✓ Muudatused saadetud live'i. Vercel ehitab uuesti — {countdown}s
+      </div>
+    );
+  }
+
+  if (!queue.length) return null;
+
+  return (
+    <div style={{
+      background: "#fff8e1", borderBottom: "1.5px solid #ffd54f",
+      position: "sticky", top: 0, zIndex: 90,
+    }}>
+      <div style={{
+        padding: "10px 24px", display: "flex", alignItems: "center",
+        gap: 12, flexWrap: "wrap",
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 800, color: "#7a5800" }}>
+          📦 {queue.length} muudatus{queue.length === 1 ? "" : "t"} järjekorras
+        </span>
+        <button
+          onClick={() => setOpen(!open)}
+          style={{
+            padding: "5px 10px", border: "1px solid #e6c568", borderRadius: 7,
+            background: "white", color: "#7a5800", fontSize: 12, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          {open ? "Peida" : "Näita"} nimekirja
+        </button>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button
+            onClick={cancelAll}
+            disabled={flushing}
+            style={{
+              padding: "7px 14px", border: "1px solid #e6c568", borderRadius: 8,
+              background: "white", color: "#7a5800", fontSize: 13, fontWeight: 700,
+              cursor: flushing ? "not-allowed" : "pointer", opacity: flushing ? 0.5 : 1,
+            }}
+          >
+            ✕ Tühista kõik
+          </button>
+          <button
+            onClick={flushAll}
+            disabled={flushing}
+            style={{
+              padding: "7px 16px", border: "none", borderRadius: 8,
+              background: flushing ? "#c5dfa0" : "#87be23", color: "white",
+              fontSize: 13, fontWeight: 800, cursor: flushing ? "not-allowed" : "pointer",
+            }}
+          >
+            {flushing ? "Saadan…" : `✓ Uuenda kõik live (${queue.length})`}
+          </button>
+        </div>
+      </div>
+      {open && (
+        <div style={{ padding: "0 24px 12px", borderTop: "1px dashed #e6c568" }}>
+          {queue.map((q) => (
+            <div key={q.path} style={{
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "6px 0", borderBottom: "1px solid #fef3c5", fontSize: 13,
+            }}>
+              <span style={{ flex: 1, color: "#1a1a1a" }}>{q.title || q.path}</span>
+              <span style={{ color: "#9a9a9a", fontSize: 11 }}>{q.path.replace("content/posts/", "")}</span>
+              <button
+                onClick={() => { removeFromQueue(q.path); setLocalQueue(getQueue()); }}
+                style={{
+                  padding: "3px 8px", border: "1px solid #e6c568", borderRadius: 6,
+                  background: "white", color: "#7a5800", fontSize: 11, cursor: "pointer",
+                }}
+              >
+                eemalda
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
