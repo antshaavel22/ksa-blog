@@ -13,6 +13,7 @@ const UI_LABELS: Record<CtaLang, {
   bookOnline: string;
   ladderFastName: string;
   ladderFastMinutes: string;
+  ladderFastPrice: string;
 }> = {
   et: {
     recommended: "Soovitatud sulle",
@@ -21,7 +22,8 @@ const UI_LABELS: Record<CtaLang, {
     fastTrack: "FAST-TRACK",
     bookOnline: "Broneeri veebis",
     ladderFastName: "Kiirtest",
-    ladderFastMinutes: "20 minutit",
+    ladderFastMinutes: "2 min · online",
+    ladderFastPrice: "0 €",
   },
   ru: {
     recommended: "Рекомендуем вам",
@@ -30,7 +32,8 @@ const UI_LABELS: Record<CtaLang, {
     fastTrack: "БЫСТРЫЙ ТЕСТ",
     bookOnline: "Записаться онлайн",
     ladderFastName: "Быстрый тест",
-    ladderFastMinutes: "20 минут",
+    ladderFastMinutes: "2 мин · онлайн",
+    ladderFastPrice: "0 €",
   },
   en: {
     recommended: "Recommended for you",
@@ -39,7 +42,8 @@ const UI_LABELS: Record<CtaLang, {
     fastTrack: "FAST-TRACK",
     bookOnline: "Book online",
     ladderFastName: "Quick test",
-    ladderFastMinutes: "20 minutes",
+    ladderFastMinutes: "2 min · online",
+    ladderFastPrice: "€0",
   },
 };
 
@@ -285,7 +289,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                 {ui.ladderFastName}
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 28, fontFamily: "var(--font-serif-v2)", fontWeight: 500 }}>19 €</span>
+                <span style={{ fontSize: 28, fontFamily: "var(--font-serif-v2)", fontWeight: 500 }}>{ui.ladderFastPrice}</span>
                 <span style={{ fontSize: 13, opacity: 0.55 }}>{ui.ladderFastMinutes}</span>
               </div>
               <div style={{ fontSize: 13, opacity: 0.7, lineHeight: 1.5 }}>{c.secondarySub}</div>

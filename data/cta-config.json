@@ -10,7 +10,7 @@
     "primarySub": "90 min · Tallinn või Tartu · sooduskood BLOG39",
     "primaryHref": "https://ksa.ee/vabane-prillidest/flow3-silmauuring/?source=blog&funnel=flow3",
     "secondaryLabel": "Flow3 Kiirtest — 0 € täna",
-    "secondarySub": "Kiirtest selgitab välja esialgse sobivuse.",
+    "secondarySub": "Tasuta sobivustest → 19 € Flow3 uuring kliinikus (tavahinna 69 € asemel).",
     "secondaryHref": "https://kiirtest.ksa.ee?source=blog",
     "accent": "#86BC25",
     "ladder": true,
@@ -24,7 +24,7 @@
       "primaryLabel": "Исследование Flow3 — 39 €",
       "primarySub": "90 мин · Таллинн или Тарту · промокод BLOG39",
       "secondaryLabel": "Онлайн-тест Flow3 — 0 € сегодня",
-      "secondarySub": "2 мин · онлайн · предварительная проверка совместимости"
+      "secondarySub": "Бесплатный тест совместимости → обследование Flow3 в клинике за 19 € (вместо 69 €)."
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
@@ -34,7 +34,7 @@
       "primaryLabel": "Flow3 consultation — €39",
       "primarySub": "90 min · Tallinn or Tartu · code BLOG39",
       "secondaryLabel": "Flow3 online test — €0 today",
-      "secondarySub": "2 min · online · pre-qualification"
+      "secondarySub": "Free pre-check → €19 Flow3 clinic exam (instead of €69)."
     }
   },
   "audit": {
