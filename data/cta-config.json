@@ -129,34 +129,32 @@
   },
   "general": {
     "live": true,
-    "eyebrow": "BRONEERI SILMAUURING",
-    "headline": "Kas sinu silmad näevad kogu pilti?",
-    "sub": "Põhjalik silmauuring Tallinnas või Tartus. Iga uuring algab põhjalikust vestlusest.",
-    "stats": [["39 €", "Flow3 uuring"], ["139 €", "põhjalik"], ["3", "asukohta"]],
-    "primaryLabel": "Flow3 uuring — 39 €",
-    "primarySub": "Sooduskood BLOG39 · täna 19 € kiirtest.ee kaudu",
-    "primaryHref": "https://ksa.ee/broneeri?source=blog&funnel=general",
-    "secondaryLabel": "Vaata kõiki uuringuid",
-    "secondaryHref": "https://ksa.ee/hinnakiri",
+    "eyebrow": "PARIM NÄGEMISE KIIRTEST — VAID 2 MINUTIT",
+    "headline": "Milline silmauuring on just sinu jaoks?",
+    "sub": "2-minutiline Kiirtest annab vastuse, kas sulle sobib Flow3 uuring või Nägemise Audit. Tasuta, online, kohe.",
+    "stats": [["0 €", "tasuta"], ["2 min", "online"], ["Flow3 / Audit", "suunatakse"]],
+    "primaryLabel": "Tee Kiirtest — 0 €",
+    "primarySub": "Online · kohene tulemus",
+    "primaryHref": "https://kiirtest.ksa.ee?source=blog&funnel=qualifier",
+    "secondaryLabel": null,
+    "secondaryHref": null,
     "accent": "#86BC25",
     "ladder": false,
     "ru": {
-      "eyebrow": "ЗАПИСАТЬСЯ НА ОБСЛЕДОВАНИЕ",
-      "headline": "Видят ли ваши глаза всю картину?",
-      "sub": "Полное обследование зрения в Таллинне или Тарту. Каждое обследование начинается с подробной беседы.",
-      "stats": [["39 €", "Flow3"], ["139 €", "полное"], ["3", "города"]],
-      "primaryLabel": "Исследование Flow3 — 39 €",
-      "primarySub": "Промокод BLOG39 · сегодня 19 € через kiirtest.ee",
-      "secondaryLabel": "Все обследования"
+      "eyebrow": "БЫСТРЫЙ ТЕСТ ЗРЕНИЯ — 2 МИНУТЫ",
+      "headline": "Какое обследование подходит именно вам?",
+      "sub": "2-минутный тест определит, подходит ли вам исследование Flow3 или Аудит зрения. Бесплатно, онлайн, сразу.",
+      "stats": [["0 €", "бесплатно"], ["2 мин", "онлайн"], ["Flow3 / Audit", "маршрут"]],
+      "primaryLabel": "Пройти быстрый тест — 0 €",
+      "primarySub": "Онлайн · мгновенный результат"
     },
     "en": {
-      "eyebrow": "BOOK AN EYE EXAM",
-      "headline": "Do your eyes see the full picture?",
-      "sub": "A comprehensive eye examination in Tallinn or Tartu. Every exam begins with a thorough conversation.",
-      "stats": [["€39", "Flow3"], ["€139", "comprehensive"], ["3", "cities"]],
-      "primaryLabel": "Flow3 consultation — €39",
-      "primarySub": "Code BLOG39 · today €19 via kiirtest.ee",
-      "secondaryLabel": "All examinations"
+      "eyebrow": "VISION QUICK TEST — 2 MIN",
+      "headline": "Which eye exam is right for you?",
+      "sub": "A 2-minute online test tells you whether the Flow3 exam or the Vision Audit is the right next step. Free, online, instant result.",
+      "stats": [["€0", "free"], ["2 min", "online"], ["Flow3 / Audit", "routing"]],
+      "primaryLabel": "Take the Vision Quick Test — €0",
+      "primarySub": "Online · instant result"
     }
   }
 }
