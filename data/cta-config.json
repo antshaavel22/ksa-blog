@@ -71,12 +71,12 @@
   },
   "kids": {
     "live": true,
-    "eyebrow": "LASTE SILMAUURING",
-    "headline": "Iga 6. laps näeb halvemini kui peaks — enamus ei tea seda veel.",
-    "sub": "Laste silmauuring sisaldab koolivormi, prillikirja ja mängulist nägemise testi. Sobib alates 3. eluaastast.",
-    "stats": [["3+", "aastat"], ["45 min", "kestvus"], ["Koolivorm", "kaasas"]],
-    "primaryLabel": "Broneeri lastele — 69 €",
-    "primarySub": "Sooduskood BLOGKIDS · koolivorm ja silmaarsti kinnitus kaasas",
+    "eyebrow": "LASTE SILMAUURING KSA-s",
+    "headline": "Iga 5. laps näeb halvemini kui peaks — enamus ei tea seda veel.",
+    "sub": "Põhjalikud laste nägemisuuringud alates 3. eluaastast. Hea nägemine kogu eluks kujuneb esimesel 6 eluaastal.",
+    "stats": [["3+", "aastat"], ["30 min", "kestvus"], ["Online", "kokkuvõte vanematele"]],
+    "primaryLabel": "Laste silmauuring — 69 €",
+    "primarySub": "Sooduskood BLOGKIDS · sisaldab online kokkuvõtet ja arsti soovitusi",
     "primaryHref": "https://ksa.ee/nagemiskontroll-lastele/?source=blog&funnel=kids",
     "secondaryLabel": null,
     "accent": "#D97757",
@@ -90,12 +90,12 @@
       "primarySub": "Промокод BLOGKIDS · школьная форма и заключение офтальмолога"
     },
     "en": {
-      "eyebrow": "CHILDREN'S EYE EXAM",
-      "headline": "Every 6th child sees worse than they should — and most don't know it yet.",
-      "sub": "Children's exam includes the school form, prescription, and a playful vision test. Suitable from age 3.",
-      "stats": [["3+", "years"], ["45 min", "duration"], ["School", "form"]],
+      "eyebrow": "CHILDREN'S EYE EXAM AT KSA",
+      "headline": "Every 5th child sees worse than they should — and most don't know it yet.",
+      "sub": "Comprehensive children's vision exams from age 3. Good lifelong vision is shaped in the first 6 years.",
+      "stats": [["3+", "years"], ["30 min", "duration"], ["Online", "report for parents"]],
       "primaryLabel": "Book for your child — €69",
-      "primarySub": "Code BLOGKIDS · school form and ophthalmologist's note included"
+      "primarySub": "Code BLOGKIDS · includes online report and doctor's recommendations"
     }
   },
   "dryeye": {
