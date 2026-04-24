@@ -1120,7 +1120,51 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       </div>
 
       {/* Formatting toolbar + Body textarea */}
-      <FormattingToolbar body={body} setBody={setBody} onUploadBodyImage={uploadBodyImage} />
+      <FormattingToolbar
+        body={body}
+        setBody={setBody}
+        onUploadBodyImage={uploadBodyImage}
+        onFormatBlogRules={async () => {
+          if (!body.trim()) {
+            alert("Artikli tekst on tühi — pole midagi vormindada.");
+            return null;
+          }
+          const res = await fetch("/api/admin/format-body", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              body,
+              excerpt: getFmField(frontmatter, "excerpt"),
+              seoExcerpt: getFmField(frontmatter, "seoExcerpt"),
+              title,
+              lang: draft.lang,
+            }),
+          });
+          if (!res.ok) {
+            const e = await res.json().catch(() => ({}));
+            alert(`Vormindamine ebaõnnestus: ${e.error ?? res.status}`);
+            return null;
+          }
+          const data = (await res.json()) as {
+            body: string;
+            excerpt: string;
+            seoExcerpt: string;
+            stats: { before: number; after: number; addedHeadings: number };
+          };
+          const msg =
+            `Vorminda blogi reeglite järgi?\n\n` +
+            `• Tekst: ${data.stats.before} → ${data.stats.after} sõna\n` +
+            `• Uusi H2 pealkirju: ${data.stats.addedHeadings}\n` +
+            `• Katkendlikud lühikirjeldused parandatud\n\n` +
+            `Rakendan muudatused?`;
+          if (!confirm(msg)) return null;
+          setBody(data.body);
+          let fm = setFmField(frontmatter, "excerpt", data.excerpt);
+          fm = setFmField(fm, "seoExcerpt", data.seoExcerpt);
+          setFrontmatter(fm);
+          return data.body;
+        }}
+      />
 
       {/* Review Panel — shown only for drafts */}
       {!isPublished && (
@@ -1329,15 +1373,17 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 // Operates on the selected text range using document.execCommand-style logic.
 
 function FormattingToolbar({
-  body, setBody, onUploadBodyImage,
+  body, setBody, onUploadBodyImage, onFormatBlogRules,
 }: {
   body: string;
   setBody: React.Dispatch<React.SetStateAction<string>>;
   onUploadBodyImage?: (file: File) => Promise<string | null>;
+  onFormatBlogRules?: () => Promise<string | null>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [uploadingBodyImg, setUploadingBodyImg] = useState(false);
+  const [formatting, setFormatting] = useState(false);
 
   function wrap(before: string, after: string) {
     const el = textareaRef.current;
@@ -1476,6 +1522,28 @@ function FormattingToolbar({
               onChange={e => { const f = e.target.files?.[0]; if (f) handleImageFile(f); }}
             />
           </>
+        )}
+        {onFormatBlogRules && (
+          <button
+            type="button"
+            title="Vorminda tekst blogi standardiga (H2-d, lõigud, lühikirjeldus)"
+            disabled={formatting}
+            onClick={async () => {
+              setFormatting(true);
+              try { await onFormatBlogRules(); } finally { setFormatting(false); }
+            }}
+            style={{
+              ...btnStyle,
+              display: "flex", alignItems: "center", gap: 4,
+              background: formatting ? "#f0fde4" : "#87be23",
+              color: formatting ? "#3d6b00" : "white",
+              border: "1px solid #87be23",
+              opacity: formatting ? 0.7 : 1,
+              cursor: formatting ? "wait" : "pointer",
+            }}
+          >
+            {formatting ? "⏳ Vormindan…" : "✨ Vorminda"}
+          </button>
         )}
         <span style={{ marginLeft: "auto", fontSize: 10, color: "#c0c0b8", alignSelf: "center", paddingRight: 4 }}>Markdown</span>
       </div>
