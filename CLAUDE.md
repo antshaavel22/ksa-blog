@@ -235,6 +235,8 @@ assignedTo, deadline, status  # editorial workflow
 3. **Writing language priority.** When generating trilingual content: write English first, then adapt ET and RU as independent pieces.
 4. **Master prompt.** All AI content follows `content/system/master-prompt.md` (James Clear philosophy — stories over statistics, life-first framing, no marketing language).
 5. **Russian spelling:** Tallinn = **Таллинн** (two н) — Estonian Russian local standard.
+6. **Excerpts never end mid-sentence.** Every `excerpt` and `seoExcerpt` must end either with full sentence punctuation (`.`, `!`, `?`, `…`) or with a literal ellipsis `...` signalling more text follows. Run `npx tsx scripts/fix-excerpts.mjs` to auto-repair all abrupt endings (truncates to last sentence if ≥40% content preserved, otherwise appends `...`).
+7. **No duplicate stories per language.** Before publishing a customer/founder story, check if the same subject already exists in that language folder. Scout can generate near-duplicates — delete extras, keep one canonical version per language.
 
 ## Environment Variables (.env.local)
 ```
@@ -274,6 +276,12 @@ Two Claude Code scheduled tasks run daily:
 - Login page uses `window.location.href = "/admin"` (NOT `router.push`) — required for reliable cookie redirect
 - `toSlug()` in `lib/categories.ts` strips `&` and special chars — use for all category comparisons
 - Admin page is ~2800 lines; all UI in one file — read sections carefully before editing, changes can have wide blast radius
+
+## Changelog (session 2026-04-24)
+- **Excerpt hygiene pass:** `scripts/fix-excerpts.mjs` scanned all 1003 posts. 76 had abrupt endings (30 RU, 25 EN, 21 ET). 42 truncated to last full sentence (preserved ≥40% content), 34 got `...` appended (content too short to truncate). 40 `seoExcerpt` fields also repaired. Re-run anytime after bulk content imports. **New content rule #6** in master rules: excerpts must end with sentence punctuation or `...`.
+- **Reelika EN duplicates removed:** Scout generated 3 near-identical EN articles (2026-01-13, 14, 16). Deleted 13 and 16, kept 14 (longest). Note: a 2021 original `reelika-tammeoru-get-your-eyes-in-top-shape-for-the-driving-test.mdx` also exists — kept as canonical.
+- **Unpublish API duplicate-key fix:** `addDraftStatus()` was blindly prepending `status: "draft"` to frontmatter — if file already had `status:` anywhere, this created a duplicate YAML key and crashed every build. Now checks for existing `status:` and replaces in-place. (commit 5b2849c)
+- **Build incident root cause:** Silmatilkade-iroonia draft had duplicate `status:` from earlier unpublish → gray-matter threw → every Vercel build failed. Manually de-duplicated + pushed fix. Admin UI showed stale "published" state because production froze on old READY deploy.
 
 ## Changelog (session 2026-04-23)
 - **Phase 7 complete (analytics + consent):** ConsentBanner (cookie-based, DNT-aware, 3 categories) replaced legacy CookieBanner. GTM/GA4 gated via `hasAnalyticsConsent()`. SmartCTA fires `cta_view`/`cta_click`/`funnel_outbound` with UTM params via navigator.sendBeacon. BlogAnalytics fires `article_view` + scroll_depth (25/50/75/100). Events landing in Supabase `blog_events` (project hjnvvulgbccbvwapxtgv). Admin `Stats7dTile` pulls from `blog_events_7d_by_slug` view via service role. Env vars `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` set in Vercel prod+preview.
