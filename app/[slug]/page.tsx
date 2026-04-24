@@ -13,6 +13,7 @@ import PageLang from "@/components/PageLang";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { resolveFunnel } from "@/lib/funnel-classifier";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -126,11 +127,21 @@ export default async function PostPage({ params }: PageProps) {
     ? getCategoryLabel(toSlug(primaryCategoryRaw), lang)
     : "";
   const readMin = readMinutes(post.content);
-  const resolvedFunnel =
+  // Auto-classifier: keyword-driven funnel routing, bulletproof default.
+  // Editor can pin with `funnelOverride: true` in frontmatter to skip classification.
+  const frontmatterFunnel =
     post.funnel ??
     (post.ctaType === "kiirtest-inline" || post.ctaType === "kiirtest-soft"
       ? "flow3"
       : "general");
+  const resolvedFunnel = resolveFunnel({
+    title: post.title,
+    slug: post.slug,
+    categories: post.categories,
+    body: post.content,
+    funnel: frontmatterFunnel,
+    funnelOverride: (post as { funnelOverride?: boolean }).funnelOverride === true,
+  });
 
   // Reviewer: explicit `reviewedBy` key, else fall back to author.
   const reviewerProfile = post.reviewedBy
