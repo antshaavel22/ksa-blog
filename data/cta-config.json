@@ -2,15 +2,15 @@
   "flow3": {
     "live": true,
     "eyebrow": "FLOW3 – VABANE PRILLIDEST",
-    "headline": "Näed ilma prillideta — juba homme hommikul.",
-    "sub": "Flow3 on Eesti kõige täpsem laserprotseduur lühinägelikele 18–45. 8 minutit, üks päev.",
-    "stats": [["18–45", "vanus"], ["8 min", "protseduur"], ["1 nädal", "taastumine"]],
+    "headline": "Näed ilma prillideta — kohe laseriruumist väljumisel.",
+    "sub": "Flow3 on Eesti kõige täpsem laserprotseduur lühinägelikele 18–45. 8 minutit / silm.",
+    "stats": [["18–45", "vanus"], ["8 min", "protseduur"], ["7 päeva", "tagasi sportima"]],
     "primaryLabel": "Flow3 uuring — 39 €",
     "primaryStrike": "69 €",
     "primarySub": "90 min · Tallinn või Tartu · sooduskood BLOG39",
     "primaryHref": "https://ksa.ee/vabane-prillidest/flow3-silmauuring/?source=blog&funnel=flow3",
-    "secondaryLabel": "Kiirtest.ee — 19 € täna",
-    "secondarySub": "20 min · online · sooduskood KIIRTEST19",
+    "secondaryLabel": "Flow3 Kiirtest — 0 € täna",
+    "secondarySub": "Kiirtest selgitab välja esialgse sobivuse.",
     "secondaryHref": "https://kiirtest.ksa.ee?source=blog",
     "accent": "#86BC25",
     "ladder": true,
@@ -28,13 +28,13 @@
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
-      "headline": "Wake up tomorrow seeing clearly — without glasses.",
-      "sub": "Flow3 is Estonia's most precise laser procedure for near-sighted adults 18–45. 8 minutes, one day.",
-      "stats": [["18–45", "age"], ["8 min", "procedure"], ["1 week", "recovery"]],
+      "headline": "Walk out of the laser room seeing clearly — without glasses.",
+      "sub": "Flow3 is Estonia's most precise laser procedure for near-sighted adults 18–45. 8 minutes per eye.",
+      "stats": [["18–45", "age"], ["8 min", "procedure"], ["1 week", "back to the gym"]],
       "primaryLabel": "Flow3 consultation — €39",
       "primarySub": "90 min · Tallinn or Tartu · code BLOG39",
-      "secondaryLabel": "Kiirtest.ee — €19 today",
-      "secondarySub": "20 min · online · code KIIRTEST19"
+      "secondaryLabel": "Flow3 online test — €0 today",
+      "secondarySub": "2 min · online · pre-qualification"
     }
   },
   "audit": {
