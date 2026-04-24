@@ -100,12 +100,12 @@
   },
   "dryeye": {
     "live": true,
-    "eyebrow": "KUIVA SILMA DIAGNOSTIKA",
-    "headline": "Kui silmad põletavad pärast tunnist ekraani — see ei ole normaalne.",
-    "sub": "Kuiva silma süvauuring, Rexon Eye OMR-ravi ja punctum plugs. Üks põhjus, üks plaan.",
-    "stats": [["OMR", "Rexon Eye"], ["Punctum", "plugs"], ["60 min", "diagnostika"]],
-    "primaryLabel": "Broneeri kuiva silma uuring — 89 €",
-    "primarySub": "Sooduskood BLOGDRY · sisaldab OMR-analüüsi",
+    "eyebrow": "KUIVA SILMA DIAGNOSTIKA JA RAVI",
+    "headline": "Kui silmad põletavad juba pikka aega.",
+    "sub": "Kuiva silma Sirius diagnostika, Rexon Eye OMR-ravi ja pisarakanali korgid. Üks põhjus, mitu tõhusat lahendust. Peale visiiti põhjalik online kokkuvõte ja silmaarsti soovitused.",
+    "stats": [["Sirius", "diagnostika"], ["OMR", "raviseanss"], ["30 min", "kestvus"]],
+    "primaryLabel": "Kuiva silma uuring + tasuta OMR raviseanss — 89 €",
+    "primarySub": "Sooduskood BLOGDRY",
     "primaryHref": "https://ksa.ee/hinnakiri/?source=blog&funnel=dryeye",
     "secondaryLabel": null,
     "accent": "#5B9AC9",
@@ -119,12 +119,12 @@
       "primarySub": "Промокод BLOGDRY · включает OMR-анализ"
     },
     "en": {
-      "eyebrow": "DRY EYE DIAGNOSTICS",
-      "headline": "If your eyes burn after an hour at the screen — that's not normal.",
-      "sub": "In-depth dry eye exam, Rexon Eye OMR therapy, and punctum plugs. One cause, one plan.",
-      "stats": [["OMR", "Rexon Eye"], ["Punctum", "plugs"], ["60 min", "diagnostics"]],
-      "primaryLabel": "Book the dry eye exam — €89",
-      "primarySub": "Code BLOGDRY · includes OMR analysis"
+      "eyebrow": "DRY EYE DIAGNOSTICS & TREATMENT",
+      "headline": "If your eyes have burned for a long time — you don't have to live with it.",
+      "sub": "Sirius dry eye diagnostics, Rexon Eye OMR therapy, or punctum plugs. One cause, several effective solutions. After the visit: a detailed online summary and ophthalmologist's recommendations.",
+      "stats": [["Sirius", "diagnostics"], ["OMR", "session"], ["30 min", "duration"]],
+      "primaryLabel": "Dry eye exam + complimentary OMR session — €89",
+      "primarySub": "Code BLOGDRY"
     }
   },
   "general": {
