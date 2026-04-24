@@ -45,7 +45,7 @@
     "stats": [["149 €", "tavahind"], ["139 €", "lugejatele"], ["120 min", "kestvus"]],
     "primaryLabel": "Broneeri audit — 139 €",
     "primaryStrike": "149 €",
-    "primarySub": "Sooduskood BLOG139 · Tallinn, Tartu, Pärnu",
+    "primarySub": "Sooduskood BLOG139 · Tallinn või Tartu",
     "primaryHref": "https://ksa.ee/lp/broneeri-aeg-audit-silmauuring/?source=blog&funnel=audit",
     "secondaryLabel": null,
     "accent": "#86BC25",
@@ -58,7 +58,7 @@
       "sub": "Обследование глазного дна, внутриглазного давления, катаракты и макулы. 120 минут полной диагностики.",
       "stats": [["149 €", "обычно"], ["139 €", "читателям"], ["120 мин", "длительность"]],
       "primaryLabel": "Записаться на аудит — 139 €",
-      "primarySub": "Промокод BLOG139 · Таллинн, Тарту, Пярну"
+      "primarySub": "Промокод BLOG139 · Таллинн или Тарту"
     },
     "en": {
       "eyebrow": "COMPREHENSIVE EYE EXAM 45+",
@@ -66,7 +66,7 @@
       "sub": "Retina, intraocular pressure, cataract and macular examination. 120 minutes of complete diagnostics.",
       "stats": [["€149", "regular"], ["€139", "for readers"], ["120 min", "duration"]],
       "primaryLabel": "Book the audit — €139",
-      "primarySub": "Code BLOG139 · Tallinn, Tartu, Pärnu"
+      "primarySub": "Code BLOG139 · Tallinn or Tartu"
     }
   },
   "kids": {
@@ -131,7 +131,7 @@
     "live": true,
     "eyebrow": "BRONEERI SILMAUURING",
     "headline": "Kas sinu silmad näevad kogu pilti?",
-    "sub": "Põhjalik silmauuring Tallinnas, Tartus või Pärnus. Iga uuring algab põhjalikust vestlusest.",
+    "sub": "Põhjalik silmauuring Tallinnas või Tartus. Iga uuring algab põhjalikust vestlusest.",
     "stats": [["39 €", "Flow3 uuring"], ["139 €", "põhjalik"], ["3", "asukohta"]],
     "primaryLabel": "Flow3 uuring — 39 €",
     "primarySub": "Sooduskood BLOG39 · täna 19 € kiirtest.ee kaudu",
@@ -143,7 +143,7 @@
     "ru": {
       "eyebrow": "ЗАПИСАТЬСЯ НА ОБСЛЕДОВАНИЕ",
       "headline": "Видят ли ваши глаза всю картину?",
-      "sub": "Полное обследование зрения в Таллинне, Тарту или Пярну. Каждое обследование начинается с подробной беседы.",
+      "sub": "Полное обследование зрения в Таллинне или Тарту. Каждое обследование начинается с подробной беседы.",
       "stats": [["39 €", "Flow3"], ["139 €", "полное"], ["3", "города"]],
       "primaryLabel": "Исследование Flow3 — 39 €",
       "primarySub": "Промокод BLOG39 · сегодня 19 € через kiirtest.ee",
@@ -152,7 +152,7 @@
     "en": {
       "eyebrow": "BOOK AN EYE EXAM",
       "headline": "Do your eyes see the full picture?",
-      "sub": "A comprehensive eye examination in Tallinn, Tartu, or Pärnu. Every exam begins with a thorough conversation.",
+      "sub": "A comprehensive eye examination in Tallinn or Tartu. Every exam begins with a thorough conversation.",
       "stats": [["€39", "Flow3"], ["€139", "comprehensive"], ["3", "cities"]],
       "primaryLabel": "Flow3 consultation — €39",
       "primarySub": "Code BLOG39 · today €19 via kiirtest.ee",
