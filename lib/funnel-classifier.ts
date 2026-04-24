@@ -44,9 +44,23 @@ const DRYEYE_KEYWORDS = [
 
 const KIDS_CATEGORIES = new Set(["laste-nagemiskontroll", "childrens-vision"]);
 
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function hasAny(haystack: string, needles: string[]): boolean {
   const h = haystack.toLowerCase();
-  return needles.some((n) => h.includes(n.toLowerCase()));
+  return needles.some((n) => {
+    const t = n.toLowerCase().trim();
+    // Multi-word phrase OR contains non-letter? match as substring (already bounded by phrase).
+    if (t.includes(" ") || /[^a-zа-яõäöü]/i.test(t)) {
+      return h.includes(t);
+    }
+    // Single-word keyword → word-boundary match so "laps" doesn't hit "lapivaba".
+    // Use lookarounds since \b doesn't play well with cyrillic/diacritics.
+    const re = new RegExp(`(^|[^a-zа-яõäöü])${escapeRegex(t)}(?![a-zа-яõäöü])`, "i");
+    return re.test(h);
+  });
 }
 
 export interface ClassifierInput {
