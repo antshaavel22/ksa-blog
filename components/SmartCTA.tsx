@@ -47,7 +47,7 @@ const UI_LABELS: Record<CtaLang, {
     todayOnline: "TODAY · ONLINE",
     fastTrack: "FAST-TRACK",
     bookOnline: "Book online",
-    ladderPrimaryName: "Flow3 consultation",
+    ladderPrimaryName: "Flow3 exam",
     ladderPrimaryPrice: "€39",
     ladderFastName: "Quick test",
     ladderFastMinutes: "2 min · online",
