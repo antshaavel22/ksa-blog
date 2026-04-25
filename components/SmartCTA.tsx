@@ -11,6 +11,8 @@ const UI_LABELS: Record<CtaLang, {
   todayOnline: string;
   fastTrack: string;
   bookOnline: string;
+  ladderPrimaryName: string;
+  ladderPrimaryPrice: string;
   ladderFastName: string;
   ladderFastMinutes: string;
   ladderFastPrice: string;
@@ -21,6 +23,8 @@ const UI_LABELS: Record<CtaLang, {
     todayOnline: "TÄNA · ONLINE",
     fastTrack: "FAST-TRACK",
     bookOnline: "Broneeri veebis",
+    ladderPrimaryName: "Flow3 uuring",
+    ladderPrimaryPrice: "39 €",
     ladderFastName: "Kiirtest",
     ladderFastMinutes: "2 min · online",
     ladderFastPrice: "0 €",
@@ -31,6 +35,8 @@ const UI_LABELS: Record<CtaLang, {
     todayOnline: "СЕГОДНЯ · ОНЛАЙН",
     fastTrack: "БЫСТРЫЙ ТЕСТ",
     bookOnline: "Записаться онлайн",
+    ladderPrimaryName: "Исследование Flow3",
+    ladderPrimaryPrice: "39 €",
     ladderFastName: "Быстрый тест",
     ladderFastMinutes: "2 мин · онлайн",
     ladderFastPrice: "0 €",
@@ -41,6 +47,8 @@ const UI_LABELS: Record<CtaLang, {
     todayOnline: "TODAY · ONLINE",
     fastTrack: "FAST-TRACK",
     bookOnline: "Book online",
+    ladderPrimaryName: "Flow3 consultation",
+    ladderPrimaryPrice: "€39",
     ladderFastName: "Quick test",
     ladderFastMinutes: "2 min · online",
     ladderFastPrice: "€0",
@@ -217,10 +225,10 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
                 {ui.standardOnline}
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
-                <span style={{ fontSize: 30, fontWeight: 400, letterSpacing: "-0.02em" }}>Flow3 uuring</span>
+                <span style={{ fontSize: 30, fontWeight: 400, letterSpacing: "-0.02em" }}>{ui.ladderPrimaryName}</span>
               </div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 12 }}>
-                <span style={{ fontSize: 28, color: c.accent, fontFamily: "var(--font-serif-v2)" }}>39 €</span>
+                <span style={{ fontSize: 28, color: c.accent, fontFamily: "var(--font-serif-v2)" }}>{ui.ladderPrimaryPrice}</span>
                 {c.primaryStrike && (
                   <span style={{ fontSize: 14, textDecoration: "line-through", opacity: 0.4 }}>
                     {c.primaryStrike}
