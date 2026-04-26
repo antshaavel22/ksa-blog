@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Fraunces } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
 import ConsentBanner from "@/components/ConsentBanner";
+import { getPostBySlug } from "@/lib/posts";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -31,13 +33,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+async function detectLang(): Promise<"et" | "ru" | "en"> {
+  try {
+    const h = await headers();
+    const pathname = h.get("x-pathname") ?? "/";
+    const m = pathname.match(/^\/([^/]+)\/?$/);
+    if (!m) return "et";
+    const slug = m[1];
+    if (slug === "admin" || slug === "api" || slug === "kategooria" || slug === "autor" || slug === "otsing") return "et";
+    const post = getPostBySlug(slug);
+    const lang = post?.lang;
+    if (lang === "ru" || lang === "en") return lang;
+  } catch {
+    // fall through
+  }
+  return "et";
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const lang = await detectLang();
   return (
-    <html lang="et" className={`${geist.variable} ${fraunces.variable} h-full`}>
+    <html lang={lang} className={`${geist.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         {children}
         <ConsentBanner />
