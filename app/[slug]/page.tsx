@@ -1,4 +1,4 @@
-import { getAdjacentPosts, getAllPosts, getPostBySlug, getRelatedPosts, getSisterPosts } from "@/lib/posts";
+import { getAdjacentPosts, getAllPosts, getPostBySlug, getRelatedPosts } from "@/lib/posts";
 import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
@@ -47,18 +47,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = post.seoTitle ?? post.title;
   const description = post.seoExcerpt ?? post.excerpt;
 
-  // Build hreflang map: only include existing language versions + x-default (et).
   const currentUrl = `https://blog.ksa.ee/${slug}`;
-  const langMap: Record<string, string> = {
-    [post.lang ?? "et"]: currentUrl,
-  };
-  for (const s of getSisterPosts(post)) {
-    if (s.lang && !langMap[s.lang]) {
-      langMap[s.lang] = `https://blog.ksa.ee/${s.slug}`;
-    }
-  }
-  // x-default points to ET version (use current if post is ET, else the ET sister).
-  langMap["x-default"] = langMap.et ?? currentUrl;
 
   return {
     title,
@@ -81,7 +70,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     alternates: {
       canonical: currentUrl,
-      languages: langMap,
     },
     other: { "content-language": post.lang ?? "et" },
   };
