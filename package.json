@@ -14,7 +14,8 @@
     "scout": "tsx scripts/content-scout.ts",
     "fill-translations": "tsx scripts/fill-translations.ts",
     "batch": "tsx scripts/batch-generate.ts",
-    "ai-edit": "tsx scripts/ai-editor.ts"
+    "ai-edit": "tsx scripts/ai-editor.ts",
+    "radar": "tsx scripts/blog-radar.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",

@@ -1,0 +1,35 @@
+name: Blog Radar
+on:
+  schedule:
+    - cron: "0 5 * * *" # 05:00 UTC = 08:00 EET (summer 08:00 EEST)
+  workflow_dispatch:
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+
+      - run: npm run radar
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_RADAR_WEBHOOK: ${{ secrets.SLACK_RADAR_WEBHOOK }}
+
+      - name: Persist seen-store
+        run: |
+          if [ -f .radar-seen.json ]; then
+            git config user.name "blog-radar-bot"
+            git config user.email "bot@ksa.ee"
+            git add .radar-seen.json
+            git diff --cached --quiet || git commit -m "radar: update seen-store"
+            git push
+          fi

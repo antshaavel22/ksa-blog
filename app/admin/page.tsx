@@ -235,6 +235,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [postDate, setPostDate] = useState("");
   const [postSlug, setPostSlug] = useState("");
   const [youtubeInput, setYoutubeInput] = useState("");
+  const [vimeoInput, setVimeoInput] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -1049,6 +1050,47 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           </p>
         </div>
 
+        {/* Vimeo embed */}
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f0f0ec" }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c", display: "block", marginBottom: 8 }}>
+            ▶ Vimeo video
+          </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              type="url"
+              value={vimeoInput}
+              onChange={e => setVimeoInput(e.target.value)}
+              placeholder="https://vimeo.com/..."
+              style={{
+                flex: 1, padding: "10px 14px", border: "1.5px solid #e6e6e6",
+                borderRadius: 10, fontSize: 13, outline: "none", background: "white",
+                fontFamily: "inherit", color: "#1a1a1a",
+              }}
+              onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+              onBlur={e => { e.target.style.borderColor = "#e6e6e6"; }}
+            />
+            <button
+              type="button"
+              disabled={!vimeoInput.trim()}
+              onClick={() => {
+                const tag = `\n<VimeoEmbed url="${vimeoInput.trim()}" />\n`;
+                setBody(prev => prev + tag);
+                setVimeoInput("");
+              }}
+              style={{
+                padding: "10px 16px", borderRadius: 10, border: "none",
+                background: vimeoInput.trim() ? "#87be23" : "#e6e6e6",
+                color: vimeoInput.trim() ? "white" : "#9a9a9a",
+                fontSize: 13, fontWeight: 700, cursor: vimeoInput.trim() ? "pointer" : "not-allowed",
+                whiteSpace: "nowrap",
+              }}
+            >Lisa artiklisse →</button>
+          </div>
+          <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9a9a9a" }}>
+            Toetab nii avalikke kui ka privaatseid Vimeo linke (nt vimeo.com/123/abc).
+          </p>
+        </div>
+
         {/* Category selector */}
         <div style={{ padding: "16px 18px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -1756,6 +1798,18 @@ function mdToHtml(md: string): string {
       const videoId = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/)?.[1];
       if (!videoId) return "";
       return `<div style="position:relative;padding-bottom:56.25%;height:0;margin:2rem 0;border-radius:16px;overflow:hidden"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe></div>`;
+    })
+    // VimeoEmbed MDX component → responsive iframe
+    .replace(/<VimeoEmbed\s+(?:id|url)=["']([^"']+)["']\s*\/?>/gi, (_, src) => {
+      // Match either bare ID, vimeo.com/ID[/HASH], or player.vimeo.com/video/ID
+      const m = src.match(/(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)?(\d+)(?:\/([a-zA-Z0-9]+))?/);
+      if (!m) return "";
+      const id = m[1];
+      const hash = m[2];
+      const playerSrc = hash
+        ? `https://player.vimeo.com/video/${id}?h=${hash}`
+        : `https://player.vimeo.com/video/${id}`;
+      return `<div style="position:relative;padding-bottom:56.25%;height:0;margin:2rem 0;border-radius:16px;overflow:hidden;background:#000"><iframe style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" src="${playerSrc}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
     })
     // RendiaEmbed MDX component → placeholder (actual embed loads on published page)
     .replace(/<RendiaEmbed\s+id=["']([^"']+)["'][^/]*\/?>/gi, (_, id) => {

@@ -399,25 +399,7 @@ export default async function PostPage({ params }: PageProps) {
               </div>
             )}
 
-            {post.tags && post.tags.length > 0 && (
-              <div className="flex flex-wrap" style={{ marginTop: 32, gap: 8 }}>
-                {post.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      padding: "5px 12px",
-                      fontSize: 12,
-                      background: "var(--beige-light)",
-                      color: "var(--ink-60)",
-                      borderRadius: 999,
-                      border: "1px solid var(--line)",
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Tags hidden from article view — kept in frontmatter for SEO/search only. */}
           </div>
         </article>
 
