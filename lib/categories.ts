@@ -1,5 +1,6 @@
 /** Normalize a raw category name or slug to a consistent registry key */
 export function toSlug(name: string): string {
+  if (typeof name !== "string") return "";
   return name
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, "")   // strip &, #, etc.

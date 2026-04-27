@@ -81,7 +81,14 @@ function parseMdx(raw: string): { frontmatter: string; body: string } | null {
 }
 
 function getFmField(fm: string, key: string): string {
-  const m = fm.match(new RegExp(`^${key}:\\s*["']?([^"'\\n]+)["']?`, "m"));
+  // Double-quoted: key: "..."  (apostrophes inside are fine)
+  let m = fm.match(new RegExp(`^${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*$`, "m"));
+  if (m) return m[1].replace(/\\"/g, '"');
+  // Single-quoted: key: '...'  (YAML escapes literal ' as '')
+  m = fm.match(new RegExp(`^${key}:\\s*'((?:[^']|'')*)'\\s*$`, "m"));
+  if (m) return m[1].replace(/''/g, "'");
+  // Unquoted: key: value (entire rest of line)
+  m = fm.match(new RegExp(`^${key}:\\s*(.+?)\\s*$`, "m"));
   return m ? m[1].trim() : "";
 }
 
