@@ -284,6 +284,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [assignedTo, setAssignedTo] = useState(draft.assignedTo ?? "");
   const [deadline, setDeadline] = useState(draft.deadline ?? "");
   const [reviewedBy, setReviewedBy] = useState("");
+  const [author, setAuthor] = useState("");
   const [notifying, setNotifying] = useState(false);
   const [notified, setNotified] = useState(false);
 
@@ -306,6 +307,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
           setSelectedCategories(getFmCategories(parsed.frontmatter));
           setReviewedBy(getFmField(parsed.frontmatter, "reviewedBy"));
+          setAuthor(getFmField(parsed.frontmatter, "author"));
           setPinned(getFmField(parsed.frontmatter, "pinned") === "true");
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
@@ -359,6 +361,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
     if (deadline) fm = setFmField(fm, "deadline", deadline);
     if (reviewedBy) fm = setFmField(fm, "reviewedBy", reviewedBy);
+    if (author) fm = setFmField(fm, "author", author);
     if (extraMedical) {
       fm = setFmField(fm, "medicalReview", "true");
       fm = setFmField(fm, "status", "medical_review");
@@ -1338,6 +1341,20 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       }}>
         {/* Left: assignment */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>Autor:</span>
+          <select
+            value={author}
+            onChange={e => setAuthor(e.target.value)}
+            style={{
+              padding: "7px 12px", border: "1.5px solid #e6e6e6", borderRadius: 10,
+              fontSize: 13, background: "white", color: "#1a1a1a", outline: "none", cursor: "pointer",
+            }}
+          >
+            <option value="">— vali —</option>
+            {AUTHORS.map(a => (
+              <option key={a.slug} value={a.displayName}>{a.displayName}</option>
+            ))}
+          </select>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>Vastutaja:</span>
           <select
             value={assignedTo}
@@ -1348,9 +1365,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             }}
           >
             <option value="">— vali —</option>
-            <option value="silvia">Silvia Johanna Haavel</option>
-            <option value="jana">Jana</option>
             <option value="ants">Dr. Ants Haavel</option>
+            <option value="silvia">Silvia Haavel</option>
+            <option value="jana">Jana Gretchits</option>
+            <option value="maigret">Maigret Mõru</option>
+            <option value="liisi">Liisi Mölder</option>
           </select>
           <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>Tähtaeg:</span>
           <input

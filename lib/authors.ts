@@ -70,8 +70,8 @@ export const AUTHORS: AuthorProfile[] = [
     avatarUrl: "/uploads/authors/karl-erik-tillmann.jpg",
   },
   {
-    keys: ["liisi", "Optometrist Liisi", "Liisi"],
-    displayName: "Liisi",
+    keys: ["liisi", "Optometrist Liisi", "Liisi", "Liisi Mölder", "liisi-molder"],
+    displayName: "Liisi Mölder",
     slug: "optometrist-liisi",
     role: {
       et: "Optometrist, KSA Silmakeskus",
@@ -107,8 +107,8 @@ export const AUTHORS: AuthorProfile[] = [
     },
   },
   {
-    keys: ["yana", "Yana Grechits"],
-    displayName: "Yana Grechits",
+    keys: ["yana", "Yana Grechits", "jana", "Jana", "Jana Gretchits"],
+    displayName: "Jana Gretchits",
     slug: "yana-grechits",
     role: {
       et: "KSA blogi toimetaja (vene ja inglise keel)",
@@ -122,8 +122,8 @@ export const AUTHORS: AuthorProfile[] = [
     },
   },
   {
-    keys: ["maigret", "Maigret Moru"],
-    displayName: "Maigret Moru",
+    keys: ["maigret", "Maigret Moru", "Maigret Mõru"],
+    displayName: "Maigret Mõru",
     slug: "maigret-moru",
     role: {
       et: "KSA Silmakeskus",
