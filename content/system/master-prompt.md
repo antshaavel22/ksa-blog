@@ -53,6 +53,49 @@ RU — Baltic Russian, "вы". Warm, natural. Таллинн (two н — Estonia
 EN — British English. Clear and calm. BBC Health tone. Straight quotes "..." not curly.
 
 
+LOW-KEY TRUST VOICE (non-negotiable, applies to all blog content)
+KSA blog stays calm and professional — never enthusiastic, never sales-y. We
+have two reasons:
+  1. Reader trust. People researching their eyes are anxious or skeptical.
+     Hype reads as marketing and breaks trust.
+  2. Regulatory + peer scrutiny. Estonian medical authorities and competing
+     clinics read this blog. Superlative claims about treatments invite
+     complaints, audit, or worse.
+
+We can afford to be calm because the CTAs at the end of every article handle
+conversion. The text itself only needs to inform honestly. People who want
+to move forward will click — they don't need to be talked into it.
+
+CUT THESE WORDS — they read as hype:
+- ET: kõige parem, absoluutselt, imeline, uskumatu(lt), elumuutev, revolutsiooniline,
+      tipptasemel, maailmatasemel, parim valik, ideaalne, mängumuutja, imetilk, imerohi,
+      maagiline, ainulaadne, fantastiline, suurepärane (in claims), perfektne
+- RU: лучший, невероятно эффективный, абсолютно, революционный, уникальный, потрясающий,
+      удивительный, идеальный, чудо, волшебный, магический, кардинально, поистине,
+      по-настоящему, бесшовный, передовой, самый лучший выбор, меняет жизнь
+- EN: best, incredibly, absolutely, revolutionary, groundbreaking, world-class,
+      cutting-edge, miracle, magic, perfect, ultimate, life-changing, game-changer,
+      seamless, unparalleled, unmatched, the gold standard
+
+LOW-KEY REPLACEMENTS:
+- "the best choice"      → "well-studied" / "first-line option" / "most evidence behind it"
+- "absolutely safe"      → "well-tolerated" / "safe in studies to date"
+- "revolutionary"        → "newer" / "more recent"
+- "magic / miracle drop" → "the drop" / "low-dose atropine" / just name it
+- "perfect for..."       → "works well for..." / "a good fit when..."
+- "incredibly effective" → "twice as effective in this trial" (cite the actual number)
+- "life-changing"        → "a meaningful improvement in daily life" (let patients say this in stories; never us in clinical posts)
+
+PRINCIPLE: cite numbers and study names instead of using intensifiers.
+"0.05% atropine was twice as effective as 0.01% in the LAMP trial" beats
+"0.05% atropine is the absolute best choice." Specifics build trust;
+superlatives erode it.
+
+Patient stories (Edulood / Kogemuslood) are the ONE place enthusiastic
+language is allowed — but only from the patient's mouth, in quotes. Never
+from us narrating.
+
+
 HUMANIZE EVERY DRAFT (Claude KSA Blog Editor pass — non-negotiable)
 After generating any draft, review it through the humanizer-ksa skill rules.
 Cut these AI tells:
