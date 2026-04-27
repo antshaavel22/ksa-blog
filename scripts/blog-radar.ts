@@ -39,21 +39,19 @@ if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY missing");
 type Source = { id: string; name: string; url: string; lang: "en" | "et" | "ru" };
 const SOURCES: Source[] = [
   // English — research / industry
-  { id: "healio", name: "Healio Ophthalmology", url: "https://www.healio.com/sws/feed/news/ophthalmology", lang: "en" },
-  { id: "reviewofopt", name: "Review of Ophthalmology", url: "https://www.reviewofophthalmology.com/rss/news", lang: "en" },
-  { id: "aao", name: "AAO Eyenet", url: "https://www.aao.org/rss/eyenet", lang: "en" },
-  { id: "eyewire", name: "EyeWire News", url: "https://eyewire.news/feed/", lang: "en" },
-  { id: "allaboutvision", name: "All About Vision", url: "https://www.allaboutvision.com/rss.xml", lang: "en" },
+  { id: "healio_ophth", name: "Healio Ophthalmology", url: "https://www.healio.com/sws/feed/news/ophthalmology", lang: "en" },
+  { id: "healio_opto", name: "Healio Optometry", url: "https://www.healio.com/sws/feed/news/optometry", lang: "en" },
+  { id: "bjo", name: "British Journal of Ophthalmology", url: "https://bjo.bmj.com/rss/current.xml", lang: "en" },
+  { id: "bmjophth", name: "BMJ Open Ophthalmology", url: "https://bmjophth.bmj.com/rss/recent.xml", lang: "en" },
+  { id: "medpagetoday_ophth", name: "MedPage Today Ophthalmology", url: "https://www.medpagetoday.com/rss/Ophthalmology.xml", lang: "en" },
   { id: "sciencedaily_eye", name: "ScienceDaily Eye Care", url: "https://www.sciencedaily.com/rss/health_medicine/eye_care.xml", lang: "en" },
-  { id: "medscape", name: "Medscape Ophthalmology", url: "https://www.medscape.com/rss/ophthalmology", lang: "en" },
-  { id: "optometrytimes", name: "Optometry Times", url: "https://www.optometrytimes.com/rss", lang: "en" },
-  // Estonian — broad health/lifestyle (filter for eye-related)
-  { id: "err_tervis", name: "ERR Tervis", url: "https://www.err.ee/rss/tervis", lang: "et" },
+  // Estonian — broad health/lifestyle/science (filter applied for eye-related)
+  { id: "err", name: "ERR Uudised", url: "https://www.err.ee/rss", lang: "et" },
+  { id: "novaator", name: "ERR Novaator (teadus)", url: "https://novaator.err.ee/rss", lang: "et" },
   { id: "postimees_tervis", name: "Postimees Tervis", url: "https://tervis.postimees.ee/rss", lang: "et" },
-  { id: "delfi_tervis", name: "Delfi Tervis", url: "https://tervis.delfi.ee/rss", lang: "et" },
   // Russian (Estonia-local)
+  { id: "rus_err", name: "ERR rus", url: "https://rus.err.ee/rss", lang: "ru" },
   { id: "rus_postimees", name: "Postimees Rus Здоровье", url: "https://rus.postimees.ee/rss", lang: "ru" },
-  { id: "rus_delfi", name: "Delfi RU Здоровье", url: "https://rus.delfi.ee/rss", lang: "ru" },
 ];
 
 // ── seen-store ───────────────────────────────────────────────────────────────
