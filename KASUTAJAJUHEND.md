@@ -156,7 +156,7 @@ Vahekaart **📝 Sisureeglid** sisaldab täielikku prompti mida AI kasutab.
 **Mida see hõlmab:**
 - KSA kliiniku faktid (55 000+ protseduuri, Flow3, ICB)
 - **Eesti keel:** loomulik Tallinna keel, "sina" vorm
-- **Vene keel:** Балтийский стиль — soe, mitte formaalne Moskva vene · Таллин (üks н!)
+- **Vene keel:** Балтийский стиль — soe, mitte formaalne Moskva vene · **Таллинн (kaks н — Eesti vene kohalik standard, kinnitanud Jana)**
 - **Inglise keel:** briti inglise (colour, centre, whilst)
 - Lugemistase: arusaadav 8. klassi õpilasele
 - Meditsiiniterminid koos lihtsustusega: "müoopia (lühinägelikkus)"
@@ -202,7 +202,41 @@ Iga avaldatud postitusel on automaatselt:
 
 ---
 
-## 13. Sagedased olukorrad
+## 13. Claude KSA Blog Editor — uus humaniseerija (aprill 2026)
+
+**Mis see on:** AI-generaator teeb mustandid liiga toored ja AI-laadsed (pikad laused, *"sukeldume teadusesse!"*, *"võtmerolli mängib"*, slogan-lõpud, jargooon ilma seletuseta). Claude KSA Blog Editor võtab toore mustandi ja kirjutab ümber sooja arstihäälega, 8. klassi lugemistasemel, kõik meditsiinitermid kohe sulgudes lahti seletatud.
+
+**Mida ta parandab:**
+- Cuts AI-fraasid: *"tõeliselt põnev"*, *"võtmetähtsusega"*, *"sukeldume"*, *"helget tulevikku"*
+- Lühendab pikki lauseid → 8. klassi tase
+- Lisab meditsiiniterminite kõrvale lihtsa selgituse: *sarvkest (silma esimene läbipaistev kiht)*
+- Esimese isiku arstihääl kus loomulik: "Olen näinud...", "Soovitan..."
+- Lõpetab **soodustava kutsega**, mitte müügi-slogan'iga
+- ET grammatika: *uuringul, vastuvõtul, kontrollil* (mitte *uuringus*)
+- RU: **Таллинн kahe н-ga**, mitte Таллин
+
+**Kuidas kasutada:** praegu jooksutab Ants seda Claude'i kaudu kõikidele mustanditele enne, kui need sinuni jõuavad. Kui näed mustandit, mis ikkagi loeb AI-laadselt — anna teada, parandame skilli reegleid.
+
+**Tulemus:** mustandid on nüüd ~90% avaldamiseks valmis. Sinu töö on lugeda üle, kohendada paari nüanssi, lisada kaanepilt, valida kontrollija ja vajutada Avalda. **Eesmärk: 1 postitus päevas keele kohta.**
+
+---
+
+## 14. Miks blog meie pildis nii oluline on
+
+Korralikult kasutatud blog võib tuua **20–30% uutest leadidest**. See pole väike number — see on terve broneerimisvoo lisarivi.
+
+Aga sama tähtis: blog on **tasuta väärtuskanal olemasolevatele patsientidele**. Inimene, kes käis kunagi Flow3-l või kuiva silma vastuvõtul, saab meilt jätkuvalt usaldusväärset infot — ilma et me midagi müüks. See ehitab usaldust ja **käivitab suusõnalise reklaami, jagamise ja soovitused ilma, et küsiks**.
+
+**Win-win-win:**
+- 🟢 **Lugeja** — saab tasuta usaldusväärset arstinfot
+- 🟢 **Olemasolev patsient** — tunneb, et hoolime ka pärast operatsiooni
+- 🟢 **KSA** — orgaanilised leadid + soovitused
+
+**Soovitus toimetajatele:** kui avaldad postitust, jaga seda pehmelt ka oma kanalites (Instagram-storyd, LinkedIn, Facebook). Mitte agressiivset müüki — lihtsalt "vaadake, mida me sel teemal kirjutasime". Just see õrn, regulaarne kohalolek toob aja jooksul kliendid sisse.
+
+---
+
+## 15. Sagedased olukorrad
 
 | Olukord | Lahendus |
 |---------|----------|

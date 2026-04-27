@@ -235,9 +235,11 @@ assignedTo, deadline, status  # editorial workflow
 3. **Writing language priority.** When generating trilingual content: write English first, then adapt ET and RU as independent pieces.
 4. **Master prompt.** All AI content follows `content/system/master-prompt.md` (James Clear philosophy — stories over statistics, life-first framing, no marketing language).
 5. **Russian spelling:** Tallinn = **Таллинн** (two н) — Estonian Russian local standard.
+5a. **Estonian grammar:** events you attend take adessive `-l`: *uuringul, vastuvõtul, kontrollil* — NOT inessive `-s` (*uuringus*). Confirmed by Dr. Haavel 2026-04-27.
 6. **Excerpts never end mid-sentence.** Every `excerpt` and `seoExcerpt` must end either with full sentence punctuation (`.`, `!`, `?`, `…`) or with a literal ellipsis `...` signalling more text follows. Run `npx tsx scripts/fix-excerpts.mjs` to auto-repair all abrupt endings (truncates to last sentence if ≥40% content preserved, otherwise appends `...`).
 7. **No duplicate stories per language.** Before publishing a customer/founder story, check if the same subject already exists in that language folder. Scout can generate near-duplicates — delete extras, keep one canonical version per language.
 8. **Every post uses the standard blog format (below). Use the ✨ Vorminda button in the editor toolbar — it applies all rules in one click.**
+9. **Claude KSA Blog Editor (humanizer-ksa skill).** New 2026-04-27. Lives at `~/.claude/skills/humanizer-ksa/SKILL.md`. Layered on `~/.claude/skills/humanizer/` (blader/humanizer). Trilingual EE/RU/EN vocabulary lists of AI tells + KSA voice rules + Jana/Silvia/Haavel hand-off. Run on every AI-generated draft before it reaches editors — they should receive ~90% publish-ready material. Reference voice: `content/drafts/et/2026-04-22-vahiravi-ja-sinu-silmade-tervise-raakimata-lugu.mdx` (rewritten + Haavel-approved 2026-04-27). Strategic context: blog is 20–30% of new leads + free-value channel for existing patients → word-of-mouth + referrals. Win-win-win.
 
 ## Standard Blog Format (applied by the ✨ Vorminda button)
 
