@@ -3188,7 +3188,13 @@ function HelpTab() {
       <h3 style={s.h3}>Pildi SEO nimi</h3>
       <p style={s.p}>Enne pildi üleslaadimist kirjuta <strong>pildi-seo-nimi</strong> lahtrisse (nt <span style={s.code}>ksa-laseroperatsioon-kornea</span>). Pilt saab automaatselt SEO-sõbraliku faili nime kujul <span style={s.code}>ksa-laseroperatsioon-kornea-ksa-silmakeskus.webp</span>. Kui jätad tühjaks, kasutatakse faili originaalnime.</p>
       <h3 style={s.h3}>YouTube video</h3>
-      <p style={s.p}>Kleebi YouTube link redaktori ülaosas olevasse lahtrisse → <strong>Lisa video</strong>. Video ilmub teksti sisse.</p>
+      <p style={s.p}>Kleebi YouTube link toolbox'is olevasse <strong>▶ YouTube video</strong> lahtrisse → <strong>Lisa artiklisse →</strong>. Video ilmub artikli lõppu, saad selle tekstis ümber tõsta.</p>
+      <h3 style={s.h3}>Vimeo video</h3>
+      <p style={s.p}>Sama loogika nagu YouTube'il — kleebi link toolbox'is olevasse <strong>▶ Vimeo video</strong> lahtrisse → <strong>Lisa artiklisse →</strong>. Toetab nii avalikke (<span style={s.code}>vimeo.com/123456</span>) kui ka privaatseid/unlisted linke (<span style={s.code}>vimeo.com/123456/abc123</span>) — hash käib automaatselt kaasa. Eelvaates näed kohe 16:9 iframe'i.</p>
+      <h3 style={s.h3}>📌 Kinnita avalehel</h3>
+      <p style={s.p}>Toolbox'is on uus checkbox <strong>📌 Kinnita avalehel</strong>. Märkad linnukese, salvestad → postitus läheb avalehe esimese 6 kaardi sekka, segatud uusimatega. Korraga saab kinnitada kuni <strong>3 postitust per keel</strong> — kui kinnitad neljanda, vanim pinned langeb ise tavarodusse tagasi (ei pea käsitsi lahti tegema).</p>
+      <p style={s.p}>Lugeja näeb kinnitatud kaardil kuupäeva asemel rohelist mulli <strong>📌 Toimetaja valik</strong>. Kategoorialeht ja otsing jäävad rangelt date-desc — pin mõjub ainult avalehele.</p>
+      <p style={s.p}>Pin'imise eemaldamine: võta linnuke maha, salvesta → ~2 min Vercel rebuild + kuni 120s ISR → post läheb tagasi oma loomulikule kuupäeva-positsioonile, mull kaob.</p>
       <h3 style={s.h3}>Rendia video</h3>
       <p style={s.p}>Lisa Rendia patsiendiharidusvideo artiklisse MDX komponendiga: <span style={s.code}>{"<RendiaEmbed id=\"UUID\" />"}</span>. UUID leiad Rendia Embed Managerist (<strong>{"</>"}  nupust</strong>). Eelvaates näed tumedat kohahoidjat — päris video ilmub avaldatud lehel.</p>
       <h3 style={s.h3}>Otsing blogis</h3>
