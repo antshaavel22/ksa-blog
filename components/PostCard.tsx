@@ -132,7 +132,37 @@ export default function PostCard({ post, large = false }: PostCardProps) {
               color: "var(--ink-40)",
             }}
           >
-            {BLOG_CONFIG.showDate && !post.hideDate && dateFormatted ? (
+            {post.pinned ? (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "3px 10px",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: "0.04em",
+                  color: "var(--lime-dark)",
+                  background: "var(--lime-wash)",
+                  border: "1px solid var(--lime-soft, #d4ec9b)",
+                  borderRadius: 999,
+                }}
+                aria-label={
+                  post.lang === "ru"
+                    ? "Выбор редактора"
+                    : post.lang === "en"
+                    ? "Editor's pick"
+                    : "Toimetaja valik"
+                }
+              >
+                <span aria-hidden="true">📌</span>
+                {post.lang === "ru"
+                  ? "Выбор редактора"
+                  : post.lang === "en"
+                  ? "Editor's pick"
+                  : "Toimetaja valik"}
+              </span>
+            ) : BLOG_CONFIG.showDate && !post.hideDate && dateFormatted ? (
               <span>{dateFormatted}</span>
             ) : (
               <span />
