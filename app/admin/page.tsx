@@ -261,6 +261,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
   const [showPreview, setShowPreview] = useState(false);
   const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
+  const [pinned, setPinned] = useState(getFmField(frontmatter, "pinned") === "true");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [renamingImage, setRenamingImage] = useState(false);
   const [imageRenameInput, setImageRenameInput] = useState("");
@@ -298,6 +299,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setPostSlug(getFmField(parsed.frontmatter, "slug") || draft.filename.replace(/\.mdx?$/, ""));
           setSelectedCategories(getFmCategories(parsed.frontmatter));
           setReviewedBy(getFmField(parsed.frontmatter, "reviewedBy"));
+          setPinned(getFmField(parsed.frontmatter, "pinned") === "true");
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -346,6 +348,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }
+    fm = setFmField(fm, "pinned", pinned ? "true" : "false");
     if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
     if (deadline) fm = setFmField(fm, "deadline", deadline);
     if (reviewedBy) fm = setFmField(fm, "reviewedBy", reviewedBy);
@@ -1088,6 +1091,29 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           </div>
           <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9a9a9a" }}>
             Toetab nii avalikke kui ka privaatseid Vimeo linke (nt vimeo.com/123/abc).
+          </p>
+        </div>
+
+        {/* Pin to homepage */}
+        <div style={{ padding: "16px 18px", borderBottom: "1px solid #f0f0ec" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              checked={pinned}
+              onChange={e => setPinned(e.target.checked)}
+              style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#87be23" }}
+            />
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#5a6b6c" }}>
+              📌 Kinnita avalehel
+            </span>
+            {pinned && (
+              <span style={{ fontSize: 11, color: "#3d6b00", fontWeight: 700, background: "#f0fde4", padding: "2px 9px", borderRadius: 12, border: "1px solid #c5e58a" }}>
+                kinnitatud
+              </span>
+            )}
+          </label>
+          <p style={{ margin: "6px 0 0 26px", fontSize: 11, color: "#9a9a9a", lineHeight: 1.5 }}>
+            Kinnitatud postitus jääb avalehe esimese 6 kaardi sekka, segatud uusimatega. Korraga saab kinnitada kuni 3 postitust keele kohta — vanemad pinned langevad ise välja.
           </p>
         </div>
 

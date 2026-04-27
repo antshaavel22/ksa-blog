@@ -1,4 +1,4 @@
-import { getAllPosts, getAllCategories } from "@/lib/posts";
+import { getAllPosts, getAllCategories, getHomeFeed } from "@/lib/posts";
 import { getCategoryLabel, CATEGORY_LABELS, toSlug } from "@/lib/categories";
 import PostCard from "@/components/PostCard";
 import BlogNav from "@/components/BlogNav";
@@ -79,7 +79,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
   const categoryFiltered = kategooria
     ? langFiltered.filter((p) => p.categories.some((c) => toSlug(c) === kategooria))
     : langFiltered;
-  const filtered = query
+  const queryFiltered = query
     ? categoryFiltered.filter(
         (p) =>
           p.title.toLowerCase().includes(query) ||
@@ -88,6 +88,10 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
           p.tags?.some((x) => x.toLowerCase().includes(query))
       )
     : categoryFiltered;
+  // Apply pin/shuffle only on the unfiltered top of the main feed (page 1,
+  // no category, no query). Search and category views stay strict date-desc.
+  const filtered =
+    page === 1 && !kategooria && !query ? getHomeFeed(queryFiltered) : queryFiltered;
 
   const total = filtered.length;
   const totalPages = Math.ceil(total / POSTS_PER_PAGE);

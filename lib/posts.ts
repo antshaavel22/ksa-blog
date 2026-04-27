@@ -44,6 +44,46 @@ export interface PostMeta {
   reviewedBy?: string;
   /** CSS object-position value (e.g. "50% 30%") — controls hero image crop framing. */
   imageFocalPoint?: string;
+  /** When true, pin to homepage top-6 (mixed/shuffled with newest). Max 3 active per lang. */
+  pinned?: boolean;
+}
+
+/**
+ * Build the homepage feed for a given language. Pinned posts (max 3, newest
+ * first) take 3 of the top-6 slots; the rest of the top-6 are filled by the
+ * newest non-pinned posts. Those 6 are shuffled (deterministic per UTC day
+ * so SSR/ISR is stable). After position 6 the order is plain date-desc.
+ *
+ * Falls back to plain date-desc whenever there are no pinned posts.
+ */
+export function getHomeFeed(posts: PostMeta[]): PostMeta[] {
+  const pinned = posts.filter((p) => p.pinned === true).slice(0, 3);
+  if (pinned.length === 0) return posts;
+  const pinnedSlugs = new Set(pinned.map((p) => p.slug));
+  const rest = posts.filter((p) => !pinnedSlugs.has(p.slug));
+  const fillerCount = Math.max(0, 6 - pinned.length);
+  const filler = rest.slice(0, fillerCount);
+  const tail = rest.slice(fillerCount);
+
+  // Deterministic shuffle seeded by UTC date — stable across requests within
+  // the same day, refreshed automatically on the next ISR regen.
+  const seed = (() => {
+    const d = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    let h = 2166136261;
+    for (let i = 0; i < d.length; i++) h = Math.imul(h ^ d.charCodeAt(i), 16777619);
+    return h >>> 0;
+  })();
+  let s = seed || 1;
+  const rand = () => {
+    s ^= s << 13; s ^= s >>> 17; s ^= s << 5;
+    return ((s >>> 0) % 1_000_000) / 1_000_000;
+  };
+  const top6 = [...pinned, ...filler];
+  for (let i = top6.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [top6[i], top6[j]] = [top6[j], top6[i]];
+  }
+  return [...top6, ...tail];
 }
 
 export interface Post extends PostMeta {
