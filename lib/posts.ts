@@ -124,6 +124,11 @@ export function getAllPosts(lang?: PostLang): PostMeta[] {
       post.tags = post.tags.filter(
         (t): t is string => typeof t === "string" && t.trim().length > 0,
       );
+      // Coerce `pinned` to a strict boolean. Older admin code wrote
+      // `pinned: "false"` (quoted string) which is truthy in JS — every such
+      // post then rendered the "📌 Toimetaja valik" badge on the homepage.
+      // Only the literal YAML boolean `true` should pin a post.
+      post.pinned = post.pinned === true;
       return post;
     })
     .filter((p) => (lang ? p.lang === lang : true))
@@ -157,6 +162,7 @@ export function getPostBySlug(slug: string): Post | null {
       post.tags = post.tags.filter(
         (t): t is string => typeof t === "string" && t.trim().length > 0,
       );
+      post.pinned = post.pinned === true;
       return { ...post, content };
     }
   }

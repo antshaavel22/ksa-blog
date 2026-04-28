@@ -259,8 +259,6 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [currentLang, setCurrentLang] = useState(draft.lang ?? "et");
   const [activePath, setActivePath] = useState(draft.path);
   const [movingLang, setMovingLang] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<{ synced: number; sisters: number } | null>(null);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -268,7 +266,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [uploadPreviewUrl, setUploadPreviewUrl] = useState(""); // raw.githubusercontent.com — editor preview only, NOT saved to frontmatter
   const [showPreview, setShowPreview] = useState(false);
   const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
-  const [pinned, setPinned] = useState(getFmField(frontmatter, "pinned") === "true");
+  const [pinned, setPinned] = useState(/^pinned:\s*(true|"true")\s*$/m.test(frontmatter));
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [renamingImage, setRenamingImage] = useState(false);
   const [imageRenameInput, setImageRenameInput] = useState("");
@@ -308,7 +306,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setSelectedCategories(getFmCategories(parsed.frontmatter));
           setReviewedBy(getFmField(parsed.frontmatter, "reviewedBy"));
           setAuthor(getFmField(parsed.frontmatter, "author"));
-          setPinned(getFmField(parsed.frontmatter, "pinned") === "true");
+          setPinned(/^pinned:\s*(true|"true")\s*$/m.test(parsed.frontmatter));
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
         setLoaded(true);
@@ -357,7 +355,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     if (focalPoint && focalPoint !== "center center") {
       fm = setFmField(fm, "imageFocalPoint", focalPoint);
     }
-    fm = setFmField(fm, "pinned", pinned ? "true" : "false");
+    // Write `pinned` as a real YAML boolean, not a quoted string. Quoted
+     // "false" is truthy in JS and made every saved post render the editor
+     // badge on the homepage.
+    fm = fm.replace(/^pinned:.*$/m, "").replace(/\n{3,}/g, "\n\n");
+    if (pinned) fm = fm.trimEnd() + "\npinned: true";
     if (assignedTo) fm = setFmField(fm, "assignedTo", assignedTo);
     if (deadline) fm = setFmField(fm, "deadline", deadline);
     if (reviewedBy) fm = setFmField(fm, "reviewedBy", reviewedBy);
@@ -369,20 +371,6 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     return fm;
   }
 
-  async function syncImage() {
-    if (!featuredImage) return;
-    setSyncing(true); setSyncResult(null);
-    try {
-      const res = await fetch("/api/admin/sync-images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filePath: activePath, featuredImage }),
-      });
-      const d = await res.json() as { synced?: string[]; sistersFound?: number };
-      setSyncResult({ synced: d.synced?.length ?? 0, sisters: d.sistersFound ?? 0 });
-      setTimeout(() => setSyncResult(null), 5000);
-    } finally { setSyncing(false); }
-  }
 
   async function generateImage() {
     setGeneratingImage(true); setGeneratedPrompt("");
@@ -989,18 +977,6 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 <button
                   type="button"
-                  onClick={syncImage}
-                  disabled={syncing}
-                  style={{
-                    padding: "6px 14px", borderRadius: 8, border: "1.5px solid #e6e6e6",
-                    background: syncing ? "#f0f0ec" : "white", color: "#5a6b6c", fontSize: 12, fontWeight: 600,
-                    cursor: syncing ? "wait" : "pointer", fontFamily: "inherit",
-                  }}
-                >
-                  {syncing ? "Sünkroonin..." : "Sünkrooni pilt sõsarartiklitele"}
-                </button>
-                <button
-                  type="button"
                   onClick={() => { setFeaturedImage(""); setUploadPreviewUrl(""); setUploadInfo(null); }}
                   style={{
                     padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5",
@@ -1011,13 +987,6 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
                   Eemalda pilt
                 </button>
               </div>
-              {syncResult && (
-                <p style={{ margin: "4px 0 0", fontSize: 11, color: syncResult.synced > 0 ? "#3d6b00" : "#9a9a9a" }}>
-                  {syncResult.sisters === 0
-                    ? "Sõsarartikleid ei leitud"
-                    : `${syncResult.synced}/${syncResult.sisters} sõsarartiklit uuendatud`}
-                </p>
-              )}
             </>
           )}
         </div>
