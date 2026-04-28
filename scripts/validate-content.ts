@@ -39,6 +39,27 @@ function walk(dir: string, acc: string[] = []): string[] {
   return acc;
 }
 
+function stripNullCategoryEntries(raw: string): string | null {
+  // Match the YAML categories block and remove items that are empty after `- `.
+  // Block ends at first non-indented line (next key or `---`).
+  const re = /^categories:\s*\n((?:[ \t]+-[^\n]*\n)+)/m;
+  const m = raw.match(re);
+  if (!m) return null;
+  const block = m[1];
+  const kept = block
+    .split("\n")
+    .filter((line) => {
+      if (!line.trim()) return false;
+      // `  - foo` keep, `  -` or `  - ` drop, `  - ""` drop, `  - null` drop.
+      const after = line.replace(/^[ \t]+-\s*/, "").trim();
+      if (after === "" || after === '""' || after === "''" || after === "null" || after === "~") return false;
+      return true;
+    })
+    .join("\n");
+  const newBlock = kept ? `categories:\n${kept}\n` : `categories: []\n`;
+  return raw.replace(re, newBlock);
+}
+
 function tryAutoRepair(raw: string): string | null {
   // Common corruption pattern: title truncated at an escaped quote
   //   title: "Something \"
@@ -63,7 +84,35 @@ function main() {
   for (const file of files) {
     const raw = fs.readFileSync(file, "utf-8");
     try {
-      matter(raw);
+      const parsed = matter(raw);
+      const data = parsed.data as { categories?: unknown; tags?: unknown };
+
+      // Auto-repair `categories: [null, ...]` — admin batch-edit can write
+      // `- ` (empty YAML item) which becomes null and crashes the SSG render
+      // (`c.toLowerCase()` on null in lib/funnel-classifier.ts).
+      const cats = data.categories;
+      if (Array.isArray(cats)) {
+        const cleaned = cats.filter(
+          (c) => typeof c === "string" && c.trim().length > 0,
+        );
+        if (cleaned.length !== cats.length) {
+          if (FIX) {
+            const fixed = stripNullCategoryEntries(raw);
+            if (fixed && fixed !== raw) {
+              fs.writeFileSync(file, fixed);
+              console.log(`  ✓ stripped null category entries: ${path.relative(process.cwd(), file)}`);
+              repaired++;
+              continue;
+            }
+          }
+          failures.push({
+            file: path.relative(process.cwd(), file),
+            reason: `categories array contains ${cats.length - cleaned.length} null/empty entr${cats.length - cleaned.length === 1 ? "y" : "ies"}`,
+            headBlock: raw.slice(0, 400),
+          });
+          continue;
+        }
+      }
     } catch (err) {
       const reason = (err as Error).message.split("\n")[0];
       const headBlock = raw.slice(0, 400);

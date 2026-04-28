@@ -108,11 +108,22 @@ export function getAllPosts(lang?: PostLang): PostMeta[] {
       const post = data as PostMeta;
       // Normalise categories: gray-matter may return a string (if frontmatter
       // uses `categories: "foo"`) or an array — always coerce to string[].
+      // Also drop null/empty entries — admin batch-edit can write `- ` (empty
+      // YAML item) which becomes null and crashes downstream `.toLowerCase()`.
       if (!Array.isArray(post.categories)) {
         post.categories = post.categories
           ? String(post.categories).split(",").map((s: string) => s.trim()).filter(Boolean)
           : [];
       }
+      post.categories = post.categories
+        .filter((c): c is string => typeof c === "string" && c.trim().length > 0)
+        .map((c) => c.trim());
+      if (!Array.isArray(post.tags)) {
+        post.tags = [];
+      }
+      post.tags = post.tags.filter(
+        (t): t is string => typeof t === "string" && t.trim().length > 0,
+      );
       return post;
     })
     .filter((p) => (lang ? p.lang === lang : true))
@@ -130,6 +141,22 @@ export function getPostBySlug(slug: string): Post | null {
     const { data, content } = matter(raw);
     const post = data as PostMeta;
     if (filename.replace(/\.mdx?$/, "") === slug || post.slug === slug) {
+      // Same defensive normalisation as getAllPosts — keeps single-post
+      // renders safe against null/empty categories or malformed tags.
+      if (!Array.isArray(post.categories)) {
+        post.categories = post.categories
+          ? String(post.categories).split(",").map((s: string) => s.trim()).filter(Boolean)
+          : [];
+      }
+      post.categories = post.categories
+        .filter((c): c is string => typeof c === "string" && c.trim().length > 0)
+        .map((c) => c.trim());
+      if (!Array.isArray(post.tags)) {
+        post.tags = [];
+      }
+      post.tags = post.tags.filter(
+        (t): t is string => typeof t === "string" && t.trim().length > 0,
+      );
       return { ...post, content };
     }
   }
