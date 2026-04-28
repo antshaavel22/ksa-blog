@@ -14,11 +14,11 @@
   --lime-wash:   #f4f9e8;
   --lime-50:     #eef5d9;
 
-  /* Neutrals: ink */
-  --ink:    #1a1a1a;
-  --ink-80: #333333;
-  --ink-60: #555555;
-  --ink-40: #888888;
+  /* Neutrals: ink — Silvia mock 2026-04-28: black → teal-gray (#5A6B6C, KSA CVI secondary). */
+  --ink:    #5A6B6C;
+  --ink-80: #4a5a5b;
+  --ink-60: #6f7f80;
+  --ink-40: #92a0a1;
   --ink-20: #bbbbbb;
   --ink-10: #dddddd;
   --ink-05: #eeeeee;
@@ -175,10 +175,10 @@
   --color-lime-dark:     #6FA01E;
   --color-lime-darker:   #5A8518;
   --color-lime-wash:     #f4f9e8;
-  --color-ink:           #1a1a1a;
-  --color-ink-80:        #333333;
-  --color-ink-60:        #555555;
-  --color-ink-40:        #888888;
+  --color-ink:           #5A6B6C;
+  --color-ink-80:        #4a5a5b;
+  --color-ink-60:        #6f7f80;
+  --color-ink-40:        #92a0a1;
   --color-ink-20:        #bbbbbb;
   --color-ink-10:        #dddddd;
   --color-ink-05:        #eeeeee;
@@ -212,7 +212,7 @@
 /* ─── Base ─────────────────────────────────────────────────────── */
 body {
   background: #FEFEFE;
-  color: #000000;
+  color: var(--ink);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
