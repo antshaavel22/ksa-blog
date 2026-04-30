@@ -76,13 +76,86 @@ function tryAutoRepair(raw: string): string | null {
   return null;
 }
 
+/**
+ * Convert raw Rendia embed HTML to the MDX component. The raw form
+ *   <var style="..." data-presentation="UUID">...</var>
+ *   <script src="//hub.rendia.com/whitelabel/embed.js"></script>
+ * crashes Vercel prerender because React rejects `style="..."` strings in MDX.
+ * The MDX form `<RendiaEmbed id="UUID" />` works correctly.
+ */
+function repairRawRendiaEmbed(raw: string): { fixed: string; count: number } {
+  const RENDIA_RE = /<var\b[^>]*\bdata-presentation=["']([0-9a-f-]+)["'][^>]*>[\s\S]*?<\/var>(?:\s*<script[^>]*hub\.rendia\.com[^>]*><\/script>)?/gi;
+  let count = 0;
+  const fixed = raw.replace(RENDIA_RE, (_match, id) => {
+    count++;
+    return `<RendiaEmbed id="${id}" caption="Source: Rendia" />`;
+  });
+  return { fixed, count };
+}
+
+/**
+ * Detect any remaining HTML-string `style="..."` attribute in the MDX body
+ * (after frontmatter). These crash React prerender. We can't safely auto-fix
+ * arbitrary inline styles, so we surface them as a hard failure with the
+ * line content and let the editor remove or convert them.
+ */
+function findRawStyleAttrs(body: string): { line: number; snippet: string }[] {
+  const STYLE_RE = /\bstyle=["'][^"']+["']/g;
+  const lines = body.split("\n");
+  const hits: { line: number; snippet: string }[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (STYLE_RE.test(lines[i])) {
+      hits.push({ line: i + 1, snippet: lines[i].trim().slice(0, 200) });
+      STYLE_RE.lastIndex = 0;
+    }
+  }
+  return hits;
+}
+
 function main() {
   const files = [...walk(path.join(ROOT, "posts")), ...walk(path.join(ROOT, "drafts"))];
   const failures: Failure[] = [];
   let repaired = 0;
 
   for (const file of files) {
-    const raw = fs.readFileSync(file, "utf-8");
+    let raw = fs.readFileSync(file, "utf-8");
+
+    // Body-level check: raw Rendia HTML — auto-repair to MDX component.
+    const rendiaResult = repairRawRendiaEmbed(raw);
+    if (rendiaResult.count > 0) {
+      if (FIX) {
+        fs.writeFileSync(file, rendiaResult.fixed);
+        raw = rendiaResult.fixed;
+        console.log(`  ✓ converted ${rendiaResult.count} raw Rendia embed${rendiaResult.count === 1 ? "" : "s"} → MDX component: ${path.relative(process.cwd(), file)}`);
+        repaired++;
+      } else {
+        failures.push({
+          file: path.relative(process.cwd(), file),
+          reason: `body contains ${rendiaResult.count} raw Rendia <var data-presentation="..."> embed(s) that crash prerender; use <RendiaEmbed id="UUID" /> instead`,
+          headBlock: raw.slice(0, 400),
+        });
+        continue;
+      }
+    }
+
+    // Body-level check: raw HTML style="..." attribute. React rejects these
+    // in MDX with: 'The `style` prop expects a mapping from style properties
+    // to values, not a string'. We don't auto-fix because the right rewrite
+    // depends on intent — surface the offending line(s) and let the editor
+    // remove them or convert to JSX style={{...}}.
+    const fmEnd = raw.indexOf("\n---", 4);
+    const body = fmEnd > 0 ? raw.slice(fmEnd + 4) : raw;
+    const styleHits = findRawStyleAttrs(body);
+    if (styleHits.length > 0) {
+      const first = styleHits[0];
+      failures.push({
+        file: path.relative(process.cwd(), file),
+        reason: `body contains raw HTML style="..." attribute(s) that crash React prerender (line ~${first.line}: ${first.snippet})`,
+        headBlock: raw.slice(0, 400),
+      });
+      continue;
+    }
+
     try {
       const parsed = matter(raw);
       const data = parsed.data as { categories?: unknown; tags?: unknown };
