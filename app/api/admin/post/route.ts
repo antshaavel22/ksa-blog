@@ -51,9 +51,10 @@ async function writePostProd(filePath: string, content: string): Promise<void> {
   });
   if (!putRes.ok) throw new Error(`GitHub write error: ${putRes.status}`);
 
-  // Explicitly trigger Vercel redeploy (GitHub auto-deploy is also active, belt+suspenders)
+  // GitHub auto-deploy already sees this commit. Make deploy-hook use opt-in
+  // so one editor save does not create duplicate Vercel builds.
   const deployHook = process.env.VERCEL_DEPLOY_HOOK;
-  if (deployHook) {
+  if (process.env.FORCE_VERCEL_DEPLOY_HOOK_AFTER_GIT === "true" && deployHook) {
     try { await fetch(deployHook, { method: "POST" }); } catch { /* non-fatal */ }
   }
 }

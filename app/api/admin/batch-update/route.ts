@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const branch = "main";
+    const branch = process.env.GITHUB_BRANCH ?? "main";
 
     // 1. Get current branch head
     const ref = await gh<{ object: { sha: string } }>(
@@ -127,9 +127,10 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ sha: commit.sha, force: false }),
     });
 
-    // 7. Fire Vercel deploy hook ONCE (optional)
+    // 7. Git integrations deploy from the pushed commit. Keep the deploy hook
+    // opt-in only to avoid duplicate Vercel builds for the same edit batch.
     const deployHook = process.env.VERCEL_DEPLOY_HOOK;
-    if (deployHook) {
+    if (process.env.FORCE_VERCEL_DEPLOY_HOOK_AFTER_GIT === "true" && deployHook) {
       try {
         await fetch(deployHook, { method: "POST" });
       } catch {

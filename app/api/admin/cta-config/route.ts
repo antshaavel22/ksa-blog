@@ -71,7 +71,7 @@ async function writeProd(config: unknown): Promise<void> {
   }
 
   const deployHook = process.env.VERCEL_DEPLOY_HOOK;
-  if (deployHook) {
+  if (process.env.FORCE_VERCEL_DEPLOY_HOOK_AFTER_GIT === "true" && deployHook) {
     try {
       await fetch(deployHook, { method: "POST" });
     } catch {}

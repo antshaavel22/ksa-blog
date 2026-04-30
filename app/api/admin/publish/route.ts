@@ -21,7 +21,6 @@ async function publishDev(draftPath: string, clientContent?: string): Promise<st
 
   let raw: string;
   if (clientContent) {
-    // Client sent the latest content — use it directly (avoids stale filesystem)
     raw = clientContent;
   } else {
     const absSource = pathMod.join(cwd, draftPath);
@@ -37,7 +36,6 @@ async function publishDev(draftPath: string, clientContent?: string): Promise<st
   fs.mkdirSync(pathMod.dirname(absTarget), { recursive: true });
   fs.writeFileSync(absTarget, published, "utf-8");
 
-  // Only delete if it exists (client content may not have a filesystem draft)
   const absSource2 = pathMod.join(cwd, draftPath);
   if (fs.existsSync(absSource2)) fs.unlinkSync(absSource2);
 
@@ -49,16 +47,14 @@ async function publishProd(draftPath: string, clientContent?: string): Promise<s
 
   const token = process.env.GITHUB_TOKEN!;
   const repo = process.env.GITHUB_REPO!;
+  const branch = process.env.GITHUB_BRANCH ?? "main";
   const basename = pathMod.basename(draftPath);
   const targetPath = `content/posts/${basename}`;
 
   let raw: string;
-
   if (clientContent) {
-    // ✅ PREFERRED PATH: client sends latest content (avoids stale filesystem read)
     raw = clientContent;
   } else {
-    // Fallback: read from filesystem (only works if draft was in the current deployment bundle)
     const fs = await import("fs");
     const cwd = process.cwd();
     const absSource = pathMod.join(cwd, draftPath);
@@ -68,59 +64,75 @@ async function publishProd(draftPath: string, clientContent?: string): Promise<s
 
   const published = removeDraftStatus(raw);
 
-  // Step 1: Write to content/posts/ on GitHub
-  const putUrl = `https://api.github.com/repos/${repo}/contents/${targetPath}`;
-  const checkRes = await fetch(putUrl, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-  });
-  const putBody: Record<string, string> = {
-    message: `Publish: ${basename}`,
-    content: Buffer.from(published, "utf-8").toString("base64"),
-  };
-  if (checkRes.ok) {
-    const existing = await checkRes.json() as { sha: string };
-    putBody.sha = existing.sha;
-  }
-
-  const putRes = await fetch(putUrl, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(putBody),
-  });
-  if (!putRes.ok) {
-    const err = await putRes.text();
-    throw new Error(`GitHub write error: ${putRes.status} ${err}`);
-  }
-
-  // Step 2: Delete draft from GitHub (if it exists there)
-  const deleteUrl = `https://api.github.com/repos/${repo}/contents/${draftPath}`;
-  const getRes = await fetch(deleteUrl, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-  });
-  if (getRes.ok) {
-    const draftData = await getRes.json() as { sha: string };
-    await fetch(deleteUrl, {
-      method: "DELETE",
+  const gh = async <T,>(url: string, init?: RequestInit): Promise<T> => {
+    const res = await fetch(url, {
+      ...init,
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
         "Content-Type": "application/json",
+        ...(init?.headers ?? {}),
       },
-      body: JSON.stringify({ message: `Remove draft after publish: ${basename}`, sha: draftData.sha }),
     });
-  }
+    if (!res.ok) throw new Error(`GitHub ${res.status}: ${await res.text()}`);
+    return (await res.json()) as T;
+  };
 
-  // Step 3: Trigger Vercel redeploy via deploy hook (if configured)
-  const deployHook = process.env.VERCEL_DEPLOY_HOOK;
-  if (deployHook) {
+  const ref = await gh<{ object: { sha: string } }>(
+    `https://api.github.com/repos/${repo}/git/ref/heads/${branch}`
+  );
+  const parentSha = ref.object.sha;
+  const parentCommit = await gh<{ tree: { sha: string } }>(
+    `https://api.github.com/repos/${repo}/git/commits/${parentSha}`
+  );
+  const blob = await gh<{ sha: string }>(
+    `https://api.github.com/repos/${repo}/git/blobs`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        content: Buffer.from(published, "utf-8").toString("base64"),
+        encoding: "base64",
+      }),
+    }
+  );
+
+  const draftExists = await fetch(`https://api.github.com/repos/${repo}/contents/${draftPath}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+  }).then((res) => res.ok).catch(() => false);
+
+  const treeItems: Array<Record<string, string | null>> = [
+    { path: targetPath, mode: "100644", type: "blob", sha: blob.sha },
+  ];
+  if (draftExists) treeItems.push({ path: draftPath, sha: null });
+
+  const tree = await gh<{ sha: string }>(
+    `https://api.github.com/repos/${repo}/git/trees`,
+    {
+      method: "POST",
+      body: JSON.stringify({ base_tree: parentCommit.tree.sha, tree: treeItems }),
+    }
+  );
+  const commit = await gh<{ sha: string }>(
+    `https://api.github.com/repos/${repo}/git/commits`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        message: `Publish: ${basename}`,
+        tree: tree.sha,
+        parents: [parentSha],
+      }),
+    }
+  );
+  await gh(`https://api.github.com/repos/${repo}/git/refs/heads/${branch}`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: commit.sha, force: false }),
+  });
+
+  if (process.env.FORCE_VERCEL_DEPLOY_HOOK_AFTER_GIT === "true" && process.env.VERCEL_DEPLOY_HOOK) {
     try {
-      await fetch(deployHook, { method: "POST" });
+      await fetch(process.env.VERCEL_DEPLOY_HOOK, { method: "POST" });
     } catch {
-      // Non-fatal — just means manual redeploy needed
+      // Non-fatal: the Git commit is already pushed.
     }
   }
 
@@ -130,7 +142,7 @@ async function publishProd(draftPath: string, clientContent?: string): Promise<s
 export async function POST(req: NextRequest) {
   const { path: draftPath, content: clientContent } = await req.json() as {
     path: string;
-    content?: string; // ← client sends full MDX content to avoid stale filesystem read
+    content?: string;
   };
 
   if (!draftPath) {
@@ -138,7 +150,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!draftPath.startsWith("content/drafts/")) {
-    return NextResponse.json({ error: "Invalid path — must be in content/drafts/" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid path - must be in content/drafts/" }, { status: 400 });
   }
 
   try {
@@ -147,9 +159,7 @@ export async function POST(req: NextRequest) {
         ? await publishProd(draftPath, clientContent)
         : await publishDev(draftPath, clientContent);
 
-    const needsRedeploy = process.env.NODE_ENV === "production" && !process.env.VERCEL_DEPLOY_HOOK;
-
-    return NextResponse.json({ ok: true, slug, needsRedeploy });
+    return NextResponse.json({ ok: true, slug, needsRedeploy: false });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }

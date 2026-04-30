@@ -75,51 +75,71 @@ async function listDraftsProd(): Promise<DraftMeta[]> {
     throw new Error("GITHUB_TOKEN and GITHUB_REPO must be set in production");
   }
 
-  const paths = ["content/drafts", "content/drafts/et", "content/drafts/ru", "content/drafts/en"];
-  const drafts: DraftMeta[] = [];
-
-  for (const dirPath of paths) {
-    const url = `https://api.github.com/repos/${repo}/contents/${dirPath}`;
-    const res = await fetch(url, {
+  const branch = process.env.GITHUB_BRANCH ?? "main";
+  const treeRes = await fetch(
+    `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`,
+    {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
       },
-    });
-    if (!res.ok) continue;
-    const items = await res.json() as Array<{ name: string; type: string; download_url: string }>;
+      cache: "no-store",
+    }
+  );
+  if (!treeRes.ok) throw new Error(`GitHub tree read error: ${treeRes.status}`);
 
-    for (const item of items) {
-      if (item.type !== "file" || (!item.name.endsWith(".mdx") && !item.name.endsWith(".md"))) continue;
-      try {
-        const fileRes = await fetch(item.download_url);
-        if (!fileRes.ok) continue;
-        const raw = await fileRes.text();
-        const fm = parseFrontmatter(raw);
-        const langFromPath = dirPath.endsWith("/ru") ? "ru" : dirPath.endsWith("/en") ? "en" : "et";
-        drafts.push({
-          filename: item.name,
-          path: `${dirPath}/${item.name}`,
-          title: fm.title || item.name.replace(/\.mdx?$/, ""),
-          excerpt: fm.excerpt || fm.seoExcerpt || "",
-          lang: fm.lang || langFromPath,
-          date: fm.date || "",
-        });
-      } catch {
-        // Skip
-      }
+  const treeData = await treeRes.json() as {
+    tree: Array<{ path: string; type: string; sha: string }>;
+  };
+  const draftFiles = treeData.tree.filter((item) =>
+    item.type === "blob" &&
+    item.path.startsWith("content/drafts/") &&
+    (item.path.endsWith(".mdx") || item.path.endsWith(".md"))
+  );
+
+  async function readDraftBlob(item: { path: string; sha: string }): Promise<DraftMeta | null> {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${item.sha}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/vnd.github+json",
+        },
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      const data = await res.json() as { content: string };
+      const raw = Buffer.from(data.content.replace(/\n/g, ""), "base64").toString("utf-8");
+      const fm = parseFrontmatter(raw);
+      const parts = item.path.split("/");
+      const filename = parts[parts.length - 1] ?? "";
+      const langFromPath = item.path.includes("/ru/") ? "ru" : item.path.includes("/en/") ? "en" : "et";
+      return {
+        filename,
+        path: item.path,
+        title: fm.title || filename.replace(/\.mdx?$/, ""),
+        excerpt: fm.excerpt || fm.seoExcerpt || "",
+        lang: fm.lang || langFromPath,
+        date: fm.date || "",
+      };
+    } catch {
+      return null;
     }
   }
 
+  const drafts = (await Promise.all(draftFiles.map(readDraftBlob)))
+    .filter((draft): draft is DraftMeta => draft !== null);
   drafts.sort((a, b) => b.date.localeCompare(a.date) || b.filename.localeCompare(a.filename));
   return drafts;
 }
 
 export async function GET() {
   try {
-    // Always use filesystem — content/drafts/ is bundled with the Vercel deployment.
-    // listDraftsProd() made 548 sequential GitHub API requests which timed out.
-    const drafts = await listDraftsDev();
+    // Production reads current drafts from GitHub so draft-only commits can skip
+    // Vercel rebuilds without making new drafts disappear from the admin UI.
+    const drafts =
+      process.env.NODE_ENV === "production"
+        ? await listDraftsProd()
+        : await listDraftsDev();
 
     return NextResponse.json({ drafts });
   } catch (err) {
