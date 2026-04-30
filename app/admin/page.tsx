@@ -575,11 +575,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       setPublishing(false);
       return;
     }
-    // Also save to GitHub draft (keeps draft in sync before publish deletes it)
-    await fetch(`/api/admin/draft?path=${encodeURIComponent(activePath)}`, {
-      method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: finalContent }),
-    });
+    // Publish sends current editor content directly; no extra draft-save commit.
     // Then publish — send the content directly so publish API uses it verbatim
     try {
       const res = await fetch("/api/admin/publish", {

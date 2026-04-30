@@ -70,6 +70,28 @@ export const AUTHORS: AuthorProfile[] = [
     avatarUrl: "/uploads/authors/karl-erik-tillmann.jpg",
   },
   {
+    keys: ["anita", "Anita Zuravljova", "Anita Žuravljova", "anita-zuravljova"],
+    displayName: "Anita Zuravljova",
+    slug: "anita-zuravljova",
+    role: {
+      et: "Optometrist, KSA Silmakeskus",
+      ru: "Оптометрист, KSA Silmakeskus",
+      en: "Optometrist, KSA Vision Clinic",
+    },
+    credentials: {
+      et: "Optometrist · KSA Silmakeskus",
+      ru: "Оптометрист · KSA Silmakeskus",
+      en: "Optometrist · KSA Vision Clinic",
+    },
+    bio: {
+      et: "Anita Zuravljova on KSA Silmakeskuse optometrist, kelle pärusmaaks on kuiva silma esmane hindamine ja igapäevase elustiili nõustamine — toitumine, ekraaniaeg, töökoha valgustus ja kontaktläätsede sobivus. Tema patsiendid alustavad sageli temaga ja, kui vaja, suunatakse seejärel sügavamale ravile dr Karl-Erik Tillmanni juurde. Anita kirjutab regulaarselt KSA blogis silmade tervise igapäevateemadel.",
+      ru: "Анита Журавлёва — оптометрист KSA Silmakeskus, специализирующаяся на первичной оценке синдрома сухого глаза и консультировании по образу жизни — питание, экранное время, освещение рабочего места, подбор контактных линз. Её пациенты часто начинают именно с неё и, при необходимости, направляются к доктору Карлу-Эрику Тиллманну для углублённого лечения.",
+      en: "Anita Zuravljova is an optometrist at KSA Vision Clinic specialising in initial dry eye assessment and lifestyle counselling — nutrition, screen time, workplace lighting, contact lens fit. Patients often start with her and, when needed, are referred to Dr. Karl-Erik Tillmann for deeper care.",
+    },
+    profileUrl: "https://ksa.ee/meeskond/",
+    avatarUrl: "/uploads/authors/anita-zuravljova.jpg",
+  },
+  {
     keys: ["liisi", "Optometrist Liisi", "Liisi", "Liisi Mölder", "liisi-molder"],
     displayName: "Liisi Mölder",
     slug: "optometrist-liisi",
