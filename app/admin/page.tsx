@@ -124,6 +124,68 @@ function setCategoriesField(fm: string, slugsOrSlug: string | string[]): string 
   return fm + `\n${block}`;
 }
 
+// Write a YAML string-list field (e.g. llmSearchQueries: ["a", "b", ...]).
+// Replaces any existing key with a proper inline JSON array so gray-matter
+// parses it as string[] reliably.
+function setFmStringListField(fm: string, key: string, items: string[]): string {
+  if (!items || items.length === 0) return fm;
+  const block = `${key}:\n${items.map((s) => `  - "${s.replace(/"/g, '\\"')}"`).join("\n")}`;
+  const blockRe = new RegExp(`^${key}:\\s*\\n(?:[ \\t]+-[ \\t]+.+\\n?)*`, "m");
+  const inlineRe = new RegExp(`^${key}:.*$`, "m");
+  if (blockRe.test(fm)) return fm.replace(blockRe, block + "\n");
+  if (inlineRe.test(fm)) return fm.replace(inlineRe, block);
+  return fm + `\n${block}`;
+}
+
+// Write a YAML faqItems field — array of {q, a} objects.
+function setFmFaqField(fm: string, items: Array<{ q: string; a: string }>): string {
+  if (!items || items.length === 0) return fm;
+  const escape = (s: string) => s.replace(/"/g, '\\"').replace(/\n/g, " ").trim();
+  const block =
+    `faqItems:\n` +
+    items
+      .map((x) => `  - q: "${escape(x.q)}"\n    a: "${escape(x.a)}"`)
+      .join("\n");
+  const blockRe = /^faqItems:\s*\n(?:[ \t]+-[ \t]+.+\n(?:[ \t]+\w+:.+\n?)*)*/m;
+  const inlineRe = /^faqItems:.*$/m;
+  if (blockRe.test(fm)) return fm.replace(blockRe, block + "\n");
+  if (inlineRe.test(fm)) return fm.replace(inlineRe, block);
+  return fm + `\n${block}`;
+}
+
+// Read a YAML string-list field (e.g. llmSearchQueries) back into string[].
+function getFmStringList(fm: string, key: string): string[] {
+  const blockRe = new RegExp(`^${key}:\\s*\\n((?:[ \\t]+-[ \\t]+.+\\n?)+)`, "m");
+  const m = fm.match(blockRe);
+  if (!m) return [];
+  return m[1]
+    .split("\n")
+    .map((line) => line.replace(/^[ \t]+-[ \t]+/, "").trim())
+    .filter(Boolean)
+    .map((s) => s.replace(/^["']/, "").replace(/["']$/, ""));
+}
+
+// Read faqItems back into [{q, a}]
+function getFmFaqItems(fm: string): Array<{ q: string; a: string }> {
+  const blockRe = /^faqItems:\s*\n((?:[ \t]+- .+\n(?:[ \t]+\w+:.+\n?)*)+)/m;
+  const m = fm.match(blockRe);
+  if (!m) return [];
+  const items: Array<{ q: string; a: string }> = [];
+  let cur: { q?: string; a?: string } = {};
+  for (const line of m[1].split("\n")) {
+    const startMatch = line.match(/^[ \t]+- q:\s*["']?(.+?)["']?\s*$/);
+    const aMatch = line.match(/^[ \t]+a:\s*["']?(.+?)["']?\s*$/);
+    if (startMatch) {
+      if (cur.q && cur.a) items.push({ q: cur.q, a: cur.a });
+      cur = { q: startMatch[1] };
+    } else if (aMatch && cur.q) {
+      cur.a = aMatch[1];
+    }
+  }
+  if (cur.q && cur.a) items.push({ q: cur.q, a: cur.a });
+  return items;
+}
+
 function getFmCategories(fm: string): string[] {
   // Block list: categories:\n  - Foo\n  - Bar
   const blockMatch = fm.match(/^categories:\s*\n((?:[ \t]+-[ \t]+.+\n?)+)/m);
@@ -1197,6 +1259,57 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setFrontmatter(fm);
           return data.body;
         }}
+        onEnrichSeo={async () => {
+          if (!body.trim() || !title.trim()) {
+            alert("Vajan teksti ja pealkirja, et SEO + LLM välju genereerida.");
+            return;
+          }
+          const res = await fetch("/api/admin/enrich-seo", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              body,
+              title,
+              lang: draft.lang,
+              currentSeoTitle: getFmField(frontmatter, "seoTitle"),
+              currentSeoExcerpt: getFmField(frontmatter, "seoExcerpt"),
+              currentLlmQueries: getFmStringList(frontmatter, "llmSearchQueries"),
+              currentFaq: getFmFaqItems(frontmatter),
+            }),
+          });
+          if (!res.ok) {
+            const e = await res.json().catch(() => ({}));
+            alert(`SEO täiendamine ebaõnnestus: ${(e as { error?: string }).error ?? res.status}`);
+            return;
+          }
+          const data = (await res.json()) as {
+            seoTitle?: string;
+            seoExcerpt?: string;
+            llmSearchQueries?: string[];
+            faqItems?: Array<{ q: string; a: string }>;
+            skipped: string[];
+          };
+          const willAdd: string[] = [];
+          if (data.seoTitle) willAdd.push(`seoTitle (${data.seoTitle.length} tähemärki)`);
+          if (data.seoExcerpt) willAdd.push(`seoExcerpt (${data.seoExcerpt.length} tähemärki)`);
+          if (data.llmSearchQueries) willAdd.push(`llmSearchQueries (${data.llmSearchQueries.length} päringut)`);
+          if (data.faqItems) willAdd.push(`faqItems (${data.faqItems.length} K&V)`);
+          if (willAdd.length === 0) {
+            alert(`Kõik SEO väljad on juba täidetud — pole midagi lisada.\nPuutumata jäid: ${data.skipped.join(", ")}`);
+            return;
+          }
+          const msg =
+            `Genereeritud puuduvad väljad:\n\n• ` + willAdd.join("\n• ") +
+            (data.skipped.length ? `\n\nPuutumata (juba täidetud): ${data.skipped.join(", ")}` : "") +
+            `\n\nLisan need frontmatterisse?`;
+          if (!confirm(msg)) return;
+          let fm = frontmatter;
+          if (data.seoTitle) fm = setFmField(fm, "seoTitle", data.seoTitle);
+          if (data.seoExcerpt) fm = setFmField(fm, "seoExcerpt", data.seoExcerpt);
+          if (data.llmSearchQueries) fm = setFmStringListField(fm, "llmSearchQueries", data.llmSearchQueries);
+          if (data.faqItems) fm = setFmFaqField(fm, data.faqItems);
+          setFrontmatter(fm);
+        }}
       />
 
       {/* Review Panel — shown only for drafts */}
@@ -1483,17 +1596,19 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 // Operates on the selected text range using document.execCommand-style logic.
 
 function FormattingToolbar({
-  body, setBody, onUploadBodyImage, onFormatBlogRules,
+  body, setBody, onUploadBodyImage, onFormatBlogRules, onEnrichSeo,
 }: {
   body: string;
   setBody: React.Dispatch<React.SetStateAction<string>>;
   onUploadBodyImage?: (file: File) => Promise<string | null>;
   onFormatBlogRules?: () => Promise<string | null>;
+  onEnrichSeo?: () => Promise<void>;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imgInputRef = useRef<HTMLInputElement>(null);
   const [uploadingBodyImg, setUploadingBodyImg] = useState(false);
   const [formatting, setFormatting] = useState(false);
+  const [enriching, setEnriching] = useState(false);
 
   function wrap(before: string, after: string) {
     const el = textareaRef.current;
@@ -1653,6 +1768,28 @@ function FormattingToolbar({
             }}
           >
             {formatting ? "⏳ Vormindan…" : "✨ Vorminda"}
+          </button>
+        )}
+        {onEnrichSeo && (
+          <button
+            type="button"
+            title="Genereeri puuduvad SEO + LLM väljad (seoTitle, seoExcerpt, llmSearchQueries, faqItems)"
+            disabled={enriching}
+            onClick={async () => {
+              setEnriching(true);
+              try { await onEnrichSeo(); } finally { setEnriching(false); }
+            }}
+            style={{
+              ...btnStyle,
+              display: "flex", alignItems: "center", gap: 4,
+              background: enriching ? "#eef0fe" : "#5a6b6c",
+              color: "white",
+              border: "1px solid #5a6b6c",
+              opacity: enriching ? 0.7 : 1,
+              cursor: enriching ? "wait" : "pointer",
+            }}
+          >
+            {enriching ? "⏳ Täiendan…" : "✨ SEO + LLM"}
           </button>
         )}
         <span style={{ marginLeft: "auto", fontSize: 10, color: "#c0c0b8", alignSelf: "center", paddingRight: 4 }}>Markdown</span>
