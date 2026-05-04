@@ -1340,12 +1340,46 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           <input
             type="date"
             value={deadline}
-            onChange={e => setDeadline(e.target.value)}
+            min="2020-01-01"
+            max={(() => { const d = new Date(); d.setFullYear(d.getFullYear() + 3); return d.toISOString().split("T")[0]; })()}
+            onChange={e => {
+              const v = e.target.value;
+              if (v && !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+              if (v) {
+                const yr = parseInt(v.slice(0, 4), 10);
+                if (yr < 2020 || yr > new Date().getFullYear() + 3) return;
+              }
+              setDeadline(v);
+            }}
             style={{
               padding: "7px 12px", border: "1.5px solid #e6e6e6", borderRadius: 10,
               fontSize: 13, background: "white", color: "#1a1a1a", outline: "none", cursor: "pointer",
             }}
           />
+          <button
+            type="button"
+            onClick={() => setDeadline(new Date().toISOString().split("T")[0])}
+            style={{ padding: "7px 10px", borderRadius: 10, border: "1.5px solid #e6e6e6", background: "white", fontSize: 12, fontWeight: 600, color: "#5a6b6c", cursor: "pointer" }}
+            title="Täna"
+          >
+            Täna
+          </button>
+          <button
+            type="button"
+            onClick={() => { const d = new Date(); d.setDate(d.getDate() + 7); setDeadline(d.toISOString().split("T")[0]); }}
+            style={{ padding: "7px 10px", borderRadius: 10, border: "1.5px solid #e6e6e6", background: "white", fontSize: 12, fontWeight: 600, color: "#5a6b6c", cursor: "pointer" }}
+            title="Nädala pärast"
+          >
+            +7p
+          </button>
+          <button
+            type="button"
+            onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); setDeadline(d.toISOString().split("T")[0]); }}
+            style={{ padding: "7px 10px", borderRadius: 10, border: "1.5px solid #e6e6e6", background: "white", fontSize: 12, fontWeight: 600, color: "#5a6b6c", cursor: "pointer" }}
+            title="Kuu pärast"
+          >
+            +30p
+          </button>
           <span style={{ fontSize: 13, fontWeight: 700, color: reviewedBy ? "#5a6b6c" : "#b91c1c" }}>
             Läbi vaadanud{!reviewedBy && " *"}:
           </span>
