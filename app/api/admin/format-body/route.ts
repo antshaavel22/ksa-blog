@@ -67,8 +67,10 @@ function fixExcerpt(raw: string): string {
 }
 
 // ─── Word-count tolerance check ──────────────────────────────────────────────
+// Unicode-aware: matches letters across alphabets (Latin, Cyrillic, etc.)
+// Plain \w is [A-Za-z0-9_] which under-counts RU drastically and ET (õäöü).
 function wordCount(s: string): number {
-  return (s.match(/\b\w+\b/g) ?? []).length;
+  return (s.match(/\p{L}[\p{L}\p{M}\d]*/gu) ?? []).length;
 }
 
 // ─── Claude structural polish ────────────────────────────────────────────────
