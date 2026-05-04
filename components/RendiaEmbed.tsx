@@ -32,12 +32,20 @@ interface RendiaEmbedProps {
 export default function RendiaEmbed({ id, caption }: RendiaEmbedProps) {
   useEffect(() => {
     if (!id) return;
-    // Load Rendia embed.js once per page — it auto-scans for var[data-presentation]
-    if (!document.querySelector(`script[src="${RENDIA_SCRIPT}"]`)) {
+    // Rendia's embed.js binds findAndLoadPlayers to window.load, which has
+    // already fired by the time React mounts. We must call it ourselves.
+    type RendiaWindow = Window & { findAndLoadPlayers?: () => void };
+    const w = window as RendiaWindow;
+    const trigger = () => { if (typeof w.findAndLoadPlayers === "function") w.findAndLoadPlayers(); };
+    const existing = document.querySelector(`script[src="${RENDIA_SCRIPT}"]`) as HTMLScriptElement | null;
+    if (existing) {
+      trigger();
+    } else {
       const script = document.createElement("script");
       script.src = RENDIA_SCRIPT;
       script.type = "text/javascript";
       script.async = true;
+      script.onload = trigger;
       document.body.appendChild(script);
     }
   }, [id]);
