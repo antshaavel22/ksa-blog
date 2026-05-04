@@ -251,6 +251,67 @@ Aga sama tähtis: blog on **tasuta väärtuskanal olemasolevatele patsientidele*
 
 ---
 
+## 16. Tekstipuhastus — mida AI mustandites vältida ja parandada
+
+AI genereerib mustandeid suure mahuga, kuid jätab teksti sisse ehituselemente, mis lugejale loevad nagu prooviprintimise kahjustused. **Kontrolli iga uue mustandi puhul** ning eemalda või paranda need:
+
+### A) Struktuurisildid pealkirjadena
+
+Need on ainult tühjad sildid ilma sisuta — eemalda kogu rida:
+
+| Vältida | Põhjus |
+|---------|--------|
+| `## Sissejuhatus` | Esimene lõik on niikuinii sissejuhatus. Vajaduseta. |
+| `## Kokkuvõte` | Kui sektsioonil on tegelik teema, kasuta seda nimena (nt `## Kas glaukoomi saab ravida toitumisega?`). Tühi "Kokkuvõte" eemalda. |
+| `## Введение` (RU) / `## Introduction` (EN) | Sama loogika — ära jäta tühja silti. |
+| `## Заключение` (RU) / `## Conclusion` (EN) / `## Summary` (EN) | Sama. |
+
+### B) Sildid algusparagrahvi sees
+
+AI alustab mõnikord lõiku sõnaga, mis on tegelikult struktuurisilt: **eemalda ainult see sõna ja jätka sama lausega**.
+
+| Vältida (algus) | Paranda |
+|-----------------|---------|
+| `Sissejuhatus Kas oled kunagi mõelnud...` | `Kas oled kunagi mõelnud...` |
+| `Введение Вы когда-нибудь...` | `Вы когда-нибудь...` |
+| `Introduction Have you ever wondered...` | `Have you ever wondered...` |
+| `Conclusion The US military...` | `The US military...` |
+
+### C) Reklaami-fraasid sissejuhatuses
+
+AI lisab sageli "Tere tulemast KSA Silmakeskuse blogisse..." stiilis fraasi. **Eemalda** — lugeja teab juba, kus ta on. Asenda kohe asjale tulevate küsimuste või faktidega.
+
+### D) Kokkuvõtete YAML väljad (`excerpt`, `seoExcerpt`)
+
+- Peavad lõppema lause-kirjavahemärgiga (`.`, `!`, `?`) **või** kolme punktiga `...` (mis annab märku, et tekst jätkub)
+- Mitte kunagi sõna keskel
+- Maksimaalselt ~25 sõna
+
+### E) Pikad lõigud (üle 6 lause)
+
+- Iga lõik **maksimaalselt 5–6 lauset**
+- Jaga loogiliselt: kus algab uus mõte või näide, alusta uut lõiku
+- Mobiilis (70 % lugejatest) on pikk lõik vältimatu väljalülitumise põhjus
+
+### F) Категориад (categories) YAML
+
+- Peab olema **plokk-loend**, mitte string
+- Õige:
+  ```yaml
+  categories:
+    - Silmade Tervis
+  ```
+- Vale: `categories: "Silmade Tervis"` — see paneb kogu Vercel buildi pikali
+
+### Muud reeglid mis ei muutu
+
+- **Tallinn vene keeles = Таллинн** (kaks н — Eesti vene standard, Jana kinnitas)
+- **Jana parandused vene keeles ON kanoonilised** — kui ta on midagi parandanud, ära kirjuta üle. Lisa ainult faktilisi parandusi.
+- **Üritustel käimine eesti keeles** — `uuringu**l**`, `vastuvõtu**l**` (mitte `uuringu**s**`). Dr. Haavel kinnitas 2026-04-27.
+- **Madala-võtme usaldushääl** — ei mingit `parim`, `imeline`, `revolutsiooniline`, `kõige parem`. Tsiteeri uuringu nimesid + numbreid, mitte tugevdavaid omadussõnu.
+
+---
+
 ## Kontakt
 
 - **Tehniline tugi:** Ants Haavel (claude.ai kaudu)

@@ -3299,6 +3299,78 @@ function HelpTab() {
         </tbody>
       </table>
 
+      {/* Section: Tekstipuhastus */}
+      <h2 style={s.h2}>Tekstipuhastus — mida AI mustandites parandada</h2>
+      <p style={s.p}>
+        AI genereerib mustandeid suure mahuga, kuid jätab teksti sisse <strong>ehituselemente</strong>, mis
+        lugejale loevad nagu ehitusplatsi tellingud. Kontrolli iga uue mustandi puhul.
+      </p>
+
+      <h3 style={s.h3}>A) Tühjad struktuuripealkirjad — eemalda kogu rida</h3>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["## Sissejuhatus", "Esimene lõik on niikuinii sissejuhatus."],
+            ["## Kokkuvõte", "Kui sektsioonil on tegelik teema, kasuta seda nimena (nt 'Kas glaukoomi saab ravida toitumisega?'). Tühi 'Kokkuvõte' eemalda."],
+            ["## Введение / ## Introduction", "Sama loogika RU/EN-s — ära jäta tühja silti."],
+            ["## Заключение / ## Conclusion / ## Summary", "Sama."],
+          ].map(([bad, why]) => (
+            <tr key={bad}>
+              <td style={{ ...s.td, fontFamily: "monospace", fontSize: 12, color: "#a04040", whiteSpace: "nowrap" }}>{bad}</td>
+              <td style={s.td}>{why}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3 style={s.h3}>B) Sildid algusparagrahvi sees — eemalda ainult silt</h3>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["Sissejuhatus Kas oled kunagi mõelnud…", "Kas oled kunagi mõelnud…"],
+            ["Введение Вы когда-нибудь…", "Вы когда-нибудь…"],
+            ["Introduction Have you ever wondered…", "Have you ever wondered…"],
+            ["Conclusion The US military…", "The US military…"],
+          ].map(([bad, good]) => (
+            <tr key={bad}>
+              <td style={{ ...s.td, color: "#a04040", fontSize: 12 }}>{bad}</td>
+              <td style={{ ...s.td, color: "#3a5a10", fontSize: 12, fontWeight: 600 }}>{good}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h3 style={s.h3}>C) Reklaami-fraasid sissejuhatuses</h3>
+      <p style={s.p}>
+        AI lisab sageli &ldquo;Tere tulemast KSA Silmakeskuse blogisse…&rdquo; stiilis fraasi.{" "}
+        <strong>Eemalda</strong> — lugeja teab juba, kus ta on. Asenda kohe asjale tulevate küsimuste või
+        faktidega.
+      </p>
+
+      <h3 style={s.h3}>D) Kokkuvõtete YAML väljad (excerpt, seoExcerpt)</h3>
+      <ul style={{ ...s.p, paddingLeft: 18, margin: "0 0 10px" }}>
+        <li>Peavad lõppema lause-kirjavahemärgiga (<code style={s.code}>.</code>, <code style={s.code}>!</code>, <code style={s.code}>?</code>) <strong>või</strong> kolme punktiga <code style={s.code}>...</code></li>
+        <li>Mitte kunagi sõna keskel</li>
+        <li>Maksimaalselt ~25 sõna</li>
+      </ul>
+
+      <h3 style={s.h3}>E) Pikad lõigud — maksimaalselt 5–6 lauset</h3>
+      <p style={s.p}>
+        Kui lõik on pikem, jaga loogiliselt — kus algab uus mõte või näide, alusta uut lõiku. Mobiilis
+        (70 % lugejatest) on pikk lõik vältimatu väljalülitumise põhjus.
+      </p>
+
+      <h3 style={s.h3}>F) Madala-võtme usaldushääl</h3>
+      <p style={s.p}>
+        Ei mingit <em>parim</em>, <em>imeline</em>, <em>revolutsiooniline</em>, <em>kõige parem</em>.
+        Tsiteeri uuringu nimesid + numbreid, mitte tugevdavaid omadussõnu.
+      </p>
+
+      <div style={s.tip}>
+        🇷🇺 <strong>Tallinn vene keeles =</strong> <code style={s.code}>Таллинн</code> (kaks н — Eesti vene standard, Jana kinnitas).<br />
+        🇪🇪 <strong>Üritustel käimine eesti keeles:</strong> <code style={s.code}>uuringul</code>, <code style={s.code}>vastuvõtul</code> (mitte <code style={s.code}>uuringus</code>).
+      </div>
+
     </div>
   );
 }
