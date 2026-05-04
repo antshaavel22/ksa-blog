@@ -30,6 +30,12 @@ function deterministicClean(body: string): string {
   let out = body;
   // Normalise line endings
   out = out.replace(/\r\n/g, "\n");
+  // Reattach orphan sentence-ending punctuation that wrapped to its own line.
+  // AI scout output often produces:    "...зрения\n. Исторически возможности..."
+  // Reattach the dot/?/!/… to the preceding word so it reads "зрения. Исторически…".
+  // Must run BEFORE the "remove stray period-only lines" rule, otherwise the dot
+  // disappears entirely.
+  out = out.replace(/([^\n\s])\n([.!?…]+)(\s+|$)/g, "$1$2$3");
   // Remove empty H2/H3/H4 lines (e.g. "## " with nothing after)
   out = out.replace(/^#{2,4}\s*$/gm, "");
   // Remove stray single-period lines (". " or just ".")
@@ -38,8 +44,8 @@ function deterministicClean(body: string): string {
   out = out.replace(/\n{3,}/g, "\n\n");
   // Trim trailing whitespace per line
   out = out.split("\n").map((l) => l.replace(/\s+$/, "")).join("\n");
-  // Fix sentence-start mid-line (space before period) — light touch
-  out = out.replace(/ +\./g, ".");
+  // Fix space-before-punctuation across the board ("word ." → "word.")
+  out = out.replace(/(\S) +([.!?,;:])/g, "$1$2");
   // Trim overall
   return out.trim() + "\n";
 }
