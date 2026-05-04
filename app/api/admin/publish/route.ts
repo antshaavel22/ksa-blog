@@ -103,7 +103,10 @@ async function publishProd(draftPath: string, clientContent?: string): Promise<s
   const treeItems: Array<Record<string, string | null>> = [
     { path: targetPath, mode: "100644", type: "blob", sha: blob.sha },
   ];
-  if (draftExists) treeItems.push({ path: draftPath, sha: null });
+  // GitHub's create-tree API requires `mode` and `type` on every entry,
+  // even on deletions where `sha: null` signals removal. Omitting them
+  // produces a 422 "Must supply a valid tree.mode".
+  if (draftExists) treeItems.push({ path: draftPath, mode: "100644", type: "blob", sha: null });
 
   const tree = await gh<{ sha: string }>(
     `https://api.github.com/repos/${repo}/git/trees`,
