@@ -32,10 +32,15 @@ function deterministicClean(body: string): string {
   out = out.replace(/\r\n/g, "\n");
   // Reattach orphan sentence-ending punctuation that wrapped to its own line.
   // AI scout output often produces:    "...зрения\n. Исторически возможности..."
-  // Reattach the dot/?/!/… to the preceding word so it reads "зрения. Исторически…".
+  // Reattach the dot/?/!/…/:/; to the preceding word so it reads "зрения. Исторически…".
   // Must run BEFORE the "remove stray period-only lines" rule, otherwise the dot
   // disappears entirely.
-  out = out.replace(/([^\n\s])\n([.!?…]+)(\s+|$)/g, "$1$2$3");
+  // Includes : and ; because section labels frequently break across lines too:
+  //   "...делится на два типа\n:\nВододефицитный…" → "…делится на два типа: Вододефицитный…"
+  out = out.replace(/([^\n\s])\n([.!?…:;]+)(\s+|$)/g, "$1$2$3");
+  // Also collapse a colon/semicolon sitting alone on its own line between two text lines:
+  //   "word\n:\nNext" → "word: Next"
+  out = out.replace(/([^\n\s])\n([:;])\n(?=\S)/g, "$1$2 ");
   // Remove empty H2/H3/H4 lines (e.g. "## " with nothing after)
   out = out.replace(/^#{2,4}\s*$/gm, "");
   // Remove stray single-period lines (". " or just ".")
