@@ -400,6 +400,27 @@ export default async function PostPage({ params }: PageProps) {
             )}
 
             {/* Tags hidden from article view — kept in frontmatter for SEO/search only. */}
+
+            {/* Low-key copyright footer */}
+            <div
+              style={{
+                marginTop: 56,
+                paddingTop: 20,
+                borderTop: "1px solid #f0f0ec",
+                fontSize: 12,
+                color: "#9a9a9a",
+                textAlign: "center",
+                letterSpacing: "0.01em",
+              }}
+            >
+              © {new Date().getFullYear()}{" "}
+              {lang === "en" ? "KSA Vision Clinic" : "KSA Silmakeskus"}
+              {lang === "et"
+                ? ". Kõik õigused kaitstud."
+                : lang === "ru"
+                  ? ". Все права защищены."
+                  : ". All rights reserved."}
+            </div>
           </div>
         </article>
 
