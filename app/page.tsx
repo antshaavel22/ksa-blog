@@ -24,7 +24,8 @@ export const metadata: Metadata = {
   },
 };
 
-const POSTS_PER_PAGE = 13; // 1 featured + 12 in grid
+const PAGE_SIZE = 12; // grid is 3 columns × 4 rows on non-first pages
+const FIRST_PAGE_SIZE = 13; // page 1 (no filter) shows 1 featured + 12 grid
 
 interface PageProps {
   searchParams: Promise<{ kategooria?: string; leht?: string; keel?: string; otsing?: string }>;
@@ -94,10 +95,26 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
     page === 1 && !kategooria && !query ? getHomeFeed(queryFiltered) : queryFiltered;
 
   const total = filtered.length;
-  const totalPages = Math.ceil(total / POSTS_PER_PAGE);
-  const pageSlice = filtered.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
+  const hasFilter = !!(kategooria || query);
+  // Pagination model:
+  //   - With filter (category/search): no featured ever, simple PAGE_SIZE per page.
+  //   - No filter: page 1 = 1 featured + 12 grid (FIRST_PAGE_SIZE total),
+  //     pages 2+ = 12 grid (PAGE_SIZE). This keeps the bottom row full (3 cards)
+  //     on every non-last page instead of leaving an orphan "1 card alone" row.
+  const totalPages = hasFilter
+    ? Math.ceil(total / PAGE_SIZE)
+    : total <= FIRST_PAGE_SIZE
+      ? 1
+      : 1 + Math.ceil((total - FIRST_PAGE_SIZE) / PAGE_SIZE);
+  const offset = hasFilter
+    ? (page - 1) * PAGE_SIZE
+    : page === 1
+      ? 0
+      : FIRST_PAGE_SIZE + (page - 2) * PAGE_SIZE;
+  const take = !hasFilter && page === 1 ? FIRST_PAGE_SIZE : PAGE_SIZE;
+  const pageSlice = filtered.slice(offset, offset + take);
 
-  const featured = page === 1 && !kategooria && !query ? pageSlice[0] : undefined;
+  const featured = page === 1 && !hasFilter ? pageSlice[0] : undefined;
   const grid = featured ? pageSlice.slice(1) : pageSlice;
 
   return (
