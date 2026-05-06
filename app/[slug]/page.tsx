@@ -3,6 +3,7 @@ import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTA from "@/components/SmartCTA";
+import ContextualInlineCTA from "@/components/ContextualInlineCTA";
 import BlogAnalytics from "@/components/BlogAnalytics";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
@@ -90,6 +91,33 @@ const READ_MIN: Record<string, string> = { et: "min lugemist", ru: "мин чт�
 function readMinutes(content: string): number {
   const words = content.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 220));
+}
+
+function splitContentForInlineCta(content: string): { intro: string; rest: string } | null {
+  const blocks = content.trim().split(/\n{2,}/);
+  if (blocks.length < 5 || content.length < 1400) return null;
+
+  let cursor = 0;
+  let paragraphCount = 0;
+
+  for (let i = 0; i < blocks.length - 2; i += 1) {
+    const block = blocks[i].trim();
+    cursor += blocks[i].length + 2;
+
+    if (!block || block.startsWith("import ") || block.startsWith("export ")) continue;
+    if (block.startsWith("#")) continue;
+    if (block.startsWith("<") && block.endsWith(">")) continue;
+
+    paragraphCount += 1;
+    if (paragraphCount >= 2 && cursor >= 500) {
+      return {
+        intro: content.slice(0, cursor).trim(),
+        rest: content.slice(cursor).trim(),
+      };
+    }
+  }
+
+  return null;
 }
 
 export default async function PostPage({ params }: PageProps) {
@@ -215,6 +243,7 @@ export default async function PostPage({ params }: PageProps) {
   const jsonLd = { "@context": "https://schema.org", "@graph": schemaGraph };
 
   const { prev, next } = getAdjacentPosts(post);
+  const contentSplit = splitContentForInlineCta(post.content);
 
   return (
     <>
@@ -386,10 +415,24 @@ export default async function PostPage({ params }: PageProps) {
         {/* ── Body ── */}
         <article className="prose-v2" style={{ padding: "40px 0 72px" }}>
           <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
-            <MDXRemote
-              source={post.content}
-              components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
-            />
+            {contentSplit ? (
+              <>
+                <MDXRemote
+                  source={contentSplit.intro}
+                  components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+                />
+                <ContextualInlineCTA funnel={resolvedFunnel} slug={slug} lang={lang} />
+                <MDXRemote
+                  source={contentSplit.rest}
+                  components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+                />
+              </>
+            ) : (
+              <MDXRemote
+                source={post.content}
+                components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+              />
+            )}
 
             {post.llmSearchQueries && post.llmSearchQueries.length > 0 && (
               <div className="sr-only" aria-hidden="true">
