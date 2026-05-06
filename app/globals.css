@@ -333,15 +333,15 @@ body {
   letter-spacing: -0.003em;
   font-weight: 400;
 }
-.prose-v2 p.lede,
-.prose-v2 p:first-of-type {
+.prose-v2 > p.lede,
+.prose-v2 > p:first-of-type {
   font-size: 22px;
   line-height: 1.55;
   color: var(--ink);
   margin-bottom: 1.5em;
   font-weight: 400;
 }
-.prose-v2 p:first-of-type::first-letter {
+.prose-v2 > p:first-of-type::first-letter {
   font-family: var(--font-serif-v2);
   font-size: 84px;
   float: left;
@@ -454,7 +454,7 @@ body {
 @media (max-width: 720px) {
   .prose-v2 figure { margin: 2em -20px; }
   .prose-v2 blockquote { margin: 2em 0; font-size: 22px; }
-  .prose-v2 p:first-of-type::first-letter { font-size: 64px; }
+  .prose-v2 > p:first-of-type::first-letter { font-size: 64px; }
 }
 
 /* ─── Article prose — ksa.ee reading experience (LEGACY) ──────────── */
