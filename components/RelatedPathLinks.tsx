@@ -97,7 +97,11 @@ const LINKS: Record<Funnel, LinkItem[]> = {
   general: [
     {
       label: { et: "Tee Kiirtest", ru: "Пройти быстрый тест", en: "Take the quick test" },
-      href: "https://kiirtest.ksa.ee?source=blog&funnel=qualifier",
+      href: {
+        et: "https://kiirtest.ksa.ee/?source=blog&funnel=qualifier",
+        ru: "https://kiirtest.ksa.ee/ru?source=blog&funnel=qualifier",
+        en: "https://kiirtest.ksa.ee/en?source=blog&funnel=qualifier",
+      },
       external: true,
     },
     {
