@@ -18,14 +18,14 @@ export default function RelatedPosts({ posts, lang = "et" }: RelatedPostsProps) 
   if (posts.length === 0) return null;
 
   return (
-    <section style={{ padding: "72px 0 96px" }}>
+    <section className="related-posts-section">
       <div className="mx-auto" style={{ maxWidth: "var(--container)", padding: "0 var(--gutter)" }}>
-        <div className="flex items-baseline justify-between" style={{ marginBottom: 32 }}>
+        <div className="related-posts-header flex items-baseline justify-between">
           <div>
             <div
               style={{
                 fontSize: 11,
-                letterSpacing: "0.14em",
+                letterSpacing: "0.08em",
                 color: "var(--lime-dark)",
                 fontWeight: 600,
                 textTransform: "uppercase",
@@ -36,8 +36,6 @@ export default function RelatedPosts({ posts, lang = "et" }: RelatedPostsProps) 
             </div>
             <h2
               style={{
-                fontSize: 36,
-                letterSpacing: "-0.025em",
                 fontWeight: 400,
                 margin: 0,
                 lineHeight: 1.1,
@@ -59,8 +57,7 @@ export default function RelatedPosts({ posts, lang = "et" }: RelatedPostsProps) 
         </div>
 
         <div
-          className="grid"
-          style={{ gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}
+          className="related-posts-grid grid"
         >
           {posts.map((post) => (
             <RelatedCard key={post.slug} post={post} lang={lang} />
@@ -84,10 +81,9 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
   return (
     <Link href={`/${post.slug}`} className="group block h-full" style={{ color: "inherit" }}>
       <div
-        className="flex h-full flex-col overflow-hidden transition-[border-color] duration-200"
-        style={{ background: "#fff", border: "1px solid var(--line)", borderRadius: 16 }}
+        className="related-post-card flex h-full flex-col overflow-hidden transition-[border-color] duration-200"
       >
-        <div className="overflow-hidden" style={{ aspectRatio: "4/3", background: "var(--beige-light)" }}>
+        <div className="related-post-image overflow-hidden">
           {post.featuredImage ? (
             <Image
               src={post.featuredImage}
@@ -108,16 +104,12 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
           )}
         </div>
         <div
-          className="flex flex-1 flex-col"
-          style={{ padding: "20px 22px 24px", gap: 10 }}
+          className="related-post-body flex flex-1 flex-col"
         >
           {categoryLabel && (
             <div
+              className="related-post-category"
               style={{
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                color: "var(--lime-dark)",
-                fontWeight: 600,
                 textTransform: "uppercase",
               }}
             >
@@ -125,28 +117,24 @@ function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
             </div>
           )}
           <h3
+            className="related-post-title"
             style={{
-              fontSize: 18,
               fontWeight: 500,
               lineHeight: 1.28,
-              letterSpacing: "-0.015em",
               margin: 0,
             }}
           >
             {post.title}
           </h3>
           {post.excerpt && (
-            <p style={{ fontSize: 13, color: "var(--ink-60)", lineHeight: 1.55, margin: 0 }}>
+            <p className="related-post-excerpt" style={{ color: "var(--ink-60)", lineHeight: 1.55, margin: 0 }}>
               {post.excerpt}
             </p>
           )}
           <div
-            className="flex items-center justify-between"
+            className="related-post-date flex items-center justify-between"
             style={{
               marginTop: "auto",
-              paddingTop: 8,
-              fontSize: 12,
-              color: "var(--ink-40)",
             }}
           >
             <span>{dateFormatted}</span>

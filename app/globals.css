@@ -168,6 +168,103 @@
   .post-grid { grid-template-columns: 1fr; gap: 20px; }
 }
 
+/* Related posts: keep article recommendations readable on small phones. */
+.related-posts-section {
+  padding: 72px 0 96px;
+}
+.related-posts-header {
+  margin-bottom: 32px;
+}
+.related-posts-header h2 {
+  font-size: 36px;
+}
+.related-posts-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.related-post-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.related-post-image {
+  aspect-ratio: 4 / 3;
+  background: var(--beige-light);
+}
+.related-post-body {
+  gap: 10px;
+  padding: 20px 22px 24px;
+}
+.related-post-category {
+  color: var(--lime-dark);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.related-post-title {
+  font-size: 18px;
+}
+.related-post-excerpt {
+  font-size: 13px;
+}
+.related-post-date {
+  color: var(--ink-40);
+  font-size: 12px;
+  padding-top: 8px;
+}
+
+@media (max-width: 900px) {
+  .related-posts-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .related-posts-section {
+    padding: 48px 0 72px;
+  }
+  .related-posts-header {
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .related-posts-header h2 {
+    font-size: 28px;
+  }
+  .related-posts-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .related-post-card {
+    display: grid;
+    grid-template-columns: 118px minmax(0, 1fr);
+    min-height: 136px;
+  }
+  .related-post-image {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+  .related-post-body {
+    min-width: 0;
+    padding: 14px 15px;
+  }
+  .related-post-category {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .related-post-title {
+    font-size: 16px;
+    line-height: 1.25;
+  }
+  .related-post-excerpt {
+    display: none;
+  }
+  .related-post-date {
+    font-size: 11px;
+    padding-top: 6px;
+  }
+}
+
 /* ─── KSA Brand Design System — aligned with ksa.ee 2025 CVI (LEGACY) ─── */
 @theme inline {
   /* v2 tokens exposed to Tailwind utilities */
