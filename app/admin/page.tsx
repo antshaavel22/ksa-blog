@@ -87,6 +87,19 @@ function getFmField(fm: string, key: string): string {
   // Single-quoted: key: '...'  (YAML escapes literal ' as '')
   m = fm.match(new RegExp(`^${key}:\\s*'((?:[^']|'')*)'\\s*$`, "m"));
   if (m) return m[1].replace(/''/g, "'");
+  // YAML block scalar: key: > or >- or | or |- followed by indented continuation lines.
+  //   title: >-
+  //     line one
+  //     line two
+  // Folded (>) joins with spaces; literal (|) joins with newlines.
+  // Without this branch, getFmField would return ">-" and setFmField would corrupt
+  // the value to literal `key: ">-"` while leaving continuation lines orphaned.
+  m = fm.match(new RegExp(`^${key}:\\s*([>|])([+-]?)\\s*\\n((?:[ \\t]+.*(?:\\n|$))+)`, "m"));
+  if (m) {
+    const folded = m[1] === ">";
+    const lines = m[3].split("\n").map((l) => l.replace(/^[ \t]+/, "")).filter((l) => l.length > 0);
+    return folded ? lines.join(" ") : lines.join("\n");
+  }
   // Unquoted: key: value (entire rest of line)
   m = fm.match(new RegExp(`^${key}:\\s*(.+?)\\s*$`, "m"));
   return m ? m[1].trim() : "";
@@ -103,6 +116,12 @@ function setFmField(fm: string, key: string, value: string): string {
   const line = hasDouble
     ? `${key}: '${value.replace(/'/g, "''")}'`
     : `${key}: "${value}"`;
+  // Match either the bare key line OR a YAML block scalar (key: > / >- / | / |-)
+  // including its indented continuation lines. Without consuming the continuation,
+  // overwriting a folded-scalar key leaves orphaned text below — corrupted YAML
+  // (the c5df721 incident: `title: ">-"` with the real title text dangling below).
+  const blockRe = new RegExp(`^${key}:\\s*[>|][+-]?\\s*\\n(?:[ \\t]+.*(?:\\n|$))+`, "m");
+  if (blockRe.test(fm)) return fm.replace(blockRe, () => line + "\n");
   const re = new RegExp(`^${key}:.*$`, "m");
   // Use function replacement so `$` chars in value can never be interpreted
   // as backreferences (`$&`, `$'`, `$\``, etc.).
