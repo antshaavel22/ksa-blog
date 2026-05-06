@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import ConsentLink from "./ConsentLink";
 
 type Lang = "et" | "ru" | "en";
@@ -88,12 +89,15 @@ export default function BlogFooter({ lang = "et" }: { lang?: string }) {
         >
           <div>
             <div className="flex items-center gap-2.5">
-              <svg width="28" height="28" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-                <circle cx="20" cy="20" r="17" stroke="#fff" strokeWidth="2.2" />
-                <circle cx="20" cy="20" r="6.5" fill="#fff" />
-                <circle cx="23" cy="17" r="2" fill="#1a1a1a" />
-              </svg>
-              <span style={{ fontWeight: 600, fontSize: 19, letterSpacing: "-0.02em" }}>ksa</span>
+              {/* Official KSA mark (same SVG as header). Stays green on dark
+                  footer background — canonical brand color is #7EBD0B. */}
+              <Image
+                src="/ksa-mark.svg"
+                alt="KSA Silmakeskus"
+                width={64}
+                height={40}
+                style={{ height: 32, width: "auto" }}
+              />
               <span
                 style={{
                   fontWeight: 400,
