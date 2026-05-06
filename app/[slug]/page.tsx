@@ -4,6 +4,7 @@ import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTA from "@/components/SmartCTA";
 import ContextualInlineCTA from "@/components/ContextualInlineCTA";
+import RelatedPathLinks from "@/components/RelatedPathLinks";
 import BlogAnalytics from "@/components/BlogAnalytics";
 import RelatedPosts from "@/components/RelatedPosts";
 import YouTubeEmbed from "@/components/YouTubeEmbed";
@@ -443,6 +444,8 @@ export default async function PostPage({ params }: PageProps) {
             )}
 
             {/* Tags hidden from article view — kept in frontmatter for SEO/search only. */}
+
+            <RelatedPathLinks funnel={resolvedFunnel} slug={slug} lang={lang} />
 
             {/* Low-key copyright footer */}
             <div
