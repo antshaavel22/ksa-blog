@@ -48,12 +48,12 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
             aria-label="KSA Silmakeskus blogi"
           >
             <Image
-              src="/ksa-logo.svg"
+              src="/ksa-mark.svg"
               alt="KSA Silmakeskus"
               width={64}
-              height={50}
+              height={40}
               priority
-              style={{ height: 44, width: "auto" }}
+              style={{ height: 36, width: "auto" }}
             />
             <span
               style={{
