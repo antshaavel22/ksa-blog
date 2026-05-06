@@ -5,20 +5,25 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
 
 // ── Write: filesystem in dev, GitHub API in prod ────────────────────────────
 
 async function writeDev(filePath: string, content: string): Promise<void> {
-  const fs = await import("fs");
-  const path = await import("path");
-  const abs = path.join(process.cwd(), filePath);
+  const match = filePath.match(/^content\/drafts\/(et|ru|en)\/([^/]+\.mdx?)$/);
+  if (!match) throw new Error("Invalid draft path");
+
+  const abs = path.join(process.cwd(), "content", "drafts", match[1], match[2]);
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   fs.writeFileSync(abs, content, "utf-8");
 }
 
 async function writeProd(filePath: string, content: string): Promise<void> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   // Check if file already exists (get SHA)
@@ -52,6 +57,36 @@ async function writeProd(filePath: string, content: string): Promise<void> {
     const err = await putRes.text();
     throw new Error(`GitHub write error: ${putRes.status} ${err}`);
   }
+}
+
+async function prodPathExists(filePath: string): Promise<boolean> {
+  const { token, repo } = requireGitHubConfig();
+  const res = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+  });
+
+  if (res.ok) return true;
+  if (res.status === 404) return false;
+  throw new Error(`GitHub duplicate check failed: ${res.status} ${await res.text()}`);
+}
+
+async function uniqueDraftFilename(langDir: string, date: string, slug: string): Promise<string> {
+  let filename = `${date}-${slug}.mdx`;
+  let counter = 1;
+
+  if (process.env.NODE_ENV === "production") {
+    while (await prodPathExists(`content/drafts/${langDir}/${filename}`)) {
+      filename = `${date}-${slug}-${counter++}.mdx`;
+    }
+    return filename;
+  }
+
+  const dir = path.join(process.cwd(), "content", "drafts", langDir);
+  fs.mkdirSync(dir, { recursive: true });
+  while (fs.existsSync(path.join(dir, filename))) {
+    filename = `${date}-${slug}-${counter++}.mdx`;
+  }
+  return filename;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -101,6 +136,9 @@ export async function POST(req: NextRequest) {
 
     const date = new Date().toISOString().split("T")[0];
     const slug = toSlug(title);
+    if (!slug) {
+      return NextResponse.json({ error: "Pealkirjast ei saanud turvalist URL-i luua. Lisa pealkirja mõni täht või number." }, { status: 400 });
+    }
     const authorName = author?.trim() || "Dr. Ants Haavel";
     const cats = categories?.length ? categories : ["Elustiil"];
     const tagList = tags?.length ? tags : [];
@@ -128,19 +166,7 @@ ${body.trim()}
 
     // Build file path
     const langDir = lang === "ru" ? "ru" : lang === "en" ? "en" : "et";
-    let filename = `${date}-${slug}.mdx`;
-
-    // Check for duplicates (dev only — in prod GitHub handles it)
-    if (process.env.NODE_ENV !== "production") {
-      const fs = await import("fs");
-      const path = await import("path");
-      const dir = path.join(process.cwd(), `content/drafts/${langDir}`);
-      fs.mkdirSync(dir, { recursive: true });
-      let counter = 1;
-      while (fs.existsSync(path.join(dir, filename))) {
-        filename = `${date}-${slug}-${counter++}.mdx`;
-      }
-    }
+    const filename = await uniqueDraftFilename(langDir, date, slug);
 
     const filePath = `content/drafts/${langDir}/${filename}`;
 

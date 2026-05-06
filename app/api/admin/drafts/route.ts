@@ -1,4 +1,9 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
 
 export interface DraftMeta {
   filename: string;
@@ -26,15 +31,11 @@ function parseFrontmatter(raw: string): Record<string, string> {
 }
 
 async function listDraftsDev(): Promise<DraftMeta[]> {
-  const fs = await import("fs");
-  const path = await import("path");
-  const cwd = process.cwd();
-
   const dirs = [
-    { dir: path.join(cwd, "content/drafts"), prefix: "content/drafts" },
-    { dir: path.join(cwd, "content/drafts/et"), prefix: "content/drafts/et" },
-    { dir: path.join(cwd, "content/drafts/ru"), prefix: "content/drafts/ru" },
-    { dir: path.join(cwd, "content/drafts/en"), prefix: "content/drafts/en" },
+    { dir: path.join(/*turbopackIgnore: true*/ process.cwd(), "content", "drafts"), prefix: "content/drafts" },
+    { dir: path.join(/*turbopackIgnore: true*/ process.cwd(), "content", "drafts", "et"), prefix: "content/drafts/et" },
+    { dir: path.join(/*turbopackIgnore: true*/ process.cwd(), "content", "drafts", "ru"), prefix: "content/drafts/ru" },
+    { dir: path.join(/*turbopackIgnore: true*/ process.cwd(), "content", "drafts", "en"), prefix: "content/drafts/en" },
   ];
 
   const drafts: DraftMeta[] = [];
@@ -69,13 +70,7 @@ async function listDraftsDev(): Promise<DraftMeta[]> {
 }
 
 async function listDraftsProd(): Promise<DraftMeta[]> {
-  const token = process.env.GITHUB_TOKEN;
-  const repo = process.env.GITHUB_REPO;
-  if (!token || !repo) {
-    throw new Error("GITHUB_TOKEN and GITHUB_REPO must be set in production");
-  }
-
-  const branch = process.env.GITHUB_BRANCH ?? "main";
+  const { token, repo, branch } = requireGitHubConfig();
   const treeRes = await fetch(
     `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`,
     {

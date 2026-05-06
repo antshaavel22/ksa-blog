@@ -2255,15 +2255,25 @@ function PublishSuccessScreen({ slug, onBack }: { slug: string; onBack: () => vo
 function DraftsTab() {
   const [drafts, setDrafts] = useState<DraftMeta[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [langFilter, setLangFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<DraftMeta | null>(null);
 
   const loadDrafts = useCallback(() => {
     setLoading(true);
+    setLoadError("");
     fetch("/api/admin/drafts")
-      .then(r => r.json())
+      .then(async r => {
+        const d = await r.json().catch(() => ({})) as { drafts?: DraftMeta[]; error?: string };
+        if (!r.ok || d.error) throw new Error(d.error ?? `Server vastas ${r.status}`);
+        return d;
+      })
       .then((d: { drafts?: DraftMeta[] }) => { setDrafts(d.drafts ?? []); })
+      .catch((err: Error) => {
+        setDrafts([]);
+        setLoadError(err.message || "Mustandite laadimine ebaõnnestus");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -2307,7 +2317,22 @@ function DraftsTab() {
       {/* States */}
       {loading && <div style={{ textAlign: "center", padding: "60px 0", color: "#9a9a9a", fontSize: 15 }}>Laen mustandeid…</div>}
 
-      {!loading && filtered.length === 0 && (
+      {!loading && loadError && (
+        <div style={{ textAlign: "center", padding: "48px 24px", border: "1px solid #fee2e2", background: "#fef2f2", borderRadius: 18 }}>
+          <div style={{ fontSize: 42, marginBottom: 12 }}>⚠️</div>
+          <p style={{ color: "#991b1b", fontSize: 15, lineHeight: 1.55, margin: "0 0 18px" }}>
+            Mustandite laadimine ebaõnnestus: {loadError}
+          </p>
+          <button onClick={loadDrafts} style={{
+            padding: "10px 18px", borderRadius: 999, border: 0, background: "#87be23",
+            color: "white", fontWeight: 800, cursor: "pointer",
+          }}>
+            Proovi uuesti
+          </button>
+        </div>
+      )}
+
+      {!loading && !loadError && filtered.length === 0 && (
         <div style={{ textAlign: "center", padding: "60px 0" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
           <p style={{ color: "#9a9a9a", fontSize: 15 }}>

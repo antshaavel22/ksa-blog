@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
 import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
 
 function removeDraftStatus(content: string): string {
   return content.replace(/^status:\s*["']?draft["']?\s*\n/m, "");
@@ -15,49 +19,50 @@ function getSlugFromPath(filePath: string): string {
 }
 
 async function publishDev(draftPath: string, clientContent?: string): Promise<string> {
-  const fs = await import("fs");
-  const pathMod = await import("path");
   const cwd = process.cwd();
+  const draftMatch = draftPath.match(/^content\/drafts\/(et|ru|en)\/([^/]+\.mdx?)$/);
+  if (!draftMatch) throw new Error("Invalid draft path");
 
   let raw: string;
   if (clientContent) {
     raw = clientContent;
   } else {
-    const absSource = pathMod.join(cwd, draftPath);
+    const absSource = path.join(cwd, "content", "drafts", draftMatch[1], draftMatch[2]);
     if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
     raw = fs.readFileSync(absSource, "utf-8");
   }
   const published = removeDraftStatus(raw);
 
-  const basename = pathMod.basename(draftPath);
+  const basename = draftMatch[2];
   const targetRelative = `content/posts/${basename}`;
-  const absTarget = pathMod.join(cwd, targetRelative);
+  const absTarget = path.join(cwd, "content", "posts", basename);
 
-  fs.mkdirSync(pathMod.dirname(absTarget), { recursive: true });
+  if (fs.existsSync(absTarget)) {
+    throw new Error(`Published post already exists: ${targetRelative}. Rename the draft before publishing.`);
+  }
+
+  fs.mkdirSync(path.dirname(absTarget), { recursive: true });
   fs.writeFileSync(absTarget, published, "utf-8");
 
-  const absSource2 = pathMod.join(cwd, draftPath);
+  const absSource2 = path.join(cwd, "content", "drafts", draftMatch[1], basename);
   if (fs.existsSync(absSource2)) fs.unlinkSync(absSource2);
 
   return getSlugFromFrontmatter(published) || getSlugFromPath(draftPath);
 }
 
 async function publishProd(draftPath: string, clientContent?: string): Promise<string> {
-  const pathMod = await import("path");
-
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
-  const branch = process.env.GITHUB_BRANCH ?? "main";
-  const basename = pathMod.basename(draftPath);
+  const { token, repo, branch } = requireGitHubConfig();
+  const basename = path.basename(draftPath);
   const targetPath = `content/posts/${basename}`;
 
   let raw: string;
   if (clientContent) {
     raw = clientContent;
   } else {
-    const fs = await import("fs");
     const cwd = process.cwd();
-    const absSource = pathMod.join(cwd, draftPath);
+    const draftMatch = draftPath.match(/^content\/drafts\/(et|ru|en)\/([^/]+\.mdx?)$/);
+    if (!draftMatch) throw new Error("Invalid draft path");
+    const absSource = path.join(cwd, "content", "drafts", draftMatch[1], draftMatch[2]);
     if (!fs.existsSync(absSource)) throw new Error("Draft file not found: " + draftPath);
     raw = fs.readFileSync(absSource, "utf-8");
   }
@@ -99,6 +104,14 @@ async function publishProd(draftPath: string, clientContent?: string): Promise<s
   const draftExists = await fetch(`https://api.github.com/repos/${repo}/contents/${draftPath}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
   }).then((res) => res.ok).catch(() => false);
+
+  const targetExists = await fetch(`https://api.github.com/repos/${repo}/contents/${targetPath}`, {
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+  }).then((res) => res.ok).catch(() => false);
+
+  if (targetExists) {
+    throw new Error(`Published post already exists: ${targetPath}. Rename the draft before publishing.`);
+  }
 
   const treeItems: Array<Record<string, string | null>> = [
     { path: targetPath, mode: "100644", type: "blob", sha: blob.sha },
@@ -152,7 +165,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "path is required" }, { status: 400 });
   }
 
-  if (!draftPath.startsWith("content/drafts/")) {
+  if (!/^content\/drafts\/(et|ru|en)\/[^/]+\.mdx?$/.test(draftPath)) {
     return NextResponse.json({ error: "Invalid path - must be in content/drafts/" }, { status: 400 });
   }
 

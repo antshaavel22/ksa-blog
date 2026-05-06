@@ -6,12 +6,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
 
 // ── GitHub API writer ───────────────────────────────────────────────────────
 
 async function writeToGitHub(filePath: string, content: Buffer): Promise<string> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   const getRes = await fetch(url, {
@@ -43,11 +47,22 @@ async function writeToGitHub(filePath: string, content: Buffer): Promise<string>
 // ── Filesystem writer (dev) ─────────────────────────────────────────────────
 
 async function writeToDisk(filePath: string, content: Buffer): Promise<string> {
-  const fs = await import("fs");
-  const path = await import("path");
-  const abs = path.join(process.cwd(), filePath);
-  fs.mkdirSync(path.dirname(abs), { recursive: true });
-  fs.writeFileSync(abs, content);
+  if (!filePath.startsWith("public/uploads/")) {
+    throw new Error("Invalid upload path");
+  }
+
+  const relativeUploadPath = filePath.replace(/^public\/uploads\//, "");
+  const uploadRoot = path.join(process.cwd(), "public", "uploads");
+  const abs = path.join(uploadRoot, relativeUploadPath);
+  const resolvedRoot = path.resolve(uploadRoot);
+  const resolvedTarget = path.resolve(abs);
+
+  if (!resolvedTarget.startsWith(resolvedRoot + path.sep)) {
+    throw new Error("Invalid upload path");
+  }
+
+  fs.mkdirSync(path.dirname(resolvedTarget), { recursive: true });
+  fs.writeFileSync(resolvedTarget, content);
   return "/" + filePath.replace(/^public\//, "");
 }
 

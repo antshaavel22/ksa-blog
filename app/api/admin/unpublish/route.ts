@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
 import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
 
 function addDraftStatus(content: string): string {
   // If status already present, update it in-place (avoids duplicate key crash)
@@ -16,23 +20,25 @@ function getLangFromContent(content: string): string {
 }
 
 async function unpublishDev(postPath: string): Promise<string> {
-  const fs = await import("fs");
-  const pathMod = await import("path");
   const cwd = process.cwd();
 
-  const absSource = pathMod.join(cwd, postPath);
+  const absSource = path.join(cwd, "content", "posts", path.basename(postPath));
   if (!fs.existsSync(absSource)) throw new Error("Post file not found: " + postPath);
 
   const raw = fs.readFileSync(absSource, "utf-8");
   const withDraft = addDraftStatus(raw);
   const lang = getLangFromContent(raw);
 
-  const basename = pathMod.basename(postPath);
+  const basename = path.basename(postPath);
   const targetDir = `content/drafts/${lang}`;
-  const absTargetDir = pathMod.join(cwd, targetDir);
+  const absTargetDir = path.join(cwd, "content", "drafts", lang);
   fs.mkdirSync(absTargetDir, { recursive: true });
 
-  const absTarget = pathMod.join(absTargetDir, basename);
+  const absTarget = path.join(absTargetDir, basename);
+  if (fs.existsSync(absTarget)) {
+    throw new Error(`Draft already exists: ${targetDir}/${basename}. Rename or delete the existing draft first.`);
+  }
+
   fs.writeFileSync(absTarget, withDraft, "utf-8");
   fs.unlinkSync(absSource);
 
@@ -57,8 +63,7 @@ async function githubGetWithRetry(url: string, token: string, retries = 3): Prom
 }
 
 async function unpublishProd(postPath: string): Promise<string> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
 
   // 1. Read the published post (with retry — GitHub API can be flaky after batch operations)
   const getUrl = `https://api.github.com/repos/${repo}/contents/${postPath}`;
@@ -82,8 +87,10 @@ async function unpublishProd(postPath: string): Promise<string> {
     content: Buffer.from(withDraft, "utf-8").toString("base64"),
   };
   if (checkRes.ok) {
-    const existing = await checkRes.json() as { sha: string };
-    putBody.sha = existing.sha;
+    throw new Error(`Draft already exists: ${targetPath}. Rename or delete the existing draft first.`);
+  }
+  if (checkRes.status !== 404) {
+    throw new Error(`GitHub draft check failed: ${checkRes.status}`);
   }
 
   const putRes = await fetch(putUrl, {
@@ -111,7 +118,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "path is required" }, { status: 400 });
   }
 
-  if (!postPath.startsWith("content/posts/")) {
+  if (!/^content\/posts\/[^/]+\.mdx?$/.test(postPath)) {
     return NextResponse.json({ error: "Invalid path — must be in content/posts/" }, { status: 400 });
   }
 

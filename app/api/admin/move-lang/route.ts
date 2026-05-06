@@ -7,27 +7,42 @@
  * Returns: { ok: true, newPath: string }
  */
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
 import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
+
+function parseDraftPath(filePath: string): { lang: string; basename: string } | null {
+  const match = filePath.match(/^content\/drafts\/(et|ru|en)\/([^/]+\.mdx?)$/);
+  return match ? { lang: match[1], basename: match[2] } : null;
+}
 
 function newPathForLang(fromPath: string, toLang: string): string {
   // content/drafts/et/file.mdx → content/drafts/en/file.mdx
-  return fromPath.replace(/content\/drafts\/(et|ru|en)\//, `content/drafts/${toLang}/`);
+  const parsed = parseDraftPath(fromPath);
+  if (!parsed) throw new Error("Invalid draft path");
+  return `content/drafts/${toLang}/${parsed.basename}`;
 }
 
 async function moveDev(fromPath: string, newPath: string, content: string) {
-  const fs = await import("fs");
-  const pathMod = await import("path");
   const cwd = process.cwd();
-  const absNew = pathMod.join(cwd, newPath);
-  fs.mkdirSync(pathMod.dirname(absNew), { recursive: true });
+  const fromParsed = parseDraftPath(fromPath);
+  const newParsed = parseDraftPath(newPath);
+  if (!fromParsed || !newParsed) throw new Error("Invalid draft path");
+
+  const absNew = path.join(cwd, "content", "drafts", newParsed.lang, newParsed.basename);
+  if (fromPath !== newPath && fs.existsSync(absNew)) {
+    throw new Error(`Draft already exists: ${newPath}. Rename or delete it before moving.`);
+  }
+  fs.mkdirSync(path.dirname(absNew), { recursive: true });
   fs.writeFileSync(absNew, content, "utf-8");
-  const absOld = pathMod.join(cwd, fromPath);
+  const absOld = path.join(cwd, "content", "drafts", fromParsed.lang, fromParsed.basename);
   if (fs.existsSync(absOld) && fromPath !== newPath) fs.unlinkSync(absOld);
 }
 
 async function moveProd(fromPath: string, newPath: string, content: string) {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
   const base = `https://api.github.com/repos/${repo}/contents/`;
   const headers = {
     Authorization: `Bearer ${token}`,
@@ -40,7 +55,13 @@ async function moveProd(fromPath: string, newPath: string, content: string) {
   const putUrl = base + newPath;
   const checkRes = await fetch(putUrl, { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" } });
   const putBody: Record<string, string> = { message: `Move to ${path.dirname(newPath)}: ${path.basename(newPath)}`, content: b64 };
-  if (checkRes.ok) { const d = await checkRes.json() as { sha: string }; putBody.sha = d.sha; }
+  if (checkRes.ok) {
+    if (fromPath !== newPath) throw new Error(`Draft already exists: ${newPath}. Rename or delete it before moving.`);
+    const d = await checkRes.json() as { sha: string };
+    putBody.sha = d.sha;
+  } else if (checkRes.status !== 404) {
+    throw new Error(`GitHub draft check failed: ${checkRes.status}`);
+  }
   const putRes = await fetch(putUrl, { method: "PUT", headers, body: JSON.stringify(putBody) });
   if (!putRes.ok) throw new Error(`GitHub write error: ${putRes.status} ${await putRes.text()}`);
 
@@ -63,7 +84,7 @@ export async function POST(req: NextRequest) {
     fromPath: string; toLang: string; content: string;
   };
 
-  if (!fromPath?.startsWith("content/drafts/")) {
+  if (!fromPath || !parseDraftPath(fromPath)) {
     return NextResponse.json({ error: "Only drafts can be moved" }, { status: 400 });
   }
   if (!["et", "ru", "en"].includes(toLang)) {

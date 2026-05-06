@@ -4,25 +4,36 @@
  * WRITE: GitHub API in production (Vercel fs is read-only)
  */
 import { NextRequest, NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { requireGitHubConfig } from "@/lib/admin-env";
+
+export const runtime = "nodejs";
+
+function parsePostPath(filePath: string): string | null {
+  const match = filePath.match(/^content\/posts\/([^/]+\.mdx?)$/);
+  return match?.[1] ?? null;
+}
 
 async function readPost(filePath: string): Promise<string> {
-  const fs = await import("fs");
-  const path = await import("path");
-  const abs = path.join(process.cwd(), filePath);
+  const basename = parsePostPath(filePath);
+  if (!basename) throw new Error("Invalid path");
+
+  const abs = path.join(process.cwd(), "content", "posts", basename);
   if (!fs.existsSync(abs)) throw new Error("File not found: " + filePath);
   return fs.readFileSync(abs, "utf-8");
 }
 
 async function writePostDev(filePath: string, content: string): Promise<void> {
-  const fs = await import("fs");
-  const path = await import("path");
-  const abs = path.join(process.cwd(), filePath);
+  const basename = parsePostPath(filePath);
+  if (!basename) throw new Error("Invalid path");
+
+  const abs = path.join(process.cwd(), "content", "posts", basename);
   fs.writeFileSync(abs, content, "utf-8");
 }
 
 async function writePostProd(filePath: string, content: string): Promise<void> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
 
   const getRes = await fetch(url, {
@@ -60,8 +71,7 @@ async function writePostProd(filePath: string, content: string): Promise<void> {
 }
 
 async function readPostProd(filePath: string): Promise<string> {
-  const token = process.env.GITHUB_TOKEN!;
-  const repo = process.env.GITHUB_REPO!;
+  const { token, repo } = requireGitHubConfig();
   const url = `https://api.github.com/repos/${repo}/contents/${filePath}`;
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
@@ -75,7 +85,7 @@ async function readPostProd(filePath: string): Promise<string> {
 export async function GET(req: NextRequest) {
   const filePath = req.nextUrl.searchParams.get("path");
   if (!filePath) return NextResponse.json({ error: "path is required" }, { status: 400 });
-  if (!filePath.startsWith("content/posts/"))
+  if (!parsePostPath(filePath))
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   try {
     if (process.env.NODE_ENV === "production") {
@@ -100,7 +110,7 @@ export async function GET(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const filePath = req.nextUrl.searchParams.get("path");
   if (!filePath) return NextResponse.json({ error: "path is required" }, { status: 400 });
-  if (!filePath.startsWith("content/posts/"))
+  if (!parsePostPath(filePath))
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
 
   const { content } = await req.json() as { content: string };
