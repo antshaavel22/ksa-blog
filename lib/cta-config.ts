@@ -10,8 +10,11 @@ export type CtaLangOverrides = {
   stats?: [string, string][];
   primaryLabel?: string;
   primarySub?: string | null;
+  primaryHref?: string;
+  primaryStrike?: string | null;
   secondaryLabel?: string | null;
   secondarySub?: string | null;
+  secondaryHref?: string | null;
 };
 
 export type CtaEntry = {
@@ -40,9 +43,9 @@ export type CtaConfig = Record<Funnel, CtaEntry>;
 export const RAW_CONFIG = ctaConfig as unknown as CtaConfig;
 
 /**
- * Resolve a CTA entry for a given language with ET fallback.
- * Lang-overridable fields: eyebrow, headline, sub, stats, primaryLabel, primarySub, secondaryLabel, secondarySub.
- * Shared fields (not overridable per lang): primaryHref, secondaryHref, accent, ladder, live, campaign, validUntil, primaryStrike.
+ * Resolve a CTA entry for a given language with ET fallback. Lang-overridable
+ * fields include copy plus destination links, so EN/RU CTAs never send readers
+ * into an Estonian-only booking explainer by accident.
  */
 export function resolveCtaEntry(entry: CtaEntry, lang: CtaLang = "et"): CtaEntry {
   if (lang === "et") return entry;
@@ -56,8 +59,11 @@ export function resolveCtaEntry(entry: CtaEntry, lang: CtaLang = "et"): CtaEntry
     stats: overrides.stats ?? entry.stats,
     primaryLabel: overrides.primaryLabel ?? entry.primaryLabel,
     primarySub: overrides.primarySub ?? entry.primarySub,
+    primaryHref: overrides.primaryHref ?? entry.primaryHref,
+    primaryStrike: overrides.primaryStrike ?? entry.primaryStrike,
     secondaryLabel: overrides.secondaryLabel ?? entry.secondaryLabel,
     secondarySub: overrides.secondarySub ?? entry.secondarySub,
+    secondaryHref: overrides.secondaryHref ?? entry.secondaryHref,
   };
 }
 

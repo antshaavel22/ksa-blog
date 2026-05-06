@@ -6,7 +6,7 @@ import { normalizeLang, type CtaLang } from "@/lib/cta-config";
 
 type LinkItem = {
   label: Record<CtaLang, string>;
-  href: string;
+  href: string | Partial<Record<CtaLang, string>>;
   external?: boolean;
 };
 
@@ -29,7 +29,11 @@ const LINKS: Record<Funnel, LinkItem[]> = {
   flow3: [
     {
       label: { et: "Flow3 silmauuring", ru: "Исследование Flow3", en: "Flow3 exam" },
-      href: "https://ksa.ee/vabane-prillidest/flow3-silmauuring/?source=blog&funnel=flow3",
+      href: {
+        et: "https://ksa.ee/vabane-prillidest/flow3-silmauuring/?source=blog&funnel=flow3",
+        ru: "https://ksa.ee/ru/flow-silmauuring/?source=blog&funnel=flow3",
+        en: "https://ksa.ee/en/flow-examination/?source=blog&funnel=flow3",
+      },
       external: true,
     },
     {
@@ -151,7 +155,10 @@ export default function RelatedPathLinks({ funnel, slug, lang }: RelatedPathLink
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
         {links.map((item) => {
           const label = item.label[normalizedLang];
-          const href = item.external ? buildCtaUrl(item.href, funnel, slug, funnel) : item.href;
+          const rawHref = typeof item.href === "string"
+            ? item.href
+            : item.href[normalizedLang] ?? item.href.et ?? "/";
+          const href = item.external ? buildCtaUrl(rawHref, funnel, slug, funnel) : rawHref;
           return (
             <a
               key={href}

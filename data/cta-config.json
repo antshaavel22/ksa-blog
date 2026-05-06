@@ -23,8 +23,10 @@
       "stats": [["18–45", "возраст"], ["8 мин", "процедура"], ["1 неделя", "восстановление"]],
       "primaryLabel": "Исследование Flow3 — 39 €",
       "primarySub": "90 мин · Таллинн или Тарту · промокод BLOG39",
+      "primaryHref": "https://ksa.ee/ru/flow-silmauuring/?source=blog&funnel=flow3",
       "secondaryLabel": "Онлайн-тест Flow3 — 0 € сегодня",
-      "secondarySub": "Бесплатный тест совместимости → обследование Flow3 в клинике за 19 € (вместо 69 €)."
+      "secondarySub": "Бесплатный тест совместимости → обследование Flow3 в клинике за 19 € (вместо 69 €).",
+      "secondaryHref": "https://kiirtest.ksa.ee/ru.html?source=blog"
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
@@ -33,8 +35,10 @@
       "stats": [["18–45", "age"], ["8 min", "procedure"], ["1 week", "back to the gym"]],
       "primaryLabel": "Flow3 consultation — €39",
       "primarySub": "90 min · Tallinn or Tartu · code BLOG39",
+      "primaryHref": "https://ksa.ee/en/flow-examination/?source=blog&funnel=flow3",
       "secondaryLabel": "Flow3 online test — €0 today",
-      "secondarySub": "Free pre-check → €19 Flow3 clinic exam (instead of €69)."
+      "secondarySub": "Free pre-check → €19 Flow3 clinic exam (instead of €69).",
+      "secondaryHref": "https://kiirtest.ksa.ee/en.html?source=blog"
     }
   },
   "audit": {
