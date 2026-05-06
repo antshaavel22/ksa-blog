@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const CTA: Record<string, { label: string; href: string }> = {
   et: { label: "Broneeri", href: "https://ksa.ee/broneeri?source=blog" },
@@ -8,16 +9,6 @@ const CTA: Record<string, { label: string; href: string }> = {
 
 const BLOG_LABEL: Record<string, string> = { et: "Blogi", en: "Blog", ru: "Блог" };
 const BACK_LABEL: Record<string, string> = { et: "ksa.ee", en: "ksa.ee", ru: "ksa.ee" };
-
-function KsaMark({ size = 28, color = "#5A8518" }: { size?: number; color?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <circle cx="20" cy="20" r="17" stroke={color} strokeWidth="2.2" />
-      <circle cx="20" cy="20" r="6.5" fill={color} />
-      <circle cx="23" cy="17" r="2" fill="#fff" />
-    </svg>
-  );
-}
 
 export default function BlogNav({ lang = "et" }: { lang?: string }) {
   const cta = CTA[lang] ?? CTA.et;
@@ -51,16 +42,25 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
             {back}
           </Link>
 
-          <Link href={homeHref} className="flex items-center gap-2.5" style={{ color: "#5A8518" }}>
-            <KsaMark size={28} />
-            <span style={{ fontWeight: 600, fontSize: 19, letterSpacing: "-0.02em" }}>ksa</span>
+          <Link
+            href={homeHref}
+            className="flex items-center gap-3"
+            aria-label="KSA Silmakeskus blogi"
+          >
+            <Image
+              src="/ksa-logo.svg"
+              alt="KSA Silmakeskus"
+              width={64}
+              height={50}
+              priority
+              style={{ height: 44, width: "auto" }}
+            />
             <span
               style={{
                 fontWeight: 400,
                 fontSize: 14,
                 color: "var(--ink-40)",
-                marginLeft: 4,
-                paddingLeft: 10,
+                paddingLeft: 12,
                 borderLeft: "1px solid var(--ink-10)",
               }}
             >
