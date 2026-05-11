@@ -2,9 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 
 const CTA: Record<string, { label: string; href: string }> = {
-  et: { label: "Broneeri", href: "https://ksa.ee/broneeri?source=blog" },
-  en: { label: "Book",     href: "https://ksa.ee/en.html" },
-  ru: { label: "Записаться", href: "https://ksa.ee/ru.html" },
+  et: { label: "Broneeri", href: "https://my.ksa.ee/et?source=blog" },
+  en: { label: "Book",     href: "https://my.ksa.ee/en?source=blog" },
+  ru: { label: "Записаться", href: "https://my.ksa.ee/ru?source=blog" },
 };
 
 const BLOG_LABEL: Record<string, string> = { et: "Blogi", en: "Blog", ru: "Блог" };

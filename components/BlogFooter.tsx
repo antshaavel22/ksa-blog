@@ -39,21 +39,21 @@ const CAT_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
 const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
   et: [
     { label: "Flow3", href: "https://ksa.ee/flow3" },
-    { label: "Uuringud", href: "https://ksa.ee/uuringud" },
-    { label: "Hinnakiri", href: "https://ksa.ee/hinnakiri" },
-    { label: "Broneeri", href: "https://ksa.ee/broneeri" },
+    { label: "Uuringud", href: "https://ksa.ee/hinnakiri/" },
+    { label: "Hinnakiri", href: "https://ksa.ee/hinnakiri/" },
+    { label: "Broneeri", href: "https://my.ksa.ee/et" },
   ],
   ru: [
     { label: "Flow3", href: "https://ksa.ee/ru.html" },
     { label: "Услуги", href: "https://ksa.ee/ru.html" },
     { label: "Цены", href: "https://ksa.ee/ru.html" },
-    { label: "Записаться", href: "https://ksa.ee/ru.html" },
+    { label: "Записаться", href: "https://my.ksa.ee/ru" },
   ],
   en: [
     { label: "Flow3", href: "https://ksa.ee/en.html" },
     { label: "Services", href: "https://ksa.ee/en.html" },
     { label: "Pricing", href: "https://ksa.ee/en.html" },
-    { label: "Book", href: "https://ksa.ee/en.html" },
+    { label: "Book", href: "https://my.ksa.ee/en" },
   ],
 };
 
@@ -61,17 +61,17 @@ const LEGAL: Record<Lang, Array<{ label: string; href: string }>> = {
   et: [
     { label: "Privaatsus", href: "https://ksa.ee/privaatsuspoliitika" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
-    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
+    { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],
   ru: [
     { label: "Конфиденциальность", href: "https://ksa.ee/ru.html" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
-    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
+    { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],
   en: [
     { label: "Privacy", href: "https://ksa.ee/en.html" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
-    { label: "Instagram", href: "https://www.instagram.com/ksa_silmakeskus" },
+    { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],
 };
 
