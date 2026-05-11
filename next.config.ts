@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Language path → query param (blog uses ?keel=xx, not /xx routes).
+      // Fixes 404 on /ru, /en, /et that Googlebot + paid ads were hitting.
+      { source: "/ru", destination: "/?keel=ru", permanent: true },
+      { source: "/ru/", destination: "/?keel=ru", permanent: true },
+      { source: "/en", destination: "/?keel=en", permanent: true },
+      { source: "/en/", destination: "/?keel=en", permanent: true },
+      { source: "/et", destination: "/", permanent: true },
+      { source: "/et/", destination: "/", permanent: true },
       {
         source: "/flow3-laserkorrektsiooni-lahendus-frustreeritud-prillikandjaile",
         destination: "/miks-59-protsenti-prillikandjaid-on-frustreeritud-2",
