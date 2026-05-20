@@ -59,17 +59,17 @@ const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
 
 const LEGAL: Record<Lang, Array<{ label: string; href: string }>> = {
   et: [
-    { label: "Privaatsus", href: "https://ksa.ee/privaatsuspoliitika" },
+    { label: "Privaatsus", href: "https://ksa.ee/andmekaitsetingimused/" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
     { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],
   ru: [
-    { label: "Конфиденциальность", href: "https://ksa.ee/ru.html" },
+    { label: "Конфиденциальность", href: "https://ksa.ee/ru/zashita-dannyh/" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
     { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],
   en: [
-    { label: "Privacy", href: "https://ksa.ee/en.html" },
+    { label: "Privacy", href: "https://ksa.ee/en/ksa-privacy-policy/" },
     { label: "Facebook", href: "https://www.facebook.com/ksasilmakeskus/" },
     { label: "Instagram", href: "https://www.instagram.com/ksasilmakeskus" },
   ],

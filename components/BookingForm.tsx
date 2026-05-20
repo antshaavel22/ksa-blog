@@ -184,8 +184,8 @@ export default function BookingForm({ funnel }: BookingFormProps) {
         <input type="checkbox" name="consent" required style={{ marginTop: 3 }} />
         <span>
           Olen nõus, et KSA Silmakeskus võtab minuga ühendust broneerimisaja kokkuleppimiseks ning töötleb minu andmeid vastavalt{" "}
-          <a href="https://ksa.ee/privaatsuspoliitika/" target="_blank" rel="noreferrer" style={{ color: "#5a6b6c", textDecoration: "underline" }}>
-            privaatsuspoliitikale
+          <a href="https://ksa.ee/andmekaitsetingimused/" target="_blank" rel="noreferrer" style={{ color: "#5a6b6c", textDecoration: "underline" }}>
+            andmekaitsetingimustele
           </a>.
         </span>
       </label>
