@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 
+// NOTE: my.ksa.ee/{et,en,ru} return 404 — Mai's booking system only has the
+// root path live for now. Pointing all languages to root until per-lang routes
+// are added; ?lang= param is passed as a hint for the booking app.
 const CTA: Record<string, { label: string; href: string }> = {
-  et: { label: "Broneeri", href: "https://my.ksa.ee/et?source=blog" },
-  en: { label: "Book",     href: "https://my.ksa.ee/en?source=blog" },
-  ru: { label: "Записаться", href: "https://my.ksa.ee/ru?source=blog" },
+  et: { label: "Broneeri", href: "https://my.ksa.ee/?source=blog&lang=et" },
+  en: { label: "Book",     href: "https://my.ksa.ee/?source=blog&lang=en" },
+  ru: { label: "Записаться", href: "https://my.ksa.ee/?source=blog&lang=ru" },
 };
 
 const BLOG_LABEL: Record<string, string> = { et: "Blogi", en: "Blog", ru: "Блог" };

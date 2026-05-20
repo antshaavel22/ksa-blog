@@ -41,19 +41,19 @@ const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
     { label: "Flow3", href: "https://ksa.ee/flow3" },
     { label: "Uuringud", href: "https://ksa.ee/hinnakiri/" },
     { label: "Hinnakiri", href: "https://ksa.ee/hinnakiri/" },
-    { label: "Broneeri", href: "https://my.ksa.ee/et" },
+    { label: "Broneeri", href: "https://my.ksa.ee/?source=blog&lang=et" },
   ],
   ru: [
     { label: "Flow3", href: "https://ksa.ee/ru.html" },
     { label: "Услуги", href: "https://ksa.ee/ru.html" },
     { label: "Цены", href: "https://ksa.ee/ru.html" },
-    { label: "Записаться", href: "https://my.ksa.ee/ru" },
+    { label: "Записаться", href: "https://my.ksa.ee/?source=blog&lang=ru" },
   ],
   en: [
     { label: "Flow3", href: "https://ksa.ee/en.html" },
     { label: "Services", href: "https://ksa.ee/en.html" },
     { label: "Pricing", href: "https://ksa.ee/en.html" },
-    { label: "Book", href: "https://my.ksa.ee/en" },
+    { label: "Book", href: "https://my.ksa.ee/?source=blog&lang=en" },
   ],
 };
 
