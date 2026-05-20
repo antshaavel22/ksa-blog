@@ -33,13 +33,49 @@ export default function BookingForm({ funnel }: BookingFormProps) {
     };
 
     try {
-      const res = await fetch("/api/booking/submit", {
+      // 1. Email via Web3Forms (browser-side; their free plan blocks server calls)
+      const web3Key = process.env.NEXT_PUBLIC_WEB3FORMS_KEY ?? "";
+      const emailBody = [
+        `Uuring: ${funnel.service}`,
+        `Hind: ${funnel.priceLabel}${funnel.priceStrike ? ` (tavahind ${funnel.priceStrike})` : ""}`,
+        `Sooduskood: ${funnel.promoCode}`,
+        "",
+        `Nimi: ${payload.name}`,
+        `Telefon: ${payload.phone}`,
+        `Email: ${payload.email}`,
+        `Kliinik: ${payload.clinic}`,
+        payload.preferredTime ? `Eelistatud aeg: ${payload.preferredTime}` : null,
+        payload.message ? `Märkused: ${payload.message}` : null,
+        "",
+        `Allikas: ${payload.source}`,
+        `Aeg: ${new Date().toLocaleString("et-EE")}`,
+      ].filter(Boolean).join("\n");
+
+      const emailRes = web3Key
+        ? await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              access_key: web3Key,
+              subject: `Broneerimissoov · ${funnel.service} · ${payload.name}`,
+              email: "registreerumised@ksa.ee",
+              from_name: "KSA blogi broneerimisvorm",
+              message: emailBody,
+            }),
+          })
+        : null;
+      const emailOk = !!emailRes && emailRes.ok;
+
+      // 2. Slack via our API route (server-side, env-protected webhook URL)
+      const slackRes = await fetch("/api/booking/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-      if (res.ok && data.ok) {
+      const data = (await slackRes.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+
+      // Success if either delivery worked — we don't want a Slack failure to lose a lead.
+      if (emailOk || (slackRes.ok && data.ok)) {
         setStatus("success");
         // GTM/GA4 conversion event
         if (typeof window !== "undefined") {

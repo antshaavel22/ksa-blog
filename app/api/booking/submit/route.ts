@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BOOKING_FUNNELS, BOOKING_RECIPIENT, type BookingFunnel } from "@/lib/booking-funnels";
+import { BOOKING_FUNNELS, type BookingFunnel } from "@/lib/booking-funnels";
 
-// Receives booking-form submission from /broneeri/[funnel].
-// Sends:
-//   1. Email to registreerumised@ksa.ee  (via Web3Forms, same key used by /admin)
-//   2. Slack message to #kiirtesti-täitmised  (via incoming webhook in env)
-// Returns ok: true once BOTH have been attempted. We don't fail the user if
-// Slack is misconfigured — email is the source of truth.
+// Receives booking-form submission from /broneeri/[funnel] and posts a
+// notification to #kiirtesti-täitmised via Slack incoming webhook.
+//
+// Email delivery is handled CLIENT-SIDE (browser → Web3Forms) because the free
+// Web3Forms plan blocks server-side requests. That split is fine: the email is
+// the source of truth (lands in registreerumised@ksa.ee inbox); Slack is just
+// the instant-notification surface for the team.
 
-const WEB3FORMS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY ?? process.env.WEB3FORMS_KEY ?? "";
 const SLACK_WEBHOOK_URL = process.env.SLACK_BOOKING_WEBHOOK_URL ?? "";
 
 interface SubmitPayload {
@@ -27,31 +27,12 @@ interface SubmitPayload {
 
 function sanitize(s: unknown, max = 500): string {
   if (typeof s !== "string") return "";
+  // Strip ASCII control chars (keeps printable + UTF-8 incl. Estonian/Russian)
   return s.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, max);
 }
 
 function isEmail(s: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-}
-
-async function sendEmail(subject: string, body: string): Promise<boolean> {
-  if (!WEB3FORMS_KEY) return false;
-  try {
-    const res = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: WEB3FORMS_KEY,
-        subject,
-        message: body,
-        email: BOOKING_RECIPIENT,
-        from_name: "KSA blogi broneerimisvorm",
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
 }
 
 async function sendSlack(text: string, blocks: object[]): Promise<boolean> {
@@ -101,7 +82,10 @@ export async function POST(req: NextRequest) {
     );
   }
   if (!isEmail(email)) {
-    return NextResponse.json({ ok: false, error: "Email ei ole õigesti vormistatud." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Email ei ole õigesti vormistatud." },
+      { status: 400 },
+    );
   }
   if (!raw.consent) {
     return NextResponse.json(
@@ -109,25 +93,6 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-
-  const subject = `Broneerimissoov · ${funnel.service} · ${name}`;
-  const lines = [
-    `Uuring: ${funnel.service}`,
-    `Hind: ${funnel.priceLabel}${funnel.priceStrike ? ` (tavahind ${funnel.priceStrike})` : ""}`,
-    `Sooduskood: ${funnel.promoCode}`,
-    "",
-    `Nimi: ${name}`,
-    `Telefon: ${phone}`,
-    `Email: ${email}`,
-    `Kliinik: ${clinic}`,
-    preferredTime ? `Eelistatud aeg: ${preferredTime}` : null,
-    message ? `Märkused: ${message}` : null,
-    "",
-    `Allikas: ${source}`,
-    `Aeg: ${new Date().toISOString()}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
 
   const slackText = `Uus broneerimissoov: ${funnel.service} — ${name}`;
   const slackBlocks = [
@@ -162,23 +127,18 @@ export async function POST(req: NextRequest) {
     {
       type: "context",
       elements: [
-        { type: "mrkdwn", text: `Allikas: ${source} · ${new Date().toLocaleString("et-EE")}` },
+        {
+          type: "mrkdwn",
+          text: `Allikas: ${source} · ${new Date().toLocaleString("et-EE")}`,
+        },
       ],
     },
   ];
 
-  const [emailOk, slackOk] = await Promise.all([
-    sendEmail(subject, lines),
-    sendSlack(slackText, slackBlocks),
-  ]);
+  const slackOk = await sendSlack(slackText, slackBlocks);
 
-  // Email must succeed — it's the source of truth.
-  if (!emailOk) {
-    return NextResponse.json(
-      { ok: false, error: "Vabandust, tekkis tehniline tõrge. Palun proovi uuesti või helista 661 6868." },
-      { status: 502 },
-    );
-  }
-
+  // Slack failure shouldn't block the user — email is the source of truth and
+  // is sent client-side independently. Return ok:true either way; surface the
+  // slack status to the client for logging.
   return NextResponse.json({ ok: true, slack: slackOk });
 }
