@@ -44,15 +44,15 @@ const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
     { label: "Broneeri", href: "https://my.ksa.ee/?source=blog&lang=et" },
   ],
   ru: [
-    { label: "Flow3", href: "https://ksa.ee/ru.html" },
-    { label: "Услуги", href: "https://ksa.ee/ru.html" },
-    { label: "Цены", href: "https://ksa.ee/ru.html" },
+    { label: "Flow3", href: "https://ksa.ee/ru/" },
+    { label: "Услуги", href: "https://ksa.ee/ru/" },
+    { label: "Цены", href: "https://ksa.ee/ru/" },
     { label: "Записаться", href: "https://my.ksa.ee/?source=blog&lang=ru" },
   ],
   en: [
-    { label: "Flow3", href: "https://ksa.ee/en.html" },
-    { label: "Services", href: "https://ksa.ee/en.html" },
-    { label: "Pricing", href: "https://ksa.ee/en.html" },
+    { label: "Flow3", href: "https://ksa.ee/en/" },
+    { label: "Services", href: "https://ksa.ee/en/" },
+    { label: "Pricing", href: "https://ksa.ee/en/" },
     { label: "Book", href: "https://my.ksa.ee/?source=blog&lang=en" },
   ],
 };
