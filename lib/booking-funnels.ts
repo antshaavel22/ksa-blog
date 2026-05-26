@@ -54,7 +54,7 @@ export const BOOKING_FUNNELS: Record<BookingFunnel, BookingFunnelConfig> = {
     eyebrow: "LASTE SILMAUURING",
     headline: "Broneeri laste silmauuring",
     sub: "Põhjalik laste silmauuring alates 3. eluaastast. Sisaldab kooli vormi täitmist, online-kokkuvõtet ja silmaarsti soovitusi.",
-    priceLabel: "69 €",
+    priceLabel: "79 €",
     durationLabel: "30 min",
     promoCode: "BLOGKIDS",
     promoCodeLabel: "Sooduskood BLOGKIDS",
