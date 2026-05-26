@@ -1,19 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 
-// Booking CTA — booking.ksa.ee is Mai's new CRM (live since 2026-05-05).
-// ?lang= is consumed by the booking app to set UI language; ?source= for attribution.
-const CTA: Record<string, { label: string; href: string }> = {
-  et: { label: "Broneeri", href: "https://booking.ksa.ee/?source=blog&lang=et" },
-  en: { label: "Book",     href: "https://booking.ksa.ee/?source=blog&lang=en" },
-  ru: { label: "Записаться", href: "https://booking.ksa.ee/?source=blog&lang=ru" },
-};
+// Sticky-Nav Broneeri CTA removed 2026-05-26 — blog already has 4 other CTA
+// surfaces (SmartCTA at article end, ContextualInlineCTA in-body, footer
+// Broneeri, RelatedPathLinks). A 5th sticky CTA up top made the blog feel
+// pushy and undercut the editorial trust voice (rule #9 in CLAUDE.md).
+// To re-add later, restore the CTA Record + the rendered <Link> in the JSX
+// below and point href at booking.ksa.ee.
 
 const BLOG_LABEL: Record<string, string> = { et: "Blogi", en: "Blog", ru: "Блог" };
 const BACK_LABEL: Record<string, string> = { et: "ksa.ee", en: "ksa.ee", ru: "ksa.ee" };
 
 export default function BlogNav({ lang = "et" }: { lang?: string }) {
-  const cta = CTA[lang] ?? CTA.et;
   const blogLabel = BLOG_LABEL[lang] ?? BLOG_LABEL.et;
   const back = BACK_LABEL[lang] ?? BACK_LABEL.et;
   const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
@@ -81,26 +79,6 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
-            </svg>
-          </Link>
-
-          <Link
-            href={cta.href}
-            className="inline-flex items-center gap-2 transition-colors"
-            style={{
-              background: "var(--lime)",
-              color: "#fff",
-              padding: "10px 20px",
-              borderRadius: 999,
-              fontSize: 14,
-              fontWeight: 500,
-              letterSpacing: "-0.005em",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {cta.label}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M5 12h14M13 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
