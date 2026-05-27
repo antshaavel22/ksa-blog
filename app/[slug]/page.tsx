@@ -3,7 +3,6 @@ import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTAEditorial from "@/components/SmartCTAEditorial";
-import ContextualInlineCTA from "@/components/ContextualInlineCTA";
 import RelatedPathLinks from "@/components/RelatedPathLinks";
 import BlogAnalytics from "@/components/BlogAnalytics";
 import RelatedPosts from "@/components/RelatedPosts";
@@ -416,13 +415,16 @@ export default async function PostPage({ params }: PageProps) {
         {/* ── Body ── */}
         <article className="prose-v2" style={{ padding: "40px 0 72px" }}>
           <div className="mx-auto" style={{ maxWidth: 720, padding: "0 24px" }}>
+            {/* Inline ContextualInlineCTA removed 2026-05-28 — Ants flagged
+                the mid-article green-pill block as pushy. New editorial
+                SmartCTAEditorial appears once at the end of the article,
+                between body and author card. */}
             {contentSplit ? (
               <>
                 <MDXRemote
                   source={contentSplit.intro}
                   components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
                 />
-                <ContextualInlineCTA funnel={resolvedFunnel} slug={slug} lang={lang} />
                 <MDXRemote
                   source={contentSplit.rest}
                   components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
@@ -469,6 +471,14 @@ export default async function PostPage({ params }: PageProps) {
             </div>
           </div>
         </article>
+
+        {/* ── Smart CTA editorial (Ants 2026-05-28: pull-marketing pattern,
+            matches silmatervis.ksa.ee/refraktiivkirurgia-juhend). Renders
+            BETWEEN article body and author card — high attention right
+            after the reader finishes the piece, before related-links and
+            author-bio trail off. Two paths: direct booking to
+            booking.ksa.ee with promokood OR callback form → KAISA. ── */}
+        <SmartCTAEditorial funnel={resolvedFunnel} slug={slug} lang={lang} />
 
         {/* ── Author card ── */}
         {authorProfile && authorBio && (
@@ -571,11 +581,6 @@ export default async function PostPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* ── Smart CTA editorial (Ants 2026-05-28: pull-marketing pattern,
-            matches silmatervis.ksa.ee/refraktiivkirurgia-juhend; replaces
-            the old green-pill SmartCTA). Two paths: direct booking to
-            booking.ksa.ee with promokood OR callback form → KAISA. ── */}
-        <SmartCTAEditorial funnel={resolvedFunnel} slug={slug} lang={lang} />
         <BlogAnalytics
           slug={slug}
           funnel={resolvedFunnel}
