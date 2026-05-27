@@ -1,0 +1,228 @@
+SMARTCTA EDITORIAL — TEXT REVIEW (ET, RU, EN)
+==============================================
+
+ET: SIGNED OFF by Ants 2026-05-28. Locked into code.
+RU: Sent to Jana for translation review (this doc).
+EN: Drafted by Claude — to be reviewed later if needed.
+
+Strategic frame (Ants 2026-05-28):
+  "We end push marketing now and enter a new era of content-pull
+  marketing. Higher standard. The belief is this pulls clients to
+  KSA's services — not pushes them."
+
+Visual pattern: 2px black top border → tiny eyebrow → big Fraunces
+serif headline → calm body paragraph → text-only "Broneeri X →"
+button (Path 1: direct booking) → small "Mul on veel küsimusi…" link
+that expands to Eesnimi + Telefon callback form (Path 2: KAISA AI
+callback, 24/7 once live ~2 weeks from now).
+
+Live preview: http://localhost:3002/admin/cta-editorial-preview?lang=et
+
+Prices + promo codes LOCKED from cta-config.json:
+  flow3:   BLOG39   → €39 (regular €69)
+  audit:   BLOG139  → €139 (regular €149)
+  kids:    BLOGKIDS → €69
+  dryeye:  BLOGDRY  → €89
+  general: (free, no code)
+
+
+══════════════════════════════════════════════════════════════════
+                          [== ET — LOCKED ==]
+══════════════════════════════════════════════════════════════════
+
+# 1. FLOW3
+Eyebrow:         FLOW3 · VABANE PRILLIDEST
+Headline:        Tahad teada, kas Flow3 sinu silmadele sobib?
+Body:            Flow3 uuring kliinikus — 39 € (tavahind 69 €) kuni
+                 31. mai 2026. 60 minutit, Tallinn või Tartu.
+Path 1 button:   Broneeri Flow3 uuring · 39 € sooduskoodiga
+Path 2 prompt:   Mul on veel küsimusi ja soovin, et helistate tagasi →
+Callback help:   Jäta nimi + telefon
+Callback button: Helistage mulle tagasi
+Reassurance:     Sinu andmeid ei jaga me kunagi kolmandate osapooltega.
+
+# 2. AUDIT
+Eyebrow:         NÄGEMISE AUDIT · PÕHJALIK SILMAUURING
+Headline:        Saa täielik ülevaade oma silmade tervisest.
+Body:            Audit silmauuring — 139 € sooduskoodiga (tavahind
+                 149 €). 60-minutiline uuring mõõdab üle 50
+                 parameetri + kirjalik raport. Tallinn või Tartu.
+Path 1 button:   Broneeri Audit · 139 € sooduskoodiga
+Path 2 prompt:   Mul on veel küsimusi ja soovin, et helistate tagasi →
+Callback help:   Jäta nimi + telefon
+Callback button: Helistage mulle tagasi
+Reassurance:     Sinu andmeid ei jaga me kunagi kolmandate osapooltega.
+
+# 3. KIDS
+Eyebrow:         LASTE SILMAUURING
+Headline:        Kontrolli lapse silmanägemine enne kooliminekut.
+Body:            Laste silmauuring 4–17a — 69 € sooduskoodiga.
+                 Sisaldab online kokkuvõtet ja arsti soovitusi.
+Path 1 button:   Broneeri lapse uuring sooduskoodiga
+Path 2 prompt:   Mul on veel küsimusi ja soovin, et helistate tagasi →
+Callback help:   Jäta nimi + telefon
+Callback button: Helistage mulle tagasi
+Reassurance:     Sinu andmeid ei jaga me kunagi kolmandate osapooltega.
+
+# 4. DRYEYE
+Eyebrow:         KUIVASILMA KONSULTATSIOON + TERAAPIA
+Headline:        Põhjalik diagnoos ja efektiivne Rexon Eye teraapia.
+Body:            Kuiva silma teraapia — 89 € sooduskoodiga (tavahind
+                 150 €). Esimene konsultatsioon sisaldab tasuta
+                 Rexon Eye -raviseanssi.
+Path 1 button:   Broneeri kuiva silma teraapia sooduskoodiga
+Path 2 prompt:   Mul on veel küsimusi ja soovin, et helistate tagasi →
+Callback help:   Jäta nimi + telefon
+Callback button: Helistage mulle tagasi
+Reassurance:     Sinu andmeid ei jaga me kunagi kolmandate osapooltega.
+
+# 5. GENERAL
+Eyebrow:         TEE KIIRTEST
+Headline:        Vaata, mida sinu silmad sulle räägivad.
+Body:            KSA kiirtest — 3 minutiga online. Tulemus näitab,
+                 kas oleks aeg silmaarstile minna.
+Path 1 button:   Online Flow3 kiirtest · 0 €
+Path 2 prompt:   Mul on veel küsimusi ja soovin, et helistate tagasi →
+Callback help:   Jäta nimi + telefon
+Callback button: Helistage mulle tagasi
+Reassurance:     Test on tasuta. Sinu andmeid ei jaga me kolmandate
+                 osapooltega.
+
+# Shared
+Name field:      Eesnimi  /  Sinu eesnimi
+Phone field:     Telefon  /  +372 …
+Success:         ✓ Aitäh! Helistame Teile esimesel võimalusel tagasi.
+
+
+══════════════════════════════════════════════════════════════════
+            [== RU — FOR JANA TRANSLATION REVIEW ==]
+══════════════════════════════════════════════════════════════════
+
+# 1. FLOW3
+Eyebrow:         FLOW3 · СВОБОДА ОТ ОЧКОВ
+Headline:        Хотите узнать, подходит ли Flow3 вашим глазам?
+Body:            Обследование Flow3 в клинике — 39 € (вместо 69 €)
+                 до 31 мая 2026. 60 минут, Таллинн или Тарту.
+Path 1 button:   Записаться на Flow3 · промокод 39 €
+Path 2 prompt:   У меня ещё есть вопросы — перезвоните мне →
+Callback help:   Оставьте имя и телефон
+Callback button: Перезвоните мне
+Reassurance:     Мы не передаём ваши данные третьим лицам.
+
+# 2. AUDIT
+Eyebrow:         АУДИТ ЗРЕНИЯ · ПОЛНОЕ ОБСЛЕДОВАНИЕ
+Headline:        Получите полный обзор здоровья ваших глаз.
+Body:            Аудит зрения — 139 € по промокоду (вместо 149 €).
+                 60-минутное обследование с измерением 50+ параметров
+                 + письменный отчёт. Таллинн или Тарту.
+Path 1 button:   Записаться на Аудит · 139 €
+Path 2 prompt:   У меня ещё есть вопросы — перезвоните мне →
+Callback help:   Оставьте имя и телефон
+Callback button: Перезвоните мне
+Reassurance:     Мы не передаём ваши данные третьим лицам.
+
+# 3. KIDS
+Eyebrow:         ОСМОТР ЗРЕНИЯ У ДЕТЕЙ
+Headline:        Проверьте зрение ребёнка перед школой.
+Body:            Детский осмотр 4–17 лет — 69 € по промокоду.
+                 Включает онлайн-заключение и рекомендации врача.
+Path 1 button:   Записать ребёнка по промокоду
+Path 2 prompt:   У меня ещё есть вопросы — перезвоните мне →
+Callback help:   Оставьте имя и телефон
+Callback button: Перезвоните мне
+Reassurance:     Мы не передаём ваши данные третьим лицам.
+
+# 4. DRYEYE
+Eyebrow:         КОНСУЛЬТАЦИЯ ПО СУХОМУ ГЛАЗУ + ТЕРАПИЯ
+Headline:        Тщательная диагностика и эффективная терапия Rexon Eye.
+Body:            Терапия сухого глаза — 89 € по промокоду (вместо
+                 150 €). Первая консультация включает бесплатный
+                 сеанс Rexon Eye.
+Path 1 button:   Записаться на терапию по промокоду
+Path 2 prompt:   У меня ещё есть вопросы — перезвоните мне →
+Callback help:   Оставьте имя и телефон
+Callback button: Перезвоните мне
+Reassurance:     Мы не передаём ваши данные третьим лицам.
+
+# 5. GENERAL
+Eyebrow:         БЫСТРЫЙ ТЕСТ
+Headline:        Узнайте, что говорят вам ваши глаза.
+Body:            Быстрый тест KSA — 3 минуты онлайн. Результат
+                 покажет, не пора ли посетить офтальмолога.
+Path 1 button:   Онлайн быстрый тест Flow3 · 0 €
+Path 2 prompt:   У меня ещё есть вопросы — перезвоните мне →
+Callback help:   Оставьте имя и телефон
+Callback button: Перезвоните мне
+Reassurance:     Тест бесплатный. Мы не передаём ваши данные
+                 третьим лицам.
+
+# Shared (RU)
+Name field:      Имя  /  Ваше имя
+Phone field:     Телефон  /  +372 …
+Success:         ✓ Спасибо! Перезвоним Вам при первой возможности.
+
+
+══════════════════════════════════════════════════════════════════
+                  [== EN — DRAFT, REVIEW LATER ==]
+══════════════════════════════════════════════════════════════════
+
+# 1. FLOW3
+Eyebrow:         FLOW3 · FREEDOM FROM GLASSES
+Headline:        Want to know if Flow3 is right for your eyes?
+Body:            Flow3 exam at the clinic — €39 (regular €69) until
+                 31 May 2026. 60 minutes, Tallinn or Tartu.
+Path 1 button:   Book Flow3 exam · €39 with promo
+Path 2 prompt:   I have more questions — please call me back →
+
+# 2. AUDIT
+Eyebrow:         VISION AUDIT · FULL EYE EXAM
+Headline:        Get a complete overview of your eye health.
+Body:            Audit exam — €139 with promo (regular €149).
+                 60-minute exam measures 50+ parameters + written
+                 report. Tallinn or Tartu.
+Path 1 button:   Book Audit · €139 with promo
+
+# 3. KIDS
+Eyebrow:         CHILD VISION EXAM
+Headline:        Check your child's vision before school.
+Body:            Child exam 4–17 — €69 with promo. Includes online
+                 summary and doctor's recommendations.
+Path 1 button:   Book child exam with promo
+
+# 4. DRYEYE
+Eyebrow:         DRY EYE CONSULTATION + THERAPY
+Headline:        Thorough diagnosis and effective Rexon Eye therapy.
+Body:            Dry eye therapy — €89 with promo (regular €150).
+                 First consultation includes a complimentary Rexon
+                 Eye session.
+Path 1 button:   Book dry-eye therapy with promo
+
+# 5. GENERAL
+Eyebrow:         QUICK TEST
+Headline:        See what your eyes are telling you.
+Body:            KSA Quick Test — 3 minutes online. The result
+                 shows whether it's time to see an eye doctor.
+Path 1 button:   Online Flow3 quick test · €0
+
+(All EN funnels share callback prompt: "I have more questions —
+please call me back →", help: "Leave your name and phone",
+button: "Call me back".)
+
+
+══════════════════════════════════════════════════════════════════
+
+Notes for Jana:
+
+The RU strings above were drafted from Ants's signed-off ET version.
+Please review for:
+- Natural Russian phrasing (not "translated" feel)
+- Tone consistency with KSA's pull-marketing voice (calm, editorial,
+  not pushy)
+- Estonian-specific terms — keep KSA, Flow3, Audit, Rexon Eye, KSA
+  brand names as-is in Latin script
+
+Prices + promo codes (BLOG39, BLOG139, BLOGKIDS, BLOGDRY) are locked
+— please don't edit those.
+
+Send back edits via Slack DM when ready. No deadline pressure —
+sample only, no live deploy until Ants explicitly approves rollout.

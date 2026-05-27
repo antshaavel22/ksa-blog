@@ -2,7 +2,7 @@ import { getAdjacentPosts, getAllPosts, getPostBySlug, getRelatedPosts } from "@
 import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
-import SmartCTA from "@/components/SmartCTA";
+import SmartCTAEditorial from "@/components/SmartCTAEditorial";
 import ContextualInlineCTA from "@/components/ContextualInlineCTA";
 import RelatedPathLinks from "@/components/RelatedPathLinks";
 import BlogAnalytics from "@/components/BlogAnalytics";
@@ -571,8 +571,11 @@ export default async function PostPage({ params }: PageProps) {
           </section>
         )}
 
-        {/* ── Smart CTA (funnel-driven; ET fallback copy until Phase 8 trilingual editor) ── */}
-        <SmartCTA funnel={resolvedFunnel} slug={slug} lang={lang} />
+        {/* ── Smart CTA editorial (Ants 2026-05-28: pull-marketing pattern,
+            matches silmatervis.ksa.ee/refraktiivkirurgia-juhend; replaces
+            the old green-pill SmartCTA). Two paths: direct booking to
+            booking.ksa.ee with promokood OR callback form → KAISA. ── */}
+        <SmartCTAEditorial funnel={resolvedFunnel} slug={slug} lang={lang} />
         <BlogAnalytics
           slug={slug}
           funnel={resolvedFunnel}
