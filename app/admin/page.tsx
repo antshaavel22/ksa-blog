@@ -2414,6 +2414,13 @@ function PublishedTab() {
   const [quickDateValue, setQuickDateValue] = useState("");
   const [quickDateSaving, setQuickDateSaving] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null);
+  // Inline excerpt quick-edit (mirrors quick-date pattern). The posts list API
+  // truncates excerpt to 120 chars, so on edit-open we fetch the full content
+  // and pull the complete excerpt out before showing the textarea.
+  const [quickEditExcerptPath, setQuickEditExcerptPath] = useState<string | null>(null);
+  const [quickExcerptValue, setQuickExcerptValue] = useState("");
+  const [quickExcerptSaving, setQuickExcerptSaving] = useState(false);
+  const [quickExcerptLoading, setQuickExcerptLoading] = useState(false);
 
   async function saveQuickDate(post: DraftMeta, newDate: string) {
     if (!newDate || newDate === post.date) { setQuickEditDatePath(null); return; }
@@ -2434,6 +2441,86 @@ function PublishedTab() {
     } finally {
       setQuickDateSaving(false);
       setQuickEditDatePath(null);
+    }
+  }
+
+  // Open inline excerpt editor: fetch full content, pull the complete excerpt
+  // (list API only carries a 120-char preview), then show the textarea.
+  async function startExcerptEdit(post: DraftMeta) {
+    setQuickEditExcerptPath(post.path);
+    setQuickExcerptValue(post.excerpt ?? "");
+    setQuickExcerptLoading(true);
+    try {
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(post.path)}`);
+      if (!res.ok) throw new Error("Lugemine ebaõnnestus");
+      const { content } = (await res.json()) as { content: string };
+      // Excerpt may be double- OR single-quoted (single is used when the text
+      // contains inner double quotes, e.g. 'sõna "tähendus"'). Match either.
+      const m = content.match(/^excerpt:\s*(["'])([\s\S]*?)\1\s*$/m);
+      if (m) {
+        // Un-escape per the quote style used in the file.
+        const quote = m[1];
+        let val = m[2];
+        if (quote === '"') val = val.replace(/\\"/g, '"');
+        else val = val.replace(/''/g, "'");
+        setQuickExcerptValue(val);
+      }
+    } catch {
+      /* keep the truncated preview as fallback */
+    } finally {
+      setQuickExcerptLoading(false);
+    }
+  }
+
+  // Save inline excerpt edit: read full content, replace the excerpt field,
+  // stage into the batch queue (flushed via "Uuenda kõik live").
+  async function saveQuickExcerpt(post: DraftMeta, newExcerpt: string) {
+    const trimmed = newExcerpt.trim();
+    if (!trimmed || trimmed === (post.excerpt ?? "").trim()) {
+      setQuickEditExcerptPath(null);
+      return;
+    }
+    setQuickExcerptSaving(true);
+    try {
+      const endpoint = `/api/admin/post?path=${encodeURIComponent(post.path)}`;
+      const readRes = await fetch(endpoint);
+      if (!readRes.ok) throw new Error("Lugemine ebaõnnestus");
+      const { content } = (await readRes.json()) as { content: string };
+      // Pick a YAML-safe quote style:
+      //  - no double quotes in text → wrap in "..."
+      //  - has double but no single → wrap in '...'
+      //  - has both → "..." with inner doubles escaped as \"
+      const hasDouble = trimmed.includes('"');
+      const hasSingle = trimmed.includes("'");
+      let yamlValue: string;
+      if (!hasDouble) {
+        yamlValue = `"${trimmed}"`;
+      } else if (!hasSingle) {
+        yamlValue = `'${trimmed}'`;
+      } else {
+        yamlValue = `"${trimmed.replace(/"/g, '\\"')}"`;
+      }
+      let updated: string;
+      // Replace existing excerpt line regardless of its current quote style.
+      const excerptLine = /^excerpt:\s*(["'])[\s\S]*?\1\s*$/m;
+      if (excerptLine.test(content)) {
+        updated = content.replace(excerptLine, `excerpt: ${yamlValue}`);
+      } else if (/^excerpt:.*$/m.test(content)) {
+        // Legacy unquoted scalar
+        updated = content.replace(/^excerpt:.*$/m, `excerpt: ${yamlValue}`);
+      } else {
+        // No excerpt field at all — inject after the title line.
+        updated = content.replace(/^(title:.*)$/m, `$1\nexcerpt: ${yamlValue}`);
+      }
+      enqueue({ path: post.path, content: updated, title: post.title });
+      setPosts((prev) =>
+        prev.map((p) => (p.path === post.path ? { ...p, excerpt: trimmed } : p))
+      );
+    } catch (err) {
+      alert("Väljavõtte muutmine ebaõnnestus: " + (err as Error).message);
+    } finally {
+      setQuickExcerptSaving(false);
+      setQuickEditExcerptPath(null);
     }
   }
 
@@ -2676,12 +2763,43 @@ function PublishedTab() {
                   }}>
                     {post.title || "(pealkiri puudub)"}
                   </p>
-                  <p style={{
-                    margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
-                    display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                  }}>
-                    {excerptOrCat}
-                  </p>
+                  {quickEditExcerptPath === post.path ? (
+                    <div onClick={e => e.stopPropagation()} style={{ marginBottom: 12, flex: 1 }}>
+                      <textarea
+                        value={quickExcerptValue}
+                        autoFocus
+                        disabled={quickExcerptLoading || quickExcerptSaving}
+                        onChange={e => setQuickExcerptValue(e.target.value)}
+                        onBlur={() => saveQuickExcerpt(post, quickExcerptValue)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveQuickExcerpt(post, quickExcerptValue);
+                          if (e.key === "Escape") setQuickEditExcerptPath(null);
+                        }}
+                        rows={4}
+                        style={{
+                          width: "100%", fontSize: 12, lineHeight: 1.5, color: "#1a1a1a",
+                          border: "1.5px solid #87be23", borderRadius: 8, padding: "6px 8px",
+                          outline: "none", resize: "vertical", fontFamily: "inherit",
+                          background: quickExcerptLoading ? "#f6f6f3" : "#fff",
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: "#b0b0aa", marginTop: 3 }}>
+                        {quickExcerptLoading ? "Laen täisteksti…" : quickExcerptSaving ? "Salvestan…" : "⌘/Ctrl+Enter salvestab · Esc tühistab · klõpsa väljast välja = salvesta"}
+                      </div>
+                    </div>
+                  ) : (
+                    <p
+                      title="Klõpsa väljavõtte muutmiseks"
+                      onClick={e => { e.stopPropagation(); startExcerptEdit(post); }}
+                      style={{
+                        margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
+                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                        cursor: "text",
+                      }}
+                    >
+                      {excerptOrCat}
+                    </p>
+                  )}
 
                   {/* Footer */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
