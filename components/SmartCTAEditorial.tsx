@@ -22,9 +22,10 @@
  * Visible at: /admin/cta-editorial-preview?lang=et|ru|en (port 3002)
  */
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { Funnel } from "@/lib/posts";
 import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaLang } from "@/lib/cta-config";
+import { sendEvent } from "@/lib/analytics";
 
 interface EditorialCopy {
   eyebrow: string;
@@ -317,6 +318,48 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
   const [done, setDone] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
 
+  // Analytics: fire cta_view once when the CTA scrolls 50%+ into view.
+  // Matches the old SmartCTA's behaviour so the dashboard time-series stays
+  // comparable across the 2026-05-28 switch.
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (!sectionRef.current || viewed.current) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !viewed.current) {
+            viewed.current = true;
+            sendEvent("cta_view", { slug, funnel, lang }, { variant: "editorial" });
+            io.disconnect();
+          }
+        }
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(sectionRef.current);
+    return () => io.disconnect();
+  }, [slug, funnel, lang]);
+
+  function onPrimaryClick() {
+    sendEvent("cta_click", { slug, funnel, lang }, { target: funnel, path: "primary" });
+    try {
+      const hostname = new URL(
+        primaryUrl,
+        typeof window !== "undefined" ? window.location.href : "https://blog.ksa.ee",
+      ).hostname;
+      const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
+      if (hostname && hostname !== currentHost) {
+        sendEvent("funnel_outbound", { slug, funnel, lang }, { destination: hostname });
+      }
+    } catch {}
+  }
+
+  function onCallbackOpen() {
+    sendEvent("cta_click", { slug, funnel, lang }, { target: "callback", path: "secondary" });
+    setCallbackOpen(true);
+  }
+
   if (!c?.live) return null;
 
   const canSubmit =
@@ -346,11 +389,12 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
     } finally {
       setSubmitting(false);
       setDone(true);
+      sendEvent("funnel_outbound", { slug, funnel, lang }, { destination: "callback_submitted" });
     }
   }
 
   return (
-    <section id="smart-cta-editorial" className="px-6 pb-16 md:pb-20 mt-16">
+    <section ref={sectionRef} id="smart-cta-editorial" className="px-6 pb-16 md:pb-20 mt-16">
       <div className="max-w-[560px] mx-auto">
         <div className="border-t-2 border-[#1a1a1a] pt-10">
           <p className="text-[10.5px] uppercase tracking-[0.25em] text-[#6f7f80] mb-3 font-semibold">
@@ -373,6 +417,7 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
               href={primaryUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={onPrimaryClick}
               className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] font-semibold text-[#1a1a1a] border-b border-[#1a1a1a] pb-1 hover:opacity-60 transition"
             >
               {copy.primaryButtonLabel} →
@@ -384,7 +429,7 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
           {!callbackOpen && !done && (
             <button
               type="button"
-              onClick={() => setCallbackOpen(true)}
+              onClick={onCallbackOpen}
               className="text-[13.5px] text-[#4a5a5b] underline underline-offset-4 hover:text-[#1a1a1a] transition"
             >
               {copy.callbackPromptLabel} →
