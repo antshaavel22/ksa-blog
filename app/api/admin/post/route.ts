@@ -1,6 +1,11 @@
 /**
  * /api/admin/post — Read and update published posts in content/posts/
- * READ: always filesystem (files bundled with deployment)
+ * READ: GitHub-first in production (source of truth), filesystem fallback.
+ *       The bundled filesystem is frozen at deploy time, so an editor served
+ *       from an older deploy would otherwise read STALE content — and any
+ *       subsequent save/batch-edit built on that read silently reverts newer
+ *       commits (the Märt Tammearu excerpt-revert bug, 2026-06-XX). Editing
+ *       reads must always reflect latest committed state, so GitHub wins.
  * WRITE: GitHub API in production (Vercel fs is read-only)
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -89,13 +94,15 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid path" }, { status: 400 });
   try {
     if (process.env.NODE_ENV === "production") {
-      // Try filesystem first (fast, always works for files in the deployment bundle).
-      // Fall back to GitHub API for files created after the last deploy (e.g. newly published posts).
+      // GitHub-first: the editor must always load the LATEST committed content,
+      // never the deploy-time bundle (which can be many commits stale). This
+      // prevents stale-base saves from clobbering newer edits. Filesystem is
+      // only a fallback for when the GitHub API is unreachable/rate-limited.
       try {
-        const content = await readPost(filePath);
+        const content = await readPostProd(filePath);
         return NextResponse.json({ content });
       } catch {
-        const content = await readPostProd(filePath);
+        const content = await readPost(filePath);
         return NextResponse.json({ content });
       }
     } else {
