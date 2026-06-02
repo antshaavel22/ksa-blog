@@ -2181,21 +2181,33 @@ function PostPreview({
           dangerouslySetInnerHTML={{ __html: htmlBody }}
         />
 
-        {/* CTA preview */}
-        <div style={{
-          marginTop: 40, padding: "24px 28px", background: "#f8fdf0",
-          border: "1.5px solid #c5e58a", borderRadius: 20,
-          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap",
-        }}>
-          <div>
-            <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 15 }}>Kas sinu nägemine vajab kontrolli?</p>
-            <p style={{ margin: 0, fontSize: 13, color: "#5a6b6c", fontWeight: 300 }}>Tee tasuta kiirtest — 2 minutit.</p>
-          </div>
-          <span style={{
-            padding: "12px 24px", borderRadius: 99, background: "#87be23",
-            color: "white", fontSize: 14, fontWeight: 700,
-          }}>Tee kiirtest →</span>
-        </div>
+        {/* CTA preview — language-aware so previewing an EN/RU post never
+            shows an Estonian CTA. Mirrors the live SmartCTAEditorial "general"
+            funnel copy per language. */}
+        {(() => {
+          const ctaCopy: Record<string, { title: string; sub: string; button: string }> = {
+            et: { title: "Kas sinu nägemine vajab kontrolli?", sub: "Tee tasuta kiirtest — 2 minutit.", button: "Tee kiirtest →" },
+            ru: { title: "Нужно ли проверить ваше зрение?", sub: "Пройдите бесплатный тест — 2 минуты.", button: "Пройти тест →" },
+            en: { title: "Does your vision need a check?", sub: "Take the free quick test — 2 minutes.", button: "Take the test →" },
+          };
+          const cta = ctaCopy[lang] ?? ctaCopy.et;
+          return (
+            <div style={{
+              marginTop: 40, padding: "24px 28px", background: "#f8fdf0",
+              border: "1.5px solid #c5e58a", borderRadius: 20,
+              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap",
+            }}>
+              <div>
+                <p style={{ margin: "0 0 4px", fontWeight: 700, fontSize: 15 }}>{cta.title}</p>
+                <p style={{ margin: 0, fontSize: 13, color: "#5a6b6c", fontWeight: 300 }}>{cta.sub}</p>
+              </div>
+              <span style={{
+                padding: "12px 24px", borderRadius: 99, background: "#87be23",
+                color: "white", fontSize: 14, fontWeight: 700,
+              }}>{cta.button}</span>
+            </div>
+          );
+        })()}
       </article>
     </div>
   );
