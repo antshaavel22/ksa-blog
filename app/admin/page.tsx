@@ -2671,6 +2671,52 @@ function PublishedTab() {
                     </p>
                     {isDup && <span style={{ fontSize: 10, background: "#ffc107", color: "#000", borderRadius: 4, padding: "1px 5px", fontWeight: 800, flexShrink: 0 }}>DUPLIKAAT</span>}
                   </div>
+                  {/* Inline excerpt editor — explicit, discoverable. Click the
+                      "✎ Väljavõte" button to edit the excerpt without opening
+                      the full editor. */}
+                  {quickEditExcerptPath === post.path ? (
+                    <div onClick={e => e.stopPropagation()} style={{ marginTop: 4 }}>
+                      <textarea
+                        value={quickExcerptValue}
+                        autoFocus
+                        disabled={quickExcerptLoading || quickExcerptSaving}
+                        onChange={e => setQuickExcerptValue(e.target.value)}
+                        onBlur={() => saveQuickExcerpt(post, quickExcerptValue)}
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) saveQuickExcerpt(post, quickExcerptValue);
+                          if (e.key === "Escape") setQuickEditExcerptPath(null);
+                        }}
+                        rows={3}
+                        style={{
+                          width: "100%", fontSize: 12, lineHeight: 1.5, color: "#1a1a1a",
+                          border: "1.5px solid #87be23", borderRadius: 8, padding: "6px 8px",
+                          outline: "none", resize: "vertical", fontFamily: "inherit",
+                          background: quickExcerptLoading ? "#f6f6f3" : "#fff",
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: "#b0b0aa", marginTop: 3 }}>
+                        {quickExcerptLoading ? "Laen täisteksti…" : quickExcerptSaving ? "Salvestan…" : "⌘/Ctrl+Enter salvestab · Esc tühistab · klõpsa väljast välja = salvesta"}
+                      </div>
+                    </div>
+                  ) : (
+                    <div onClick={e => e.stopPropagation()} style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 1 }}>
+                      <span style={{ fontSize: 12, color: "#9a9a9a", lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                        {post.excerpt || "(väljavõte puudub)"}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => startExcerptEdit(post)}
+                        style={{
+                          flexShrink: 0, fontSize: 11, fontWeight: 600,
+                          color: "#3d6b00", background: "#edf7d6", border: "1px solid #c5e58a",
+                          borderRadius: 20, padding: "3px 10px", cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                        }}
+                      >
+                        ✎ Väljavõte
+                      </button>
+                    </div>
+                  )}
                 </div>
                 {post.category && (
                   <span style={{
@@ -2800,17 +2846,31 @@ function PublishedTab() {
                       </div>
                     </div>
                   ) : (
-                    <p
-                      title="Klõpsa väljavõtte muutmiseks"
-                      onClick={e => { e.stopPropagation(); startExcerptEdit(post); }}
-                      style={{
-                        margin: "0 0 12px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5, flex: 1,
-                        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
-                        cursor: "text",
-                      }}
-                    >
-                      {excerptOrCat}
-                    </p>
+                    <div onClick={e => e.stopPropagation()} style={{ marginBottom: 12, flex: 1 }}>
+                      <p
+                        title="Klõpsa väljavõtte muutmiseks"
+                        onClick={() => startExcerptEdit(post)}
+                        style={{
+                          margin: "0 0 6px", fontSize: 12, color: "#9a9a9a", lineHeight: 1.5,
+                          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden",
+                          cursor: "text",
+                        }}
+                      >
+                        {excerptOrCat || "(väljavõte puudub)"}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => startExcerptEdit(post)}
+                        style={{
+                          fontSize: 11, fontWeight: 600,
+                          color: "#3d6b00", background: "#edf7d6", border: "1px solid #c5e58a",
+                          borderRadius: 20, padding: "3px 10px", cursor: "pointer",
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                        }}
+                      >
+                        ✎ Muuda väljavõtet
+                      </button>
+                    </div>
                   )}
 
                   {/* Footer */}
@@ -3536,8 +3596,36 @@ function HelpTab() {
       <h3 style={s.h3}>Otsing blogis</h3>
       <p style={s.p}>Blogi otsinguikoon (🔍) on igas lehe päises — viib <span style={s.code}>blog.ksa.ee/otsing</span> lehele, kus saab otsida kõigist 930+ artiklist pealkirja, väljavõtte, kategooria ja märksõnade järgi. Keelefilter (ET / RU / EN) on samuti olemas.</p>
 
+      {/* Section 3.6 — Quick excerpt edit */}
+      <h2 style={s.h2}>4. Väljavõtte kiirmuutmine (ei pea avama redaktorit)</h2>
+      <p style={s.p}>
+        Väljavõte (<em>excerpt</em>) on lühike tekst, mis ilmub artikli kaardil blogi avalehel ja otsingus.
+        Seda saab muuta otse <strong>Avaldatud</strong> vahekaardil — ilma tervet artiklit avamata.
+      </p>
+      <table style={s.table}>
+        <tbody>
+          {[
+            ["1", "Ava Avaldatud vahekaart", "Nimekiri või Koduleht vaade"],
+            ["2", "Leia artikkel", "Kasuta otsingut või keelefiltrit"],
+            ["3", "Klõpsa rohelisel nupul ✎ Väljavõte", "Avaneb tekstikast kohe real / kaardil"],
+            ["4", "Muuda teksti", "Kirjuta uus väljavõte"],
+            ["5", "Klõpsa väljast välja VÕI ⌘/Ctrl+Enter", "Salvestab ja läheb kohe live'i"],
+          ].map(([n, action, result]) => (
+            <tr key={n}>
+              <td style={{ ...s.td, width: 28, fontWeight: 800, color: "#87be23" }}>{n}</td>
+              <td style={{ ...s.td, fontWeight: 600 }}>{action}</td>
+              <td style={{ ...s.td, color: "#9a9a9a" }}>{result}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={s.tip}>
+        💡 <strong>Esc</strong> tühistab muudatuse. Salvestamine paneb muudatuse kohe live'i (Vercel ehitab ~2 min).
+        Sama nupp on olemas nii <strong>Nimekiri</strong> kui ka <strong>Koduleht</strong> vaates.
+      </div>
+
       {/* Section 3.5 — Delete */}
-      <h2 style={s.h2}>4. Artikli kustutamine</h2>
+      <h2 style={s.h2}>5. Artikli kustutamine</h2>
       <p style={s.p}>Blogis on kaks seisundit: <strong>mustand</strong> (ei ole avalikus blogis) ja <strong>avaldatud</strong> (nähtav blog.ksa.ee-s). Kustutamise loogika erineb vastavalt.</p>
 
       <h3 style={s.h3}>A) Mustandi kustutamine</h3>
