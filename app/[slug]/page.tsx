@@ -15,6 +15,7 @@ import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
 import { resolveFunnel } from "@/lib/funnel-classifier";
+import { publicAssetUrl, publicBlogUrl } from "@/lib/url";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,13 +43,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogImage = post.featuredImage
     ? post.featuredImage.startsWith("http")
       ? post.featuredImage
-      : `https://blog.ksa.ee${post.featuredImage}`
+      : publicAssetUrl(post.featuredImage)
     : "https://ksa.ee/wp-content/uploads/2024/09/ksa-silmanipid.png";
 
   const title = post.seoTitle ?? post.title;
   const description = post.seoExcerpt ?? post.excerpt;
 
-  const currentUrl = `https://blog.ksa.ee/${slug}`;
+  const currentUrl = publicBlogUrl(slug);
 
   return {
     title,
@@ -131,7 +132,8 @@ export default async function PostPage({ params }: PageProps) {
     ? format(new Date(post.date), "d. MMMM yyyy", { locale: dateLocale })
     : "";
   const lang = (post.lang ?? "et") as "et" | "ru" | "en";
-  const canonicalUrl = `https://blog.ksa.ee/${slug}`;
+  const canonicalUrl = publicBlogUrl(slug);
+  const articleImageUrl = post.featuredImage ? publicAssetUrl(post.featuredImage) : undefined;
   const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
   const authorName = authorProfile?.displayName ?? post.author ?? "KSA Silmakeskus";
   const authorInitials = initialsFrom(authorName);
@@ -199,7 +201,7 @@ export default async function PostPage({ params }: PageProps) {
         url: "https://ksa.ee",
         logo: { "@type": "ImageObject", url: "https://ksa.ee/wp-content/themes/ksa/images/ksa-logo.svg" },
       },
-      ...(post.featuredImage ? { image: { "@type": "ImageObject", url: post.featuredImage } } : {}),
+      ...(articleImageUrl ? { image: { "@type": "ImageObject", url: articleImageUrl } } : {}),
       ...(post.medicalTopic
         ? {
             about: {
@@ -220,10 +222,10 @@ export default async function PostPage({ params }: PageProps) {
     {
       "@type": "BreadcrumbList",
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: "KSA Blog", item: "https://blog.ksa.ee" },
+        { "@type": "ListItem", position: 1, name: "KSA Blog", item: publicBlogUrl() },
         ...(primaryCategoryRaw
           ? [
-              { "@type": "ListItem", position: 2, name: primaryCategoryRaw, item: `https://blog.ksa.ee/kategooria/${toSlug(primaryCategoryRaw)}` },
+              { "@type": "ListItem", position: 2, name: primaryCategoryRaw, item: publicBlogUrl(`kategooria/${toSlug(primaryCategoryRaw)}`) },
               { "@type": "ListItem", position: 3, name: post.title },
             ]
           : [{ "@type": "ListItem", position: 2, name: post.title }]),

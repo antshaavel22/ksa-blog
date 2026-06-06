@@ -5,6 +5,7 @@ import "./globals.css";
 import Analytics from "@/components/Analytics";
 import ConsentBanner from "@/components/ConsentBanner";
 import { getPostBySlug } from "@/lib/posts";
+import { BLOG_PUBLIC_ORIGIN } from "@/lib/url";
 
 const geist = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   },
   description:
     "Hea nägemine on üks inimese supervõimetest. KSA Silmakeskuse blogi: üle 450 artikli silmade tervise, laserkorrektsiooni ja nägemise parandamise kohta.",
-  metadataBase: new URL("https://blog.ksa.ee"),
+  metadataBase: new URL(BLOG_PUBLIC_ORIGIN),
   openGraph: {
     siteName: "KSA Silmakeskus",
     locale: "et_EE",

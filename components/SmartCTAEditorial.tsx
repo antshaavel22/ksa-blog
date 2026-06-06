@@ -26,6 +26,7 @@ import { useState, useEffect, useRef } from "react";
 import type { Funnel } from "@/lib/posts";
 import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaLang } from "@/lib/cta-config";
 import { sendEvent } from "@/lib/analytics";
+import { BLOG_PUBLIC_BASE_URL } from "@/lib/url";
 
 interface EditorialCopy {
   eyebrow: string;
@@ -346,7 +347,7 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
     try {
       const hostname = new URL(
         primaryUrl,
-        typeof window !== "undefined" ? window.location.href : "https://blog.ksa.ee",
+        typeof window !== "undefined" ? window.location.href : BLOG_PUBLIC_BASE_URL,
       ).hostname;
       const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
       if (hostname && hostname !== currentHost) {

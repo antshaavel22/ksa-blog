@@ -2,17 +2,18 @@ import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { publicBlogUrl } from "@/lib/url";
 
 export const metadata: Metadata = {
   title: "Silmade Laserkirurgia Tarbijajuhend 2026 — KSA Silmakeskus",
   description:
     "Dr. Ants Haaveli põhjalik tarbijajuhend laserkirurgia kaalumiseks: 14 peatükki, 35 viidet teaduskirjandusele, KSA 21-aastased andmed (55 000+ protseduuri, 0 ektaasiat). Sõltumatu ja patsiendi huvi keskmes.",
-  alternates: { canonical: "https://blog.ksa.ee/laserkirurgia-juhend" },
+  alternates: { canonical: publicBlogUrl("laserkirurgia-juhend") },
   openGraph: {
     title: "Silmade Laserkirurgia Tarbijajuhend 2026",
     description:
       "14 peatükki, 35 teaduslikku viidet, 21 aasta KSA andmed. Sõltumatu juhend laserkirurgia kaalumiseks.",
-    url: "https://blog.ksa.ee/laserkirurgia-juhend",
+    url: publicBlogUrl("laserkirurgia-juhend"),
     siteName: "KSA Silmakeskus",
     locale: "et_EE",
     type: "website",

@@ -295,7 +295,7 @@ async function main() {
   console.log(`✅  Edited:  ${edited}`);
   console.log(`⏭  Skipped: ${skipped}`);
   console.log(`❌  Errors:  ${errors}`);
-  console.log(`\nNext: open https://blog.ksa.ee/admin → Mustandid → review + publish`);
+  console.log(`\nNext: open https://ksa.ee/blogi/admin → Mustandid → review + publish`);
   if (!DRY_RUN && edited > 0) {
     console.log(`Progress saved to .ai-editor-progress-${lang}.json — run again to continue.`);
   }

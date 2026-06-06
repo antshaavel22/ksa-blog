@@ -6,7 +6,7 @@
 
 - **Clinic:** KSA Silmakeskus (KSA Vision Clinic)
 - **Website:** https://ksa.ee
-- **Blog:** https://blog.ksa.ee
+- **Blog:** https://ksa.ee/blogi
 - **Location:** Tallinn, Estonia
 - **Procedures:** Flow3 laser vision correction, comprehensive eye examinations, dry eye diagnostics and treatment
 - **Languages:** Estonian (et), Russian (ru), English (en)
@@ -27,8 +27,8 @@
 
 ## Key Pages
 
-- Blog home: https://blog.ksa.ee
-- Laser correction: https://ksa.ee/flow3/
+- Blog home: https://ksa.ee/blogi
+- Laser correction: https://ksa.ee/vabane-prillidest/
 - Price list: https://ksa.ee/hinnakiri/
 - Free vision test: https://kiirtest.ksa.ee/
 
@@ -44,4 +44,4 @@ All clinical claims are reviewed by Dr. Ants Haavel, MD. KSA Silmakeskus has per
 
 ## Sitemap
 
-https://blog.ksa.ee/sitemap.xml
+https://ksa.ee/blogi/sitemap.xml

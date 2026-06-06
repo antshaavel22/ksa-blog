@@ -1,5 +1,5 @@
 import { getAllPosts } from "@/lib/posts";
-import { getAuthorBySlug, AUTHORS, authorToSlug } from "@/lib/authors";
+import { getAuthorBySlug, AUTHORS } from "@/lib/authors";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import PageLang from "@/components/PageLang";
@@ -7,6 +7,7 @@ import PostCard from "@/components/PostCard";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { publicBlogUrl } from "@/lib/url";
 
 interface PageProps {
   params: Promise<{ author: string }>;
@@ -26,6 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${author.displayName} — KSA Blog`,
     description: author.bio.et,
+    alternates: { canonical: publicBlogUrl(`autor/${slug}`) },
   };
 }
 
@@ -79,7 +81,7 @@ export default async function AuthorPage({ params, searchParams }: PageProps) {
           <div className="max-w-[1200px] mx-auto px-6">
             {/* Breadcrumb */}
             <nav className="text-xs text-[#9a9a9a] mb-6">
-              <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
+              <Link href="/" className="hover:text-[#87be23] transition-colors">Blog</Link>
               <span className="mx-2">›</span>
               <span>{t.author}</span>
             </nav>

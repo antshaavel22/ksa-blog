@@ -1,7 +1,6 @@
 // Temporary booking-form funnel config. Used by /broneeri/[funnel] until Mai's
-// new booking system goes live; CTAs from cta-config.json point here in the
-// meantime. After cutover, primaryHref swaps to my.ksa.ee/... and these pages
-// can be deleted (or kept as fallback).
+// fallback for older blog CTAs. Current public CTA traffic should prefer
+// booking.ksa.ee or crm.ksa.ee; the legacy booking domain is no longer used.
 
 export type BookingFunnel = "audit" | "flow3" | "lapsed" | "kuivsilm";
 

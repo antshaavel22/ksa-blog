@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { Funnel } from "@/lib/posts";
 import { sendEvent, buildCtaUrl } from "@/lib/analytics";
+import { BLOG_PUBLIC_BASE_URL } from "@/lib/url";
 import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaEntry, type CtaLang } from "@/lib/cta-config";
 
 const UI_LABELS: Record<CtaLang, {
@@ -101,7 +102,7 @@ export default function SmartCTA({ funnel = "flow3", slug, lang, configOverride 
   const handleClick = (target: string, href: string) => () => {
     sendEvent("cta_click", { slug, funnel, lang }, { target });
     try {
-      const hostname = new URL(href, typeof window !== "undefined" ? window.location.href : "https://blog.ksa.ee").hostname;
+      const hostname = new URL(href, typeof window !== "undefined" ? window.location.href : BLOG_PUBLIC_BASE_URL).hostname;
       const currentHost = typeof window !== "undefined" ? window.location.hostname : "";
       if (hostname && hostname !== currentHost) {
         sendEvent("funnel_outbound", { slug, funnel, lang }, { destination: hostname });
