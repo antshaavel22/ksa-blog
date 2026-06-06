@@ -4,6 +4,7 @@
  */
 import { hasAnalyticsConsent } from "./consent";
 import type { Funnel } from "./posts";
+import { BLOG_PUBLIC_BASE_URL } from "./url";
 
 const VISITOR_COOKIE = "ksa_vid";
 const SESSION_KEY = "ksa_sid";
@@ -110,7 +111,7 @@ export function buildCtaUrl(
   campaign?: string | null,
 ): string {
   try {
-    const u = new URL(href, typeof window !== "undefined" ? window.location.origin : "https://blog.ksa.ee");
+    const u = new URL(href, typeof window !== "undefined" ? window.location.origin : BLOG_PUBLIC_BASE_URL);
     const setIfAbsent = (k: string, v: string) => {
       if (!u.searchParams.has(k)) u.searchParams.set(k, v);
     };

@@ -13,7 +13,7 @@
  * The `id` is the UUID from the data-presentation attribute in the Rendia embed code.
  * (Click the </> button in Rendia's Embed Manager and copy the data-presentation value.)
  *
- * ⚠️ blog.ksa.ee must be whitelisted by Rendia for embeds to display.
+ * ⚠️ ksa.ee/blogi must be whitelisted by Rendia for embeds to display.
  *    Contact: Terrie Brown (Terrie.Brown@patientpoint.com) to add the domain.
  *    Currently whitelisted: silmatervis.ksa.ee
  */

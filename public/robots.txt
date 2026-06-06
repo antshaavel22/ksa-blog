@@ -8,4 +8,4 @@ Disallow: /api/
 # Block Next.js build assets — they appear in GSC as "Crawled - currently not indexed"
 Disallow: /_next/
 
-Sitemap: https://blog.ksa.ee/sitemap.xml
+Sitemap: https://ksa.ee/blogi/sitemap.xml

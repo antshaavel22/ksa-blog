@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  basePath: "/blogi",
   images: {
     remotePatterns: [
       {
@@ -37,7 +38,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Allow blog.ksa.ee as trusted host
+  // Security headers for the mounted blog zone.
   async headers() {
     return [
       {

@@ -6,6 +6,7 @@ import PageLang from "@/components/PageLang";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { publicBlogUrl } from "@/lib/url";
 
 interface PageProps {
   params: Promise<{ category: string }>;
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${category.replace(/-/g, " ")} — KSA Blog`,
     description: `${posts.length} artiklit kategoorias ${category.replace(/-/g, " ")}. KSA Silmakeskuse ekspertartiklid.`,
-    alternates: { canonical: `https://blog.ksa.ee/kategooria/${category}` },
+    alternates: { canonical: publicBlogUrl(`kategooria/${category}`) },
   };
 }
 
@@ -51,7 +52,7 @@ export default async function CategoryPage({ params }: PageProps) {
         <section className="bg-[#f9f9f7] border-b border-[#e6e6e6] py-12">
           <div className="max-w-[1200px] mx-auto px-6">
             <nav className="text-xs text-[#9a9a9a] mb-3">
-              <Link href="https://blog.ksa.ee" className="hover:text-[#87be23] transition-colors">Blog</Link>
+              <Link href="/" className="hover:text-[#87be23] transition-colors">Blog</Link>
               <span className="mx-2">›</span>
               <span>{displayName}</span>
             </nav>

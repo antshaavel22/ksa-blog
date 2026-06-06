@@ -15,7 +15,7 @@ import matter from "gray-matter";
 const POSTS_DIR = path.join(process.cwd(), "content/posts");
 const OUTPUT_FILE = path.join(process.cwd(), "redirects-for-kadri.txt");
 const OLD_BASE = "/blogi";
-const NEW_BASE = "https://blog.ksa.ee";
+const NEW_BASE = "https://ksa.ee/blogi";
 
 function main() {
   const files = fs
@@ -37,15 +37,15 @@ function main() {
 
   // ── Section 1: Plain text / Nginx / Apache style ──────────────────────────
   const section1Lines = [
-    "# WordPress → blog.ksa.ee Redirects",
+    "# WordPress → ksa.ee/blogi Redirects",
     "# Generated: " + new Date().toISOString().split("T")[0],
     "# Total: " + slugs.length + " redirects",
     "#",
     "# Nginx format (add inside server {} block):",
-    "# rewrite ^/blogi/([^/]+)$ https://blog.ksa.ee/$1 permanent;",
+    "# rewrite ^/blogi/([^/]+)$ https://ksa.ee/blogi/$1 permanent;",
     "#",
     "# Apache .htaccess format:",
-    "# RedirectMatch 301 ^/blogi/(.*)$ https://blog.ksa.ee/$1",
+    "# RedirectMatch 301 ^/blogi/(.*)$ https://ksa.ee/blogi/$1",
     "#",
     "# Plain list (old path → new URL):",
     "",

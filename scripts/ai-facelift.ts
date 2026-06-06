@@ -44,7 +44,7 @@ const INTERNAL_LINKS = {
     { anchor: "hinnakiri", url: "https://ksa.ee/hinnakiri/" },
     { anchor: "ICB-operatsioon", url: "https://ksa.ee/icb-time" },
     { anchor: "vabane prillidest", url: "https://ksa.ee/vabane-prillidest/" },
-    { anchor: "Flow3 protseduur", url: "https://ksa.ee/flow3/" },
+    { anchor: "Flow3 protseduur", url: "https://ksa.ee/vabane-prillidest/" },
   ],
   ru: [
     { anchor: "цены на лазерную коррекцию", url: "https://ksa.ee/ru/hinnakiri/" },

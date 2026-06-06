@@ -8,16 +8,17 @@ import SearchInput from "@/components/SearchInput";
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { publicBlogUrl } from "@/lib/url";
 
 export const metadata: Metadata = {
   title: "KSA Blog — Silmade tervis ja laserkorrektsiooni artiklid",
   description:
     "Selged vastused silmade kohta — üle 450 artikli silmade tervise, laserkorrektsiooni ja nägemise parandamise kohta KSA Silmakeskuse ekspertidelt.",
-  alternates: { canonical: "https://blog.ksa.ee" },
+  alternates: { canonical: publicBlogUrl() },
   openGraph: {
     title: "KSA Blog — Silmade tervis ja laserkorrektsiooni artiklid",
     description: "Üle 450 artikli silmade tervise ja nägemise parandamise kohta.",
-    url: "https://blog.ksa.ee",
+    url: publicBlogUrl(),
     siteName: "KSA Silmakeskus",
     locale: "et_EE",
     type: "website",

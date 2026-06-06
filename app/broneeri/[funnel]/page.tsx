@@ -4,6 +4,7 @@ import { BOOKING_FUNNELS, getBookingFunnel, type BookingFunnel } from "@/lib/boo
 import BookingForm from "@/components/BookingForm";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
+import { publicBlogUrl } from "@/lib/url";
 
 interface PageProps {
   params: Promise<{ funnel: string }>;
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: `${cfg.headline} — KSA Silmakeskus`,
     description: cfg.sub,
-    alternates: { canonical: `https://blog.ksa.ee/broneeri/${cfg.slug}` },
+    alternates: { canonical: publicBlogUrl(`broneeri/${cfg.slug}`) },
     robots: { index: false, follow: true },
   };
 }

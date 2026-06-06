@@ -11,7 +11,7 @@
  *
  * Env:
  *   INDEXNOW_KEY — 8-128 char hex token. Must also be served at
- *   https://blog.ksa.ee/<INDEXNOW_KEY>.txt (file body = the key itself).
+ *   https://ksa.ee/blogi/<INDEXNOW_KEY>.txt (file body = the key itself).
  */
 import fs from "fs";
 import path from "path";
@@ -24,8 +24,8 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const SITEMAP = "https://blog.ksa.ee/sitemap.xml";
-const HOST = "blog.ksa.ee";
+const SITEMAP = "https://ksa.ee/blogi/sitemap.xml";
+const HOST = "ksa.ee";
 const KEY = process.env.INDEXNOW_KEY;
 
 const args = process.argv.slice(2);
@@ -48,7 +48,7 @@ async function indexNow(urls: string[]) {
   const body = {
     host: HOST,
     key: KEY,
-    keyLocation: `https://${HOST}/indexnow`,
+    keyLocation: `https://${HOST}/blogi/indexnow`,
     urlList: urls,
   };
   try {

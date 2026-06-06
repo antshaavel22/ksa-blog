@@ -30,9 +30,9 @@ const LINKS: Record<Funnel, LinkItem[]> = {
     {
       label: { et: "Flow3 silmauuring", ru: "Исследование Flow3", en: "Flow3 exam" },
       href: {
-        et: "https://ksa.ee/vabane-prillidest/flow3-silmauuring/?source=blog&funnel=flow3",
-        ru: "https://ksa.ee/ru/flow-silmauuring/?source=blog&funnel=flow3",
-        en: "https://ksa.ee/en/flow-examination/?source=blog&funnel=flow3",
+        et: "https://ksa.ee/vabane-prillidest/?source=blog&funnel=flow3",
+        ru: "https://ksa.ee/ru/svoboda-ot-ochkov/?source=blog&funnel=flow3",
+        en: "https://ksa.ee/en/laser-eye-surgery/?source=blog&funnel=flow3",
       },
       external: true,
     },
@@ -42,14 +42,22 @@ const LINKS: Record<Funnel, LinkItem[]> = {
     },
     {
       label: { et: "Hinnakiri", ru: "Цены", en: "Prices" },
-      href: "https://ksa.ee/hinnakiri/?source=blog&funnel=flow3",
+      href: {
+        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=flow3",
+        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=flow3",
+        en: "https://ksa.ee/en/price-list/?source=blog&funnel=flow3",
+      },
       external: true,
     },
   ],
   audit: [
     {
       label: { et: "Nägemise Audit", ru: "Аудит зрения", en: "Vision Audit" },
-      href: "https://ksa.ee/lp/broneeri-aeg-audit-silmauuring/?source=blog&funnel=audit",
+      href: {
+        et: "https://ksa.ee/audit-nagemisuuring/?source=blog&funnel=audit",
+        ru: "https://ksa.ee/ru/audit-proverkazrenija/?source=blog&funnel=audit",
+        en: "https://ksa.ee/en/vision-audit/?source=blog&funnel=audit",
+      },
       external: true,
     },
     {
@@ -64,8 +72,12 @@ const LINKS: Record<Funnel, LinkItem[]> = {
   ],
   kids: [
     {
-      label: { et: "Laste nägemiskontroll", ru: "Проверка зрения у детей", en: "Children's vision exam" },
-      href: "https://ksa.ee/nagemiskontroll-lastele/?source=blog&funnel=kids",
+      label: { et: "Küsi laste nägemise kohta", ru: "Спросить о зрении ребёнка", en: "Ask about child vision" },
+      href: {
+        et: "https://ksa.ee/kontakt/?source=blog&funnel=kids",
+        ru: "https://ksa.ee/ru/uldkontakt/?source=blog&funnel=kids",
+        en: "https://ksa.ee/en/contact/?source=blog&funnel=kids",
+      },
       external: true,
     },
     {
@@ -74,14 +86,22 @@ const LINKS: Record<Funnel, LinkItem[]> = {
     },
     {
       label: { et: "Kontakt", ru: "Контакты", en: "Contact" },
-      href: "https://ksa.ee/kontakt/?source=blog&funnel=kids",
+      href: {
+        et: "https://ksa.ee/kontakt/?source=blog&funnel=kids",
+        ru: "https://ksa.ee/ru/uldkontakt/?source=blog&funnel=kids",
+        en: "https://ksa.ee/en/contact/?source=blog&funnel=kids",
+      },
       external: true,
     },
   ],
   dryeye: [
     {
       label: { et: "Kuiva silma diagnostika ja teraapia", ru: "Диагностика сухого глаза", en: "Dry eye diagnostics" },
-      href: "https://ksa.ee/kuivasilma-diagnostika-ja-teraapia/?source=blog&funnel=dryeye",
+      href: {
+        et: "https://ksa.ee/kuiv-silm/?source=blog&funnel=dryeye",
+        ru: "https://ksa.ee/ru/kuiv-silm/?source=blog&funnel=dryeye",
+        en: "https://ksa.ee/en/dry-eye/?source=blog&funnel=dryeye",
+      },
       external: true,
     },
     {
@@ -90,7 +110,11 @@ const LINKS: Record<Funnel, LinkItem[]> = {
     },
     {
       label: { et: "Hinnakiri", ru: "Цены", en: "Prices" },
-      href: "https://ksa.ee/hinnakiri/?source=blog&funnel=dryeye",
+      href: {
+        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=dryeye",
+        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=dryeye",
+        en: "https://ksa.ee/en/price-list/?source=blog&funnel=dryeye",
+      },
       external: true,
     },
   ],
@@ -110,7 +134,11 @@ const LINKS: Record<Funnel, LinkItem[]> = {
     },
     {
       label: { et: "KSA hinnakiri", ru: "Цены KSA", en: "KSA prices" },
-      href: "https://ksa.ee/hinnakiri/?source=blog&funnel=general",
+      href: {
+        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=general",
+        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=general",
+        en: "https://ksa.ee/en/price-list/?source=blog&funnel=general",
+      },
       external: true,
     },
   ],

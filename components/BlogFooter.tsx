@@ -38,21 +38,21 @@ const CAT_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
 
 const KSA_LINKS: Record<Lang, Array<{ label: string; href: string }>> = {
   et: [
-    { label: "Flow3", href: "https://ksa.ee/flow3" },
-    { label: "Uuringud", href: "https://ksa.ee/hinnakiri/" },
+    { label: "Flow3", href: "https://ksa.ee/vabane-prillidest/" },
+    { label: "Nägemise Audit", href: "https://ksa.ee/audit-nagemisuuring/" },
     { label: "Hinnakiri", href: "https://ksa.ee/hinnakiri/" },
     { label: "Broneeri", href: "https://booking.ksa.ee/?source=blog&lang=et" },
   ],
   ru: [
-    { label: "Flow3", href: "https://ksa.ee/ru/" },
-    { label: "Услуги", href: "https://ksa.ee/ru/" },
-    { label: "Цены", href: "https://ksa.ee/ru/" },
+    { label: "Flow3", href: "https://ksa.ee/ru/svoboda-ot-ochkov/" },
+    { label: "Аудит зрения", href: "https://ksa.ee/ru/audit-proverkazrenija/" },
+    { label: "Цены", href: "https://ksa.ee/ru/preiskurant/" },
     { label: "Записаться", href: "https://booking.ksa.ee/?source=blog&lang=ru" },
   ],
   en: [
-    { label: "Flow3", href: "https://ksa.ee/en/" },
-    { label: "Services", href: "https://ksa.ee/en/" },
-    { label: "Pricing", href: "https://ksa.ee/en/" },
+    { label: "Flow3", href: "https://ksa.ee/en/laser-eye-surgery/" },
+    { label: "Vision Audit", href: "https://ksa.ee/en/vision-audit/" },
+    { label: "Pricing", href: "https://ksa.ee/en/price-list/" },
     { label: "Book", href: "https://booking.ksa.ee/?source=blog&lang=en" },
   ],
 };
