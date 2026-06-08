@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  basePath: "/blogi",
   images: {
     remotePatterns: [
       {
@@ -26,6 +25,16 @@ const nextConfig: NextConfig = {
       { source: "/en/", destination: "/?keel=en", permanent: true },
       { source: "/et", destination: "/", permanent: true },
       { source: "/et/", destination: "/", permanent: true },
+      {
+        source: "/blogi",
+        destination: "/",
+        permanent: false,
+      },
+      {
+        source: "/blogi/:path*",
+        destination: "/:path*",
+        permanent: false,
+      },
       {
         source: "/flow3-laserkorrektsiooni-lahendus-frustreeritud-prillikandjaile",
         destination: "/miks-59-protsenti-prillikandjaid-on-frustreeritud-2",
