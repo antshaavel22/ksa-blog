@@ -1,5 +1,6 @@
-export const BLOG_PUBLIC_ORIGIN = "https://ksa.ee";
-export const BLOG_BASE_PATH = "/blogi";
+export const BLOG_PUBLIC_ORIGIN =
+  process.env.NEXT_PUBLIC_BLOG_PUBLIC_ORIGIN?.replace(/\/$/, "") ?? "https://blog.ksa.ee";
+export const BLOG_BASE_PATH = (process.env.NEXT_PUBLIC_BLOG_BASE_PATH ?? "").replace(/\/$/, "");
 export const BLOG_PUBLIC_BASE_URL = `${BLOG_PUBLIC_ORIGIN}${BLOG_BASE_PATH}`;
 
 export function publicBlogUrl(path = "") {
