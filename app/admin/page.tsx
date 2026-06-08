@@ -3477,6 +3477,249 @@ function PromptTab() {
   );
 }
 
+// ─── Excerpts Tab — dedicated, dead-simple excerpt editor ─────────────────────
+// One place to find & fix any post's excerpt. Search the list, OR paste a blog
+// URL / slug to load a post that isn't in the list yet (e.g. just git-published).
+// Each excerpt is an always-visible textarea + a big Salvesta button. No hunting.
+
+type ExcerptRow = { path: string; title: string; lang: string; slug?: string; excerpt: string; date?: string };
+
+function ExcerptsTab() {
+  const [rows, setRows] = useState<ExcerptRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState("");
+  const [langFilter, setLangFilter] = useState<"all" | "et" | "ru" | "en">("all");
+  // per-path editing state
+  const [draftText, setDraftText] = useState<Record<string, string>>({});
+  const [savingPath, setSavingPath] = useState<string | null>(null);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
+  // "load by URL/slug" box
+  const [lookup, setLookup] = useState("");
+  const [lookupBusy, setLookupBusy] = useState(false);
+  const [lookupErr, setLookupErr] = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/posts")
+      .then(r => r.json())
+      .then((d: { posts?: ExcerptRow[] } | ExcerptRow[]) => {
+        const list = Array.isArray(d) ? d : (d.posts ?? []);
+        setRows(list);
+      })
+      .catch(() => setRows([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  function pathFromSlug(slug: string) {
+    return `content/posts/${slug.replace(/\.mdx?$/, "")}.mdx`;
+  }
+
+  // Pull the full excerpt out of raw MDX frontmatter (list API truncates it).
+  function extractExcerpt(content: string): string {
+    const m = content.match(/^excerpt:\s*(["'])([\s\S]*?)\1\s*$/m);
+    if (m) return m[2];
+    const m2 = content.match(/^excerpt:\s*(.+)$/m);
+    return m2 ? m2[1].trim().replace(/^["']|["']$/g, "") : "";
+  }
+
+  async function ensureFull(row: ExcerptRow) {
+    // Fetch full content (GitHub-first) so we edit the complete excerpt, not the
+    // 120-char truncated list value.
+    try {
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(row.path)}`);
+      if (res.ok) {
+        const { content } = (await res.json()) as { content: string };
+        const full = extractExcerpt(content);
+        setDraftText(prev => ({ ...prev, [row.path]: full || row.excerpt || "" }));
+        return;
+      }
+    } catch { /* fall through */ }
+    setDraftText(prev => ({ ...prev, [row.path]: row.excerpt || "" }));
+  }
+
+  async function loadByLookup() {
+    setLookupErr("");
+    let raw = lookup.trim();
+    if (!raw) return;
+    // accept a full blog URL or a bare slug
+    raw = raw.replace(/^https?:\/\/blog\.ksa\.ee\//, "").replace(/[?#].*$/, "").replace(/\/+$/, "");
+    const slug = raw;
+    const path = pathFromSlug(slug);
+    setLookupBusy(true);
+    try {
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(path)}`);
+      if (!res.ok) { setLookupErr("Ei leidnud artiklit selle URL/slug järgi."); return; }
+      const { content } = (await res.json()) as { content: string };
+      const titleM = content.match(/^title:\s*(["'])([\s\S]*?)\1\s*$/m) || content.match(/^title:\s*(.+)$/m);
+      const langM = content.match(/^lang:\s*["']?(\w+)["']?/m);
+      const newRow: ExcerptRow = {
+        path, slug,
+        title: titleM ? (titleM[2] ?? titleM[1]).replace(/^["']|["']$/g, "") : slug,
+        lang: langM ? langM[1] : "et",
+        excerpt: extractExcerpt(content),
+      };
+      setRows(prev => prev.some(r => r.path === path) ? prev : [newRow, ...prev]);
+      setDraftText(prev => ({ ...prev, [path]: newRow.excerpt }));
+      setLookup("");
+      // scroll the row into view next tick
+      setTimeout(() => document.getElementById(`exrow-${slug}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+    } catch {
+      setLookupErr("Tehniline tõrge. Proovi uuesti.");
+    } finally {
+      setLookupBusy(false);
+    }
+  }
+
+  async function save(row: ExcerptRow) {
+    const text = (draftText[row.path] ?? "").trim();
+    if (!text) { alert("Väljavõte ei saa olla tühi."); return; }
+    setSavingPath(row.path);
+    try {
+      // Read latest full content (GitHub-first), replace excerpt line, write back.
+      const res = await fetch(`/api/admin/post?path=${encodeURIComponent(row.path)}`);
+      if (!res.ok) throw new Error("Lugemine ebaõnnestus");
+      const { content } = (await res.json()) as { content: string };
+      const hasDouble = text.includes('"'), hasSingle = text.includes("'");
+      const yaml = !hasDouble ? `"${text}"` : !hasSingle ? `'${text}'` : `"${text.replace(/"/g, '\\"')}"`;
+      let updated: string;
+      const line = /^excerpt:\s*(["'])[\s\S]*?\1\s*$/m;
+      if (line.test(content)) updated = content.replace(line, `excerpt: ${yaml}`);
+      else if (/^excerpt:.*$/m.test(content)) updated = content.replace(/^excerpt:.*$/m, `excerpt: ${yaml}`);
+      else updated = content.replace(/^(title:.*)$/m, `$1\nexcerpt: ${yaml}`);
+      const put = await fetch(`/api/admin/post?path=${encodeURIComponent(row.path)}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: updated }),
+      });
+      if (!put.ok) throw new Error("Salvestamine ebaõnnestus");
+      setRows(prev => prev.map(r => r.path === row.path ? { ...r, excerpt: text } : r));
+      setSavedPath(row.path);
+      setTimeout(() => setSavedPath(p => p === row.path ? null : p), 2500);
+    } catch (e) {
+      alert("Viga: " + (e as Error).message);
+    } finally {
+      setSavingPath(null);
+    }
+  }
+
+  const filtered = rows.filter(r => {
+    if (langFilter !== "all" && r.lang !== langFilter) return false;
+    if (!q.trim()) return true;
+    const s = q.toLowerCase();
+    return (r.title || "").toLowerCase().includes(s)
+      || (r.excerpt || "").toLowerCase().includes(s)
+      || (r.slug || r.path).toLowerCase().includes(s);
+  });
+
+  return (
+    <div style={{ maxWidth: 820, margin: "0 auto", padding: "16px 20px 80px" }}>
+      <div style={{ background: "linear-gradient(135deg,#f4fae8,#edf7f0)", borderRadius: 16, padding: "18px 22px", marginBottom: 20 }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 19, fontWeight: 800, color: "#1a1a1a" }}>✎ Väljavõtete muutmine</h2>
+        <p style={{ margin: 0, fontSize: 13.5, color: "#3a5a10", lineHeight: 1.6 }}>
+          Otsi artikkel, muuda väljavõtet kasti sees ja vajuta <strong>Salvesta</strong> — muudatus läheb kohe live'i.
+          Kui artiklit nimekirjas pole (nt äsja avaldatud), kleebi selle blogi-URL või slug allolevasse kasti.
+        </p>
+      </div>
+
+      {/* Load-by-URL fallback */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input
+          value={lookup}
+          onChange={e => setLookup(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") loadByLookup(); }}
+          placeholder="Kleebi blogi-URL või slug (nt blog.ksa.ee/kelly-nevolihhin-…) ja vajuta Enter"
+          style={{ flex: 1, padding: "11px 14px", border: "1.5px solid #c5e58a", borderRadius: 10, fontSize: 14, outline: "none" }}
+        />
+        <button onClick={loadByLookup} disabled={lookupBusy} style={{
+          padding: "0 18px", background: lookupBusy ? "#9a9a9a" : "#87be23", color: "#fff",
+          border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: lookupBusy ? "wait" : "pointer",
+        }}>{lookupBusy ? "Laen…" : "Laadi"}</button>
+      </div>
+      {lookupErr && <div style={{ color: "#b91c1c", fontSize: 13, marginBottom: 12 }}>{lookupErr}</div>}
+
+      {/* Search + lang filter */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          value={q} onChange={e => setQ(e.target.value)}
+          placeholder="Otsi pealkirja, väljavõtte või slug'i järgi…"
+          style={{ flex: 1, minWidth: 220, padding: "10px 14px", border: "1.5px solid #e6e6e6", borderRadius: 10, fontSize: 14, outline: "none" }}
+        />
+        {(["all", "et", "ru", "en"] as const).map(l => (
+          <button key={l} onClick={() => setLangFilter(l)} style={{
+            padding: "8px 14px", borderRadius: 20, fontSize: 13, fontWeight: 700, cursor: "pointer",
+            border: langFilter === l ? "1.5px solid #87be23" : "1.5px solid #e6e6e6",
+            background: langFilter === l ? "#edf7d6" : "#fff", color: langFilter === l ? "#3d6b00" : "#9a9a9a",
+          }}>{l === "all" ? "Kõik" : l.toUpperCase()}</button>
+        ))}
+      </div>
+
+      {loading && <div style={{ color: "#9a9a9a", fontSize: 14 }}>Laen artikleid…</div>}
+      {!loading && filtered.length === 0 && (
+        <div style={{ color: "#9a9a9a", fontSize: 14 }}>Ühtegi artiklit ei leitud. Proovi URL/slug kasti ülal.</div>
+      )}
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {filtered.slice(0, 60).map(row => {
+          const editing = row.path in draftText;
+          const isSaving = savingPath === row.path;
+          const isSaved = savedPath === row.path;
+          return (
+            <div key={row.path} id={`exrow-${row.slug ?? ""}`} style={{
+              background: "#fff", border: "1.5px solid #f0f0ec", borderRadius: 14, padding: "14px 16px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <LangBadge lang={row.lang} />
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {row.title || row.slug}
+                </span>
+              </div>
+              {editing ? (
+                <>
+                  <textarea
+                    value={draftText[row.path]}
+                    autoFocus
+                    onChange={e => setDraftText(prev => ({ ...prev, [row.path]: e.target.value }))}
+                    onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save(row); }}
+                    rows={3}
+                    style={{ width: "100%", fontSize: 14, lineHeight: 1.55, color: "#1a1a1a",
+                      border: "1.5px solid #87be23", borderRadius: 10, padding: "10px 12px", outline: "none",
+                      resize: "vertical", fontFamily: "inherit", background: "#fff" }}
+                  />
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
+                    <button onClick={() => save(row)} disabled={isSaving} style={{
+                      padding: "9px 20px", background: isSaving ? "#9a9a9a" : "#87be23", color: "#fff",
+                      border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: isSaving ? "wait" : "pointer",
+                    }}>{isSaving ? "Salvestan…" : "Salvesta"}</button>
+                    <button onClick={() => setDraftText(prev => { const c = { ...prev }; delete c[row.path]; return c; })}
+                      style={{ padding: "9px 16px", background: "#fff", color: "#9a9a9a", border: "1.5px solid #e6e6e6", borderRadius: 10, fontSize: 14, cursor: "pointer" }}>
+                      Tühista
+                    </button>
+                    <span style={{ fontSize: 12, color: "#b0b0aa" }}>⌘/Ctrl+Enter = salvesta</span>
+                    {isSaved && <span style={{ fontSize: 13, color: "#3d6b00", fontWeight: 700 }}>✓ Salvestatud — läheb live'i ~2 min</span>}
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <p style={{ flex: 1, margin: 0, fontSize: 13.5, color: "#5a6b6c", lineHeight: 1.55 }}>
+                    {row.excerpt || <span style={{ color: "#c0392b" }}>(väljavõte puudub)</span>}
+                  </p>
+                  <button onClick={() => ensureFull(row)} style={{
+                    flexShrink: 0, padding: "7px 16px", background: "#edf7d6", color: "#3d6b00",
+                    border: "1.5px solid #c5e58a", borderRadius: 20, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  }}>✎ Muuda</button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {filtered.length > 60 && (
+        <div style={{ textAlign: "center", color: "#9a9a9a", fontSize: 13, marginTop: 16 }}>
+          Näitan esimest 60. Täpsusta otsingut, et leida rohkem.
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Help Tab ─────────────────────────────────────────────────────────────────
 
 function HelpTab() {
@@ -3620,8 +3863,10 @@ function HelpTab() {
         </tbody>
       </table>
       <div style={s.tip}>
-        💡 <strong>Esc</strong> tühistab muudatuse. Salvestamine paneb muudatuse kohe live'i (Vercel ehitab ~2 min).
-        Sama nupp on olemas nii <strong>Nimekiri</strong> kui ka <strong>Koduleht</strong> vaates.
+        💡 <strong>Kõige lihtsam viis:</strong> ava ülamenüüst <strong>„✎ Väljavõtted"</strong> vahekaart.
+        Seal on kõik artiklid koos, otsing + keelefilter, ja iga väljavõtet saab kohe kastis muuta.
+        Kui artiklit nimekirjas pole (nt äsja avaldatud), kleebi selle blogi-URL või slug ülemisse kasti.
+        <br />Esc tühistab. Salvestamine paneb muudatuse kohe live'i (~2 min).
       </div>
 
       {/* Section 3.5 — Delete */}
@@ -3823,7 +4068,7 @@ function CTATab() {
 const ADMIN_BUILD = "2026-04-23-1";
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "prompt" | "help">("drafts");
+  const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "excerpts" | "prompt" | "help">("drafts");
 
   // Force-reload when the deployed admin build is newer than the one loaded.
   // Runs once on mount + every 5 min — picks up mid-session deploys too.
@@ -3878,6 +4123,7 @@ export default function AdminPage() {
             { id: "published", label: "Avaldatud" },
             { id: "write", label: "Kirjuta uus" },
             { id: "cta", label: "CTA-d" },
+            { id: "excerpts", label: "✎ Väljavõtted" },
             { id: "prompt", label: "Sisureeglid" },
             { id: "help", label: "Juhend" },
           ] as const).map(t => (
@@ -3906,7 +4152,7 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "excerpts" ? <ExcerptsTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
     </div>
   );
 }
