@@ -25,15 +25,29 @@ const HEADINGS: Record<CtaLang, { title: string; sub: string }> = {
   },
 };
 
+// Routing policy (Silvia 2026-06-10 + Mai's guidance, 2026-06-11):
+// all booking-intent links → booking.ksa.ee deep-links, EXCEPT dry-eye which
+// goes to the kuivsilm/dryeye landing page (not a bookable wizard service).
+// Internal /kategooria article links stay (blog navigation, not landing pages).
+// Old pricelist / contact / homepage CTAs removed — they were dead-ends.
+const BOOKING = (svc: string, code: string, f: string) => ({
+  et: `https://booking.ksa.ee/?service=${svc}&lang=et&promokood=${code}&source=blog&funnel=${f}`,
+  ru: `https://booking.ksa.ee/?service=${svc}&lang=ru&promokood=${code}&source=blog&funnel=${f}`,
+  en: `https://booking.ksa.ee/?service=${svc}&lang=en&promokood=${code}&source=blog&funnel=${f}`,
+});
+const KIIRTEST = {
+  et: "https://kiirtest.ksa.ee/?source=blog&funnel=qualifier",
+  ru: "https://kiirtest.ksa.ee/ru?source=blog&funnel=qualifier",
+  en: "https://kiirtest.ksa.ee/en?source=blog&funnel=qualifier",
+};
+const KIIRTEST_LABEL = { et: "Tee Kiirtest", ru: "Пройти быстрый тест", en: "Take the quick test" };
+const ARTICLES_LABEL = { et: "Silmade tervise artiklid", ru: "Статьи о здоровье глаз", en: "Eye health articles" };
+
 const LINKS: Record<Funnel, LinkItem[]> = {
   flow3: [
     {
-      label: { et: "Flow3 silmauuring", ru: "Исследование Flow3", en: "Flow3 exam" },
-      href: {
-        et: "https://ksa.ee/vabane-prillidest/?source=blog&funnel=flow3",
-        ru: "https://ksa.ee/ru/svoboda-ot-ochkov/?source=blog&funnel=flow3",
-        en: "https://ksa.ee/en/laser-eye-surgery/?source=blog&funnel=flow3",
-      },
+      label: { et: "Broneeri Flow3 uuring", ru: "Записаться на Flow3", en: "Book a Flow3 exam" },
+      href: BOOKING("flow3", "BLOG39", "flow3"),
       external: true,
     },
     {
@@ -41,66 +55,51 @@ const LINKS: Record<Funnel, LinkItem[]> = {
       href: "/kategooria/flow-protseduur",
     },
     {
-      label: { et: "Hinnakiri", ru: "Цены", en: "Prices" },
-      href: {
-        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=flow3",
-        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=flow3",
-        en: "https://ksa.ee/en/price-list/?source=blog&funnel=flow3",
-      },
+      label: KIIRTEST_LABEL,
+      href: KIIRTEST,
       external: true,
     },
   ],
   audit: [
     {
-      label: { et: "Nägemise Audit", ru: "Аудит зрения", en: "Vision Audit" },
-      href: {
-        et: "https://ksa.ee/audit-nagemisuuring/?source=blog&funnel=audit",
-        ru: "https://ksa.ee/ru/audit-proverkazrenija/?source=blog&funnel=audit",
-        en: "https://ksa.ee/en/vision-audit/?source=blog&funnel=audit",
-      },
+      label: { et: "Broneeri Nägemise Audit", ru: "Записаться на Аудит зрения", en: "Book a Vision Audit" },
+      href: BOOKING("audit", "BLOG139", "audit"),
       external: true,
     },
     {
-      label: { et: "Silmade tervise artiklid", ru: "Статьи о здоровье глаз", en: "Eye health articles" },
+      label: ARTICLES_LABEL,
       href: "/kategooria/silmad-ja-tervis",
     },
     {
-      label: { et: "KSA teenused", ru: "Услуги KSA", en: "KSA services" },
-      href: "https://ksa.ee/?source=blog&funnel=audit",
+      label: KIIRTEST_LABEL,
+      href: KIIRTEST,
       external: true,
     },
   ],
   kids: [
     {
-      label: { et: "Küsi laste nägemise kohta", ru: "Спросить о зрении ребёнка", en: "Ask about child vision" },
-      href: {
-        et: "https://ksa.ee/kontakt/?source=blog&funnel=kids",
-        ru: "https://ksa.ee/ru/uldkontakt/?source=blog&funnel=kids",
-        en: "https://ksa.ee/en/contact/?source=blog&funnel=kids",
-      },
+      label: { et: "Broneeri laste silmauuring", ru: "Записать ребёнка на обследование", en: "Book a children's eye exam" },
+      href: BOOKING("kids", "BLOGKIDS", "kids"),
       external: true,
     },
     {
-      label: { et: "Silmade tervise artiklid", ru: "Статьи о здоровье глаз", en: "Eye health articles" },
+      label: ARTICLES_LABEL,
       href: "/kategooria/silmad-ja-tervis",
     },
     {
-      label: { et: "Kontakt", ru: "Контакты", en: "Contact" },
-      href: {
-        et: "https://ksa.ee/kontakt/?source=blog&funnel=kids",
-        ru: "https://ksa.ee/ru/uldkontakt/?source=blog&funnel=kids",
-        en: "https://ksa.ee/en/contact/?source=blog&funnel=kids",
-      },
+      label: KIIRTEST_LABEL,
+      href: KIIRTEST,
       external: true,
     },
   ],
   dryeye: [
     {
+      // Dry-eye is NOT a bookable wizard service — goes to the dedicated LP.
       label: { et: "Kuiva silma diagnostika ja teraapia", ru: "Диагностика сухого глаза", en: "Dry eye diagnostics" },
       href: {
-        et: "https://ksa.ee/kuiv-silm/?source=blog&funnel=dryeye",
-        ru: "https://ksa.ee/ru/kuiv-silm/?source=blog&funnel=dryeye",
-        en: "https://ksa.ee/en/dry-eye/?source=blog&funnel=dryeye",
+        et: "https://kuivsilm.ksa.ee/?source=blog&funnel=dryeye",
+        ru: "https://kuivsilm.ksa.ee/?lang=ru&source=blog&funnel=dryeye",
+        en: "https://dryeye.ksa.ee/?source=blog&funnel=dryeye",
       },
       external: true,
     },
@@ -109,35 +108,27 @@ const LINKS: Record<Funnel, LinkItem[]> = {
       href: "/kategooria/silmad-ja-tervis",
     },
     {
-      label: { et: "Hinnakiri", ru: "Цены", en: "Prices" },
-      href: {
-        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=dryeye",
-        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=dryeye",
-        en: "https://ksa.ee/en/price-list/?source=blog&funnel=dryeye",
-      },
+      label: KIIRTEST_LABEL,
+      href: KIIRTEST,
       external: true,
     },
   ],
   general: [
     {
-      label: { et: "Tee Kiirtest", ru: "Пройти быстрый тест", en: "Take the quick test" },
-      href: {
-        et: "https://kiirtest.ksa.ee/?source=blog&funnel=qualifier",
-        ru: "https://kiirtest.ksa.ee/ru?source=blog&funnel=qualifier",
-        en: "https://kiirtest.ksa.ee/en?source=blog&funnel=qualifier",
-      },
+      label: KIIRTEST_LABEL,
+      href: KIIRTEST,
       external: true,
     },
     {
-      label: { et: "Silmade tervise artiklid", ru: "Статьи о здоровье глаз", en: "Eye health articles" },
+      label: ARTICLES_LABEL,
       href: "/kategooria/silmad-ja-tervis",
     },
     {
-      label: { et: "KSA hinnakiri", ru: "Цены KSA", en: "KSA prices" },
+      label: { et: "Broneeri aeg", ru: "Записаться на приём", en: "Book an appointment" },
       href: {
-        et: "https://ksa.ee/hinnakiri/?source=blog&funnel=general",
-        ru: "https://ksa.ee/ru/preiskurant/?source=blog&funnel=general",
-        en: "https://ksa.ee/en/price-list/?source=blog&funnel=general",
+        et: "https://booking.ksa.ee/?lang=et&source=blog&funnel=general",
+        ru: "https://booking.ksa.ee/?lang=ru&source=blog&funnel=general",
+        en: "https://booking.ksa.ee/?lang=en&source=blog&funnel=general",
       },
       external: true,
     },
