@@ -1261,6 +1261,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           }
           const data = (await res.json()) as {
             body: string;
+            title?: string;
+            titleChanged?: boolean;
             excerpt: string;
             seoExcerpt: string;
             stats: { before: number; after: number; addedHeadings: number };
@@ -1269,10 +1271,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             `Vorminda blogi reeglite järgi?\n\n` +
             `• Tekst: ${data.stats.before} → ${data.stats.after} sõna\n` +
             `• Uusi H2 pealkirju: ${data.stats.addedHeadings}\n` +
-            `• Katkendlikud lühikirjeldused parandatud\n\n` +
-            `Rakendan muudatused?`;
+            `• Katkendlikud lühikirjeldused parandatud\n` +
+            (data.titleChanged ? `• Pealkirja tühikud korrastatud\n` : ``) +
+            `\nRakendan muudatused?`;
           if (!confirm(msg)) return null;
           setBody(data.body);
+          if (data.titleChanged && data.title) setTitle(data.title);
           let fm = setFmField(frontmatter, "excerpt", data.excerpt);
           fm = setFmField(fm, "seoExcerpt", data.seoExcerpt);
           setFrontmatter(fm);

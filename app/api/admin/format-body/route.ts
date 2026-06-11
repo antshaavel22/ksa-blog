@@ -41,15 +41,33 @@ function deterministicClean(body: string): string {
   // Also collapse a colon/semicolon sitting alone on its own line between two text lines:
   //   "word\n:\nNext" → "word: Next"
   out = out.replace(/([^\n\s])\n([:;])\n(?=\S)/g, "$1$2 ");
-  // Prevent prose lines that start with a 4-digit year + period (e.g.
-  // "2025. aastal krooniti ta meistriks…") from being parsed by Markdown as an
-  // ordered-list item — that renders as a broken hanging-indent block (the
-  // <ol start="2025"> bug). A year is never a genuine list marker, so escaping
-  // the dot is always safe: "2025\." renders as "2025." with no list. Genuine
-  // 1./2./3. ordered lists are left untouched.
-  out = out.replace(/^((?:19|20)\d\d)\.(\s)/gm, "$1\\.$2");
+  // Prevent an ISOLATED prose line that starts with "<number>." (a year like
+  // "2025.", a date ordinal like "1. jaanuaril", or a lone stat) from being
+  // parsed by Markdown as a one-item ordered list — that renders as a broken
+  // hanging-indent block (the <ol start="2025"> bug). Escaping the dot
+  // ("2025\.") renders identically ("2025.") with no list. A GENUINE ordered
+  // list has ≥2 numbered items (adjacent or blank-line separated) — those are
+  // detected via neighbouring items and left fully intact.
+  {
+    const lines = out.split("\n");
+    const isItem = (l: string | undefined) => /^\d+\.\s/.test(l ?? "");
+    const partOfList = (i: number) => {
+      // adjacent item, or item one blank line away (loose lists)
+      if (isItem(lines[i - 1]) || isItem(lines[i + 1])) return true;
+      if (lines[i - 1]?.trim() === "" && isItem(lines[i - 2])) return true;
+      if (lines[i + 1]?.trim() === "" && isItem(lines[i + 2])) return true;
+      return false;
+    };
+    out = lines
+      .map((l, i) => (isItem(l) && !partOfList(i) ? l.replace(/^(\d+)\./, "$1\\.") : l))
+      .join("\n");
+  }
   // Remove empty H2/H3/H4 lines (e.g. "## " with nothing after)
   out = out.replace(/^#{2,4}\s*$/gm, "");
+  // Heading hygiene: ensure exactly one space after the hashes ("##Foo" →
+  // "## Foo") and a blank line before a heading that's glued to a paragraph.
+  out = out.replace(/^(#{2,4})([^\s#])/gm, "$1 $2");
+  out = out.replace(/([^\n])\n(#{2,4} )/g, "$1\n\n$2");
   // Remove stray single-period lines (". " or just ".")
   out = out.replace(/^\s*\.\s*$/gm, "");
   // Collapse 3+ blank lines to 2
@@ -60,6 +78,14 @@ function deterministicClean(body: string): string {
   out = out.replace(/(\S) +([.!?,;:])/g, "$1$2");
   // Trim overall
   return out.trim() + "\n";
+}
+
+// ─── Title hygiene ───────────────────────────────────────────────────────────
+// Trim leading/trailing whitespace and collapse internal double-spaces. Common
+// artifacts: a stray leading space (renders as a gap before the H1) or a double
+// space left after an edit. Never changes wording.
+function cleanTitle(raw: string): string {
+  return (raw ?? "").replace(/\s+/g, " ").trim();
 }
 
 // ─── Excerpt hygiene (mirrors scripts/fix-excerpts.mjs) ──────────────────────
@@ -161,8 +187,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const cleanedTitle = cleanTitle(title ?? "");
     return NextResponse.json({
       body: polished,
+      title: cleanedTitle,
+      titleChanged: cleanedTitle !== (title ?? ""),
       excerpt: fixExcerpt(excerpt ?? ""),
       seoExcerpt: fixExcerpt(seoExcerpt ?? ""),
       stats: {
