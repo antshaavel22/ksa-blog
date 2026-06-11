@@ -41,6 +41,13 @@ function deterministicClean(body: string): string {
   // Also collapse a colon/semicolon sitting alone on its own line between two text lines:
   //   "word\n:\nNext" → "word: Next"
   out = out.replace(/([^\n\s])\n([:;])\n(?=\S)/g, "$1$2 ");
+  // Prevent prose lines that start with a 4-digit year + period (e.g.
+  // "2025. aastal krooniti ta meistriks…") from being parsed by Markdown as an
+  // ordered-list item — that renders as a broken hanging-indent block (the
+  // <ol start="2025"> bug). A year is never a genuine list marker, so escaping
+  // the dot is always safe: "2025\." renders as "2025." with no list. Genuine
+  // 1./2./3. ordered lists are left untouched.
+  out = out.replace(/^((?:19|20)\d\d)\.(\s)/gm, "$1\\.$2");
   // Remove empty H2/H3/H4 lines (e.g. "## " with nothing after)
   out = out.replace(/^#{2,4}\s*$/gm, "");
   // Remove stray single-period lines (". " or just ".")
