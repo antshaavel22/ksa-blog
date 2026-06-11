@@ -88,20 +88,32 @@ function cleanTitle(raw: string): string {
   return (raw ?? "").replace(/\s+/g, " ").trim();
 }
 
-// ─── Excerpt hygiene (mirrors scripts/fix-excerpts.mjs) ──────────────────────
+// ─── Excerpt hygiene — excerpts MUST end on a complete sentence ──────────────
+// Rule (Ants 2026-06-11): an excerpt never ends mid-word or mid-clause. It ends
+// on a real sentence terminator (. ! ? …). If it doesn't, truncate to the LAST
+// complete sentence in the text. Only if there is no complete sentence at all
+// do we fall back to an ellipsis.
 function fixExcerpt(raw: string): string {
   const s = (raw ?? "").trim();
   if (!s) return s;
-  if (/[.!?…]$/.test(s) || /\.\.\.$/.test(s)) return s;
-  // Try to truncate to last sentence ending
-  const m = s.match(/^(.*[.!?…])[^.!?…]*$/);
-  if (m) {
-    const truncated = m[1].trim();
-    if (truncated.length >= 50 && truncated.length >= s.length * 0.4) {
-      return truncated;
-    }
+  // Mid-word ellipsis? e.g. "broneeri…" or "broneeri..." — a letter sits right
+  // before the trailing ellipsis. That's a truncated word, never acceptable.
+  const midWordEllipsis = /\p{L}…$/u.test(s) || /\p{L}\.\.\.$/u.test(s);
+  // Clean sentence end = ends with . ! ? (optionally a closing quote), and not
+  // a mid-word ellipsis.
+  if (/[.!?]["»“”']?$/u.test(s) && !midWordEllipsis) return s;
+  // Otherwise truncate to the LAST real sentence terminator (. ! ?) that ends a
+  // word — i.e. is preceded by a letter, digit, or closing quote.
+  let cut = -1;
+  const re = /[.!?]/gu;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(s)) !== null) {
+    const before = s[m.index - 1];
+    if (before && /[\p{L}\d"»“”')]/u.test(before)) cut = m.index + 1;
   }
-  return s.replace(/[,;:\s]+$/, "") + "...";
+  if (cut >= 40) return s.slice(0, cut).trim();
+  // No complete sentence to fall back to — keep cleaned text + a single ellipsis.
+  return s.replace(/[\s.…]+$/u, "") + "…";
 }
 
 // ─── Word-count tolerance check ──────────────────────────────────────────────
