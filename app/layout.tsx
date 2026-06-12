@@ -3,7 +3,6 @@ import { Geist, Fraunces } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
-import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import ConsentBanner from "@/components/ConsentBanner";
 import { getPostBySlug } from "@/lib/posts";
 import { BLOG_PUBLIC_ORIGIN } from "@/lib/url";
@@ -64,10 +63,18 @@ export default async function RootLayout({
         {children}
         <ConsentBanner />
         <Analytics />
-        {/* Vercel Web Analytics — cookieless, no personal data, GDPR-exempt:
-            deliberately OUTSIDE the consent gate so it counts all visitors.
-            GA4 + blog_events above stay consent-gated and undercount ~2×. */}
-        <VercelAnalytics />
+        {/* Vercel Web Analytics — cookieless, no personal data, GDPR-exempt,
+            so it runs for ALL visitors (GA4 + blog_events stay consent-gated
+            and undercount ~2×). Plain script tag instead of the npm component:
+            Cookiebot auto-blocking strips dynamically injected scripts when
+            statistics-consent is declined; data-cookieconsent="ignore" is the
+            documented exemption for consent-free scripts. script.js tracks
+            page views + SPA route changes on its own. */}
+        <script
+          defer
+          src="/_vercel/insights/script.js"
+          data-cookieconsent="ignore"
+        />
       </body>
     </html>
   );
