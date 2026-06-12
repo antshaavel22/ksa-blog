@@ -48,7 +48,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     flow3: {
       eyebrow: "FLOW3 · VABANE PRILLIDEST",
       headline: "Tahad teada, kas Flow3 sinu silmadele sobib?",
-      body: "Flow3 uuring kliinikus — 39 € (tavahind 69 €) kuni 31. mai 2026. 60 minutit, Tallinn või Tartu.",
+      body: "Flow3 uuring kliinikus — 39 € (tavahind 69 €) kuni 30. juuni 2026. Kestus 60 minutit, Tallinn või Tartu.",
       primaryButtonLabel: "Broneeri Flow3 uuring · 39 € sooduskoodiga",
       callbackPromptLabel: "Mul on veel küsimusi ja soovin, et helistate tagasi",
       callbackHelpText: "Jäta nimi + telefon",
@@ -120,7 +120,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     flow3: {
       eyebrow: "FLOW3 · СВОБОДА ОТ ОЧКОВ",
       headline: "Хотите узнать, подходит ли Flow3 вашим глазам?",
-      body: "Обследование Flow3 в клинике — 39 € (вместо 69 €) до 31 мая 2026. 60 минут, Таллинн или Тарту.",
+      body: "Обследование Flow3 в клинике — 39 € (вместо 69 €) до 30 июня 2026. Продолжительность — 60 минут, Таллинн или Тарту.",
       primaryButtonLabel: "Записаться на Flow3 · промокод 39 €",
       callbackPromptLabel: "У меня ещё есть вопросы — перезвоните мне",
       callbackHelpText: "Оставьте имя и телефон",
