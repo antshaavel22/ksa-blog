@@ -3942,6 +3942,22 @@ function HelpTab() {
         <br />Esc tühistab. Salvestamine paneb muudatuse kohe live'i (~2 min).
       </div>
 
+      <h3 style={s.h3}>🆕 Väljavõte otse redaktoris (uus — soovituslik viis)</h3>
+      <p style={s.p}>
+        Nüüd on väljavõte <strong>alati nähtav redaktoris</strong> — kohe pealkirja all omaette kastis
+        {" "}<strong>„Väljavõte — kuvatakse blogikaardil ja eelvaates"</strong>. Avad artikli, näed kohe selle väljavõtet
+        ja saad seda muuta täpselt nagu artikli teksti: kirjuta kasti ning see salvestub koos artikliga, kui klõpsad
+        {" "}<strong>Salvesta</strong> või <strong>Uuenda live</strong>.
+      </p>
+      <p style={s.p}>
+        Kasti all on tähemärkide loendur ja vihje, kui väljavõte ei lõpe terve lausega. Sealsamas all on peidetult ka
+        {" "}<strong>„SEO kirjeldus (Google)"</strong> väli (vabatahtlik) — kui jätad tühjaks, kasutab Google ülemist väljavõtet.
+      </p>
+      <div style={s.tip}>
+        ✍️ <strong>Hea väljavõte:</strong> 1–2 tervet lauset, mis tutvustavad artiklit ja panevad lugejat edasi lugema.
+        Lõpeta alati terve lausega (. ! ?) — mitte poolelt sõnalt ega „…".
+      </div>
+
       {/* Section 3.5 — Delete */}
       <h2 style={s.h2}>5. Artikli kustutamine</h2>
       <p style={s.p}>Blogis on kaks seisundit: <strong>mustand</strong> (ei ole avalikus blogis) ja <strong>avaldatud</strong> (nähtav ksa.ee/blogi-s). Kustutamise loogika erineb vastavalt.</p>
