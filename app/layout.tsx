@@ -3,6 +3,7 @@ import { Geist, Fraunces } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import ConsentBanner from "@/components/ConsentBanner";
 import { getPostBySlug } from "@/lib/posts";
 import { BLOG_PUBLIC_ORIGIN } from "@/lib/url";
@@ -63,6 +64,10 @@ export default async function RootLayout({
         {children}
         <ConsentBanner />
         <Analytics />
+        {/* Vercel Web Analytics — cookieless, no personal data, GDPR-exempt:
+            deliberately OUTSIDE the consent gate so it counts all visitors.
+            GA4 + blog_events above stay consent-gated and undercount ~2×. */}
+        <VercelAnalytics />
       </body>
     </html>
   );
