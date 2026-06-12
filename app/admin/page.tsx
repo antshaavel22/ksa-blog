@@ -318,6 +318,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [excerpt, setExcerpt] = useState("");
+  const [seoExcerpt, setSeoExcerpt] = useState("");
   const [frontmatter, setFrontmatter] = useState("");
   const [featuredImage, setFeaturedImage] = useState("");
   const [postDate, setPostDate] = useState("");
@@ -387,6 +389,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           setSelectedCategories(getFmCategories(parsed.frontmatter));
           setReviewedBy(getFmField(parsed.frontmatter, "reviewedBy"));
           setAuthor(getFmField(parsed.frontmatter, "author"));
+          setExcerpt(getFmField(parsed.frontmatter, "excerpt"));
+          setSeoExcerpt(getFmField(parsed.frontmatter, "seoExcerpt"));
           setPinned(/^pinned:\s*(true|"true")\s*$/m.test(parsed.frontmatter));
           setBody(parsed.body.trimStart());
         } else { setBody(raw); }
@@ -429,6 +433,11 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
   function buildFm(extraMedical?: boolean) {
     let fm = setFmField(frontmatter, "title", title);
+    // Excerpt is a first-class editable field (the textarea under the title).
+    // Collapse any stray newlines so the quoted YAML value stays single-line.
+    fm = setFmField(fm, "excerpt", excerpt.replace(/\s*\n\s*/g, " ").trim());
+    const seo = seoExcerpt.replace(/\s*\n\s*/g, " ").trim();
+    if (seo) fm = setFmField(fm, "seoExcerpt", seo);
     fm = setFmField(fm, "featuredImage", featuredImage);
     fm = setFmField(fm, "date", postDate);
     fm = setFmField(fm, "lang", currentLang);
@@ -865,6 +874,63 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         onBlur={e => { e.target.style.borderBottomColor = "#f0f0ec"; }}
       />
 
+      {/* Excerpt — always-visible, first-class editable field (shown on the blog
+          card + preview). Edits here are saved with Salvesta / Uuenda live like
+          the body text. */}
+      <div style={{
+        background: "#fbfcf8", border: "1.5px solid #e3ead0", borderRadius: 14,
+        padding: 16, marginBottom: 24,
+      }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8, gap: 12 }}>
+          <label style={{ fontSize: 13, fontWeight: 700, color: "#3f4a23" }}>
+            Väljavõte <span style={{ fontWeight: 500, color: "#7a8a4e" }}>— kuvatakse blogikaardil ja eelvaates</span>
+          </label>
+          <span style={{ fontSize: 12, color: excerpt.trim().length > 220 ? "#b9770e" : "#9aa77a", whiteSpace: "nowrap" }}>
+            {excerpt.trim().length} tähemärki
+          </span>
+        </div>
+        <textarea
+          value={excerpt}
+          onChange={e => setExcerpt(e.target.value)}
+          placeholder="Lühike, terviklik lause, mis tutvustab artiklit…"
+          rows={3}
+          style={{
+            width: "100%", padding: "12px 14px", fontSize: 15, lineHeight: 1.5,
+            color: "#1a1a1a", border: "1.5px solid #d7e0c0", borderRadius: 10,
+            background: "white", outline: "none", boxSizing: "border-box",
+            resize: "vertical", fontFamily: "inherit",
+          }}
+          onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+          onBlur={e => { e.target.style.borderColor = "#d7e0c0"; }}
+        />
+        {excerpt.trim() && !/[.!?…]["']?$/u.test(excerpt.trim()) && (
+          <div style={{ fontSize: 12, color: "#b9770e", marginTop: 6 }}>
+            ⚠ Väljavõte peaks lõppema tervikliku lausega (. ! ? …) — praegu lõpeb poolikult.
+          </div>
+        )}
+
+        {/* SEO description — optional, secondary (Google meta) */}
+        <details style={{ marginTop: 12 }}>
+          <summary style={{ fontSize: 12.5, fontWeight: 600, color: "#6b7656", cursor: "pointer", userSelect: "none" }}>
+            SEO kirjeldus (Google) — valikuline {seoExcerpt.trim() ? "✓" : ""}
+          </summary>
+          <textarea
+            value={seoExcerpt}
+            onChange={e => setSeoExcerpt(e.target.value)}
+            placeholder="Kui jätad tühjaks, kasutab Google ülemist väljavõtet."
+            rows={2}
+            style={{
+              width: "100%", padding: "10px 12px", fontSize: 14, lineHeight: 1.5,
+              color: "#1a1a1a", border: "1.5px solid #e0e0d8", borderRadius: 10,
+              background: "white", outline: "none", boxSizing: "border-box",
+              resize: "vertical", fontFamily: "inherit", marginTop: 8,
+            }}
+            onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+            onBlur={e => { e.target.style.borderColor = "#e0e0d8"; }}
+          />
+        </details>
+      </div>
+
       {/* Media fields */}
       <div style={{
         background: "white", border: "1.5px solid #e6e6e6", borderRadius: 16,
@@ -1280,6 +1346,8 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           let fm = setFmField(frontmatter, "excerpt", data.excerpt);
           fm = setFmField(fm, "seoExcerpt", data.seoExcerpt);
           setFrontmatter(fm);
+          setExcerpt(data.excerpt);
+          setSeoExcerpt(data.seoExcerpt);
           return data.body;
         }}
         onEnrichSeo={async () => {
@@ -1332,6 +1400,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           if (data.llmSearchQueries) fm = setFmStringListField(fm, "llmSearchQueries", data.llmSearchQueries);
           if (data.faqItems) fm = setFmFaqField(fm, data.faqItems);
           setFrontmatter(fm);
+          if (data.seoExcerpt) setSeoExcerpt(data.seoExcerpt);
         }}
       />
 
