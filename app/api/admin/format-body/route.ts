@@ -127,17 +127,17 @@ function wordCount(s: string): number {
 async function claudePolish(body: string, title: string, lang: string): Promise<string> {
   if (!process.env.ANTHROPIC_API_KEY) return body;
 
-  const langLabel = lang === "ru" ? "Russian" : lang === "en" ? "English" : "Estonian";
+  const langHint = lang === "ru" ? "Russian" : lang === "en" ? "English" : lang === "et" ? "Estonian" : "(unknown — detect from the body)";
   const client = new Anthropic();
 
   const prompt = `You are a markdown structure editor for the KSA Silmakeskus blog. Your ONLY job is to improve readability through structure — NEVER rewrite meaning, NEVER add or remove facts, NEVER translate.
 
-Language: ${langLabel}
+CRITICAL LANGUAGE RULE: Work entirely in the language of the BODY TEXT below. Detect that language from the text itself. Every heading you write MUST be in the SAME language as the body. NEVER translate a heading (or anything else) into another language. (The post is tagged "${langHint}", but this is only a hint — if the body is written in a different language, ALWAYS follow the body, not the tag.)
 Title: ${title}
 
 RULES — strict:
 1. Keep ALL words. You may reorder or split sentences for readability, but the word set must be preserved (±5% tolerance).
-2. Insert \`## H2\` headings at natural topic breaks (3–5 H2s for a typical article). Headings must be in ${langLabel} and derived from the content below them.
+2. Insert \`## H2\` headings at natural topic breaks (3–5 H2s for a typical article). Write each heading in the SAME LANGUAGE as the body text, derived from the content below it — never in any other language.
 3. Split wall-of-text paragraphs (>120 words) into 2–3 shorter ones. Keep paragraphs 40–90 words ideally.
 4. For definition-style list intros like "X: Foo bar" at the start of a paragraph, convert to **X.** Foo bar (bold lead-in).
 5. Preserve EXACTLY: all markdown links [text](url), images ![alt](url), MDX tags like <YouTubeEmbed .../> and <RendiaEmbed .../>, bold **x**, italic *x*, existing bullet lists.

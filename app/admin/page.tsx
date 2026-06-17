@@ -1321,7 +1321,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
               excerpt: getFmField(frontmatter, "excerpt"),
               seoExcerpt: getFmField(frontmatter, "seoExcerpt"),
               title,
-              lang: draft.lang,
+              lang: currentLang,
             }),
           });
           if (!res.ok) {
@@ -1365,7 +1365,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             body: JSON.stringify({
               body,
               title,
-              lang: draft.lang,
+              lang: currentLang,
               currentSeoTitle: getFmField(frontmatter, "seoTitle"),
               currentSeoExcerpt: getFmField(frontmatter, "seoExcerpt"),
               currentLlmQueries: getFmStringList(frontmatter, "llmSearchQueries"),
