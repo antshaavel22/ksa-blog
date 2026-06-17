@@ -130,6 +130,24 @@ function setFmField(fm: string, key: string, value: string): string {
 
 // Write a YAML list field (e.g. categories) — replaces any existing key:…value with
 // a proper YAML block list so gray-matter always parses it as string[].
+// Detect the dominant natural language of an article body, so we can warn the
+// editor when the chosen `lang` disagrees — the recurring "RU article tagged EN"
+// class of mistake. High-precision: returns "?" when unsure (no false warnings).
+function detectBodyLang(body: string): "ru" | "et" | "en" | "?" {
+  const text = (body || "").replace(/<[^>]+>/g, " ").replace(/https?:\/\/\S+/g, " ");
+  const cyr = (text.match(/[А-Яа-яЁё]/g) || []).length;
+  const lat = (text.match(/[A-Za-zõäöü]/g) || []).length;
+  if (cyr + lat < 40) return "?";
+  if (cyr / (cyr + lat) > 0.5) return "ru";
+  const etChars = (text.match(/[õäöü]/gi) || []).length;
+  const en = (text.match(/\b(the|and|is|of|to|for|with|your|you|this|that|are|how|why|what|from|which|has|have)\b/gi) || []).length;
+  const et = (text.match(/\b(ja|on|ei|et|kui|võib|kõik|ning|või|kuid|sest|nende|seda|selle|mida|pärast|silmade|kuidas|miks)\b/gi) || []).length;
+  if (en + et < 6) return "?";
+  if (et > en && (etChars > 5 || et > en * 1.5)) return "et";
+  if (en > et && etChars <= 5) return "en";
+  return "?";
+}
+
 function setCategoriesField(fm: string, slugsOrSlug: string | string[]): string {
   const slugs = Array.isArray(slugsOrSlug) ? slugsOrSlug : [slugsOrSlug];
   if (slugs.length === 0) return fm;
@@ -658,6 +676,19 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     if (!reviewedBy) {
       setError("⚠️ Ei saa avaldada — meditsiiniline läbivaataja (reviewedBy) on kohustuslik. Vali sticky-riba allservas.");
       return;
+    }
+    // Language safety net: warn if the body language disagrees with the chosen
+    // lang (prevents "RU article on the EN blog" + wrong-language category pills).
+    const detected = detectBodyLang(body);
+    if (detected !== "?" && detected !== currentLang) {
+      const NAME: Record<string, string> = { et: "eesti", ru: "vene", en: "inglise" };
+      const ok = confirm(
+        `⚠ Keelekontroll\n\nArtikli tekst tundub olevat ${NAME[detected] ?? detected.toUpperCase()} keeles, ` +
+        `aga postituse keeleks on määratud ${NAME[currentLang] ?? currentLang.toUpperCase()}.\n\n` +
+        `Vale keel paneb artikli vale keele blogisse ja näitab vale keele kategooriaid (keeled ei tohi seguneda).\n\n` +
+        `Vajuta TÜHISTA, et keelt parandada (keelelipud pealkirja kohal), või OK, et siiski avaldada.`
+      );
+      if (!ok) return;
     }
     setPublishing(true); setError("");
     // Build the final content from current React state — this is the source of truth.

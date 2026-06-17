@@ -140,12 +140,12 @@ yana / Yana Grechits          → slug: yana-grechits
 maigret / Maigret Moru        → slug: maigret-moru
 ndhaldur / KSA Silmakeskus   → slug: ksa-silmakeskus
 ```
-Editors: **Silvia Johanna Haavel** (ET), **Jana** (RU + EN)
+Editors: **Silvia Johanna Haavel** (ET), **Jana** (RU only). ET + EN are owned by Dr. Ants Haavel (+ AI). (Updated 2026-06-17.)
 
 ## Team & Routing
 - **Dr. Ants Haavel** — owner, medical sign-off
 - **Silvia Johanna Haavel** — ET editor
-- **Jana** — RU + EN editor
+- **Jana** — RU editor only (ET + EN owned by Dr. Ants Haavel + AI)
 - **Mai** — building new booking system (active this week 2026-04-23)
 - **Kadri** — redirects, Search Console — **on vacation until 2026-04-27**, do not route tasks to her this week; send booking-LP / WP requests to Mai. DNS handled by Ants directly.
 
