@@ -382,6 +382,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         const parsed = parseMdx(raw);
         if (parsed) {
           setFrontmatter(parsed.frontmatter);
+          // Sync language from the file's own frontmatter — the source of truth.
+          // Without this, currentLang kept its initial value and the category
+          // pills (+ CTA/preview) showed Estonian labels on EN/RU posts.
+          setCurrentLang(getFmField(parsed.frontmatter, "lang") || draft.lang || "et");
           setTitle(getFmField(parsed.frontmatter, "title"));
           setFeaturedImage(getFmField(parsed.frontmatter, "featuredImage"));
           setPostDate(getFmField(parsed.frontmatter, "date") || new Date().toISOString().split("T")[0]);
@@ -851,7 +855,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           category={selectedCategories[0] ? getCategoryLabel(selectedCategories[0], currentLang as "et"|"ru"|"en") : ""}
           date={postDate}
           author={getFmField(frontmatter, "author")}
-          lang={draft.lang}
+          lang={currentLang}
           onClose={() => setShowPreview(false)}
           onPublish={!isPublished ? publish : undefined}
           publishing={publishing}
