@@ -249,7 +249,7 @@
     padding: 14px 15px;
   }
   .related-post-category {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 0.06em;
   }
   .related-post-title {
@@ -260,7 +260,7 @@
     display: none;
   }
   .related-post-date {
-    font-size: 11px;
+    font-size: 12px;
     padding-top: 6px;
   }
 }
