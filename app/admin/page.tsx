@@ -2002,6 +2002,7 @@ function DragCrop({
   // doesn't work"). Retry with backoff before giving up.
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const MAX_ATTEMPTS = 6;
   const RETRY_DELAYS = [800, 1200, 1800, 2500, 3500, 5000]; // ms, cumulative ~15s
@@ -2010,15 +2011,22 @@ function DragCrop({
     // New image → reset retry state.
     setLoadAttempt(0);
     setLoadFailed(false);
+    setImgLoaded(false);
     return () => { if (retryTimer.current) clearTimeout(retryTimer.current); };
   }, [src]);
+
+  const displaySrc = loadAttempt === 0 ? src : `${src}${src.includes("?") ? "&" : "?"}retry=${loadAttempt}`;
+
+  // Each retry mounts a fresh <img> (key={displaySrc}), so "loaded" must reset
+  // per attempt too — otherwise a stale imgLoaded=true from a prior attempt
+  // would hide the loading overlay while the NEW element is still fetching.
+  useEffect(() => { setImgLoaded(false); }, [displaySrc]);
 
   function handleImgError() {
     if (loadAttempt >= MAX_ATTEMPTS - 1) { setLoadFailed(true); return; }
     const delay = RETRY_DELAYS[loadAttempt] ?? 5000;
     retryTimer.current = setTimeout(() => setLoadAttempt((n) => n + 1), delay);
   }
-  const displaySrc = loadAttempt === 0 ? src : `${src}${src.includes("?") ? "&" : "?"}retry=${loadAttempt}`;
 
   // Parse current focalPoint ("X% Y%" or named e.g. "center center")
   function parsePct(fp: string): { x: number; y: number } {
@@ -2116,9 +2124,10 @@ function DragCrop({
               display: "block", pointerEvents: "none",
             }}
             onError={handleImgError}
+            onLoad={() => setImgLoaded(true)}
           />
         )}
-        {loadAttempt > 0 && !loadFailed && (
+        {loadAttempt > 0 && !imgLoaded && !loadFailed && (
           <div style={{
             position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
             background: "rgba(245,242,236,0.9)", pointerEvents: "none",
