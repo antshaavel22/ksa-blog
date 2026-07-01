@@ -306,47 +306,47 @@ async function sendEmail(to: string, subject: string, message: string) {
 // Compress image in the browser using Canvas before uploading
 // Shared by DraftEditor (cover photo) and FormattingToolbar (inline body images)
 async function compressImageClient(file: File, maxWidth = 1400, quality = 0.82): Promise<{ blob: Blob; width: number; height: number }> {
-  // GUARANTEE the encoded WebP stays well under the serverless body limit (4.5 MB),
-  // no matter the source. PNG screenshots are often very tall + lossless, so we
-  // step DOWN quality first and then DIMENSIONS until the blob is small enough.
-  const TARGET_BYTES = 1_800_000;   // hard ceiling we drive the output under
-  const MIN_WIDTH = 640;            // don't shrink narrower than this
+  // Keep the encoded WebP small enough to upload (well under the ~4.5 MB serverless
+  // body limit) WITHOUT freezing the browser. Big/tall PNG screenshots are the risk:
+  // encoding a huge canvas many times hangs the tab. So we do ONE up-front downscale
+  // that caps both width AND total pixel area, then at most 3 cheap re-encodes.
+  const TARGET_BYTES = 1_800_000;
+  const MAX_AREA = 4_000_000;   // ≈4 MP working canvas → fast toBlob + small output
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = async () => {
       URL.revokeObjectURL(url);
       if (!img.width || !img.height) { reject(new Error("Pilt on vigane (0 px)")); return; }
-      const aspect = img.height / img.width;
-      // Render at a given width + quality → returns the encoded blob (or null).
-      const renderAt = (w: number, q: number): Promise<{ blob: Blob; width: number; height: number } | null> =>
-        new Promise((res) => {
-          const width = Math.max(1, Math.round(w));
-          const height = Math.max(1, Math.round(width * aspect));
-          const canvas = document.createElement("canvas");
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) { res(null); return; }
-          ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, width, height); // matte for transparent PNGs
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob((b) => res(b ? { blob: b, width, height } : null), "image/webp", q);
-        });
+      // One-shot target size: cap width, then cap total area (handles very tall images).
+      let scale = img.width > maxWidth ? maxWidth / img.width : 1;
+      let w = Math.round(img.width * scale);
+      let h = Math.round(img.height * scale);
+      if (w * h > MAX_AREA) { const a = Math.sqrt(MAX_AREA / (w * h)); w = Math.round(w * a); h = Math.round(h * a); }
+      const draw = (cw: number, ch: number): HTMLCanvasElement | null => {
+        const c = document.createElement("canvas");
+        c.width = Math.max(1, cw); c.height = Math.max(1, ch);
+        const ctx = c.getContext("2d");
+        if (!ctx) return null;
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height); // matte for transparent PNGs
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        return c;
+      };
+      const enc = (c: HTMLCanvasElement, q: number): Promise<Blob | null> =>
+        new Promise((res) => c.toBlob((b) => res(b), "image/webp", q));
       try {
-        let width = Math.min(maxWidth, img.width);
-        let last: { blob: Blob; width: number; height: number } | null = null;
-        // Quality ladder per width: 0.82 → 0.6 → 0.45; then shrink width 18% and repeat.
-        for (let i = 0; i < 14; i++) {
-          for (const q of [quality, 0.6, 0.45]) {
-            const r = await renderAt(width, q);
-            if (!r) continue;
-            last = r;
-            if (r.blob.size <= TARGET_BYTES) { resolve(r); return; }
-          }
-          if (width <= MIN_WIDTH) break;
-          width = Math.max(MIN_WIDTH, Math.round(width * 0.82));
+        let canvas = draw(w, h);
+        if (!canvas) { reject(new Error("Pildi töötlemine ebaõnnestus (canvas)")); return; }
+        // At most 3 encodes: q0.82 → q0.55 (same canvas) → shrink 30% + q0.6.
+        let blob = await enc(canvas, quality);
+        if (blob && blob.size > TARGET_BYTES) blob = await enc(canvas, 0.55);
+        if (blob && blob.size > TARGET_BYTES) {
+          w = Math.round(w * 0.7); h = Math.round(h * 0.7);
+          const smaller = draw(w, h);
+          if (smaller) { canvas = smaller; blob = await enc(canvas, 0.6); }
         }
-        if (last) { resolve(last); return; } // accept smallest we achieved
-        reject(new Error("Pildi tihendamine ebaõnnestus"));
+        if (!blob) { reject(new Error("Pildi tihendamine ebaõnnestus")); return; }
+        resolve({ blob, width: canvas.width, height: canvas.height });
       } catch (e) { reject(e as Error); }
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Pildi avamine ebaõnnestus — proovi teist faili")); };
