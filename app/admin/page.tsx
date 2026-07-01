@@ -1995,6 +1995,31 @@ function DragCrop({
   const startMouse = useRef({ x: 0, y: 0 });
   const startPct = useRef({ x: 50, y: 50 });
 
+  // GitHub's raw.githubusercontent.com CDN can take a few seconds to serve a
+  // file right after it was committed (propagation delay). The very first
+  // image load after upload can 404/error even though the file exists — with
+  // no retry this left the preview permanently blank (looked like "upload
+  // doesn't work"). Retry with backoff before giving up.
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const MAX_ATTEMPTS = 6;
+  const RETRY_DELAYS = [800, 1200, 1800, 2500, 3500, 5000]; // ms, cumulative ~15s
+
+  useEffect(() => {
+    // New image → reset retry state.
+    setLoadAttempt(0);
+    setLoadFailed(false);
+    return () => { if (retryTimer.current) clearTimeout(retryTimer.current); };
+  }, [src]);
+
+  function handleImgError() {
+    if (loadAttempt >= MAX_ATTEMPTS - 1) { setLoadFailed(true); return; }
+    const delay = RETRY_DELAYS[loadAttempt] ?? 5000;
+    retryTimer.current = setTimeout(() => setLoadAttempt((n) => n + 1), delay);
+  }
+  const displaySrc = loadAttempt === 0 ? src : `${src}${src.includes("?") ? "&" : "?"}retry=${loadAttempt}`;
+
   // Parse current focalPoint ("X% Y%" or named e.g. "center center")
   function parsePct(fp: string): { x: number; y: number } {
     const named: Record<string, number> = { left: 0, center: 50, right: 100, top: 0, bottom: 100 };
@@ -2077,19 +2102,43 @@ function DragCrop({
         }}
         title="Lohista pilti, et valida kärpimisel nähtav osa"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt=""
-          draggable={false}
-          style={{
-            width: "100%", height: "100%",
-            objectFit: "cover",
-            objectPosition: `${Math.round(pct.x)}% ${Math.round(pct.y)}%`,
-            display: "block", pointerEvents: "none",
-          }}
-          onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-        />
+        {!loadFailed && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={displaySrc}
+            src={displaySrc}
+            alt=""
+            draggable={false}
+            style={{
+              width: "100%", height: "100%",
+              objectFit: "cover",
+              objectPosition: `${Math.round(pct.x)}% ${Math.round(pct.y)}%`,
+              display: "block", pointerEvents: "none",
+            }}
+            onError={handleImgError}
+          />
+        )}
+        {loadAttempt > 0 && !loadFailed && (
+          <div style={{
+            position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(245,242,236,0.9)", pointerEvents: "none",
+          }}>
+            <span style={{ fontSize: 12, color: "#9a9a9a" }}>⏳ Laen eelvaadet…</span>
+          </div>
+        )}
+        {loadFailed && (
+          <div style={{
+            position: "absolute", inset: 0, display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center", gap: 6, padding: 12, textAlign: "center",
+          }}>
+            <span style={{ fontSize: 12, color: "#9a9a9a" }}>Pilt on üles laaditud, aga eelvaadet ei õnnestunud laadida.</span>
+            <button
+              type="button"
+              onClick={() => { setLoadAttempt(0); setLoadFailed(false); }}
+              style={{ fontSize: 11, padding: "4px 10px", borderRadius: 6, border: "1px solid #e6e6e6", background: "white", color: "#5a6b6c", cursor: "pointer", fontFamily: "inherit" }}
+            >🔄 Proovi uuesti</button>
+          </div>
+        )}
         {/* Drag hint overlay */}
         <div style={{
           position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
