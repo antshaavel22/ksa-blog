@@ -77,13 +77,19 @@ export async function GET(req: NextRequest) {
   try {
     if (process.env.NODE_ENV === "production") {
       // Try filesystem first (fast, always available for files in the deployment bundle).
-      // Fall back to GitHub API for files created after the last deploy.
+      // GitHub-first: the editor must always load the LATEST committed content,
+      // never the deploy-time bundle (which can be many commits stale — the
+      // bundled filesystem is frozen at build time). Reading the filesystem
+      // first meant every edit saved via PUT (which writes straight to GitHub)
+      // was invisible on the next load until the NEXT full redeploy — looked
+      // exactly like "save doesn't stick, reverts to old content". Same class
+      // of bug already fixed for /api/admin/post (see that route's comment).
+      // Filesystem is only a fallback for when the GitHub API is unreachable.
       try {
-        const content = await readDraft(filePath);
+        const content = await readDraftProd(filePath);
         return NextResponse.json({ content });
       } catch {
-        // Not in bundle — read from GitHub (file was created after last deploy)
-        const content = await readDraftProd(filePath);
+        const content = await readDraft(filePath);
         return NextResponse.json({ content });
       }
     } else {
