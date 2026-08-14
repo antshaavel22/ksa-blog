@@ -165,7 +165,7 @@ async function genExcerpt(title, body, lang, problem, draft) {
 }
 
 // Generation is held to the tighter writing target, not the wider accept-band.
-const validate = (ex, lang, body) => validateExcerpt(ex, lang, body, { strict: true });
+const validate = (ex, lang, body, title) => validateExcerpt(ex, lang, body, { strict: true, title });
 
 // Naming the ceiling doesn't work — drafts land just over it again and again.
 // Naming a target well below the ceiling does: the usual overshoot then still
@@ -217,7 +217,7 @@ for (const f of fs.readdirSync(dir)) {
   const old = String(g.data.excerpt || "").trim();
   const body = plainBody(g.content);
   if (!body) continue;
-  const problem = old ? validate(old, lang, body) : "missing";
+  const problem = old ? validate(old, lang, body, title) : "missing";
   if (!ALL && !problem) continue;
   targets.push({ f, lang, title, old, body, why: problem ?? "regenerate-all" });
 }
@@ -232,7 +232,7 @@ const results = [];
 async function run(t) {
   try {
     let ex = await genExcerpt(t.title, t.body, t.lang);
-    let problem = validate(ex, t.lang, t.body);
+    let problem = validate(ex, t.lang, t.body, t.title);
 
     for (let attempt = 0; attempt < 5 && problem; attempt++) {
       // "lifted from the article" can't be repaired by editing the draft — that
@@ -244,7 +244,7 @@ async function run(t) {
         revisable ? ex : null,
       );
       if (!next) continue;                     // empty reply: keep the draft we had
-      const nextProblem = validate(next, t.lang, t.body);
+      const nextProblem = validate(next, t.lang, t.body, t.title);
       if (!nextProblem) { ex = next; problem = null; break; }
       // Otherwise carry the new draft forward only if it isn't worse than what we
       // hold — an over-long draft that keeps its specifics is a better base to

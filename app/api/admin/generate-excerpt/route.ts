@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
         .replace(/^["'«»]+|["'«»]+$/g, "")
         .replace(/\s+/g, " ")
         .trim();
-      problem = validateExcerpt(excerpt, useLang, cleanBody, { strict: true });
+      problem = validateExcerpt(excerpt, useLang, cleanBody, { strict: true, title: String(title ?? "") });
     }
 
     if (problem) {

@@ -748,7 +748,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     // Excerpt gate: an excerpt must be an original two-sentence summary (content
     // rule #6). Bad ones used to ship silently — a raw 180-char slice of the body
     // cut mid-word. Offer to write a proper one rather than just blocking.
-    const excerptProblem = validateExcerpt(excerpt.trim(), currentLang, body);
+    const excerptProblem = validateExcerpt(excerpt.trim(), currentLang, body, { title });
     if (excerptProblem) {
       const wantsFix = confirm(
         `⚠ Väljavõte ei vasta reeglile\n\n${excerpt.trim() ? `Praegu: "${excerpt.trim().slice(0, 120)}${excerpt.trim().length > 120 ? "…" : ""}"\n\nProbleem: ${excerptProblem}` : "Väljavõte on tühi."}\n\n` +
@@ -1026,7 +1026,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         {/* Live check against the same rules the publish gate and the CLI use, so
             the editor sees the problem while writing rather than at publish time. */}
         {excerpt.trim() && (() => {
-          const problem = validateExcerpt(excerpt.trim(), currentLang, body);
+          const problem = validateExcerpt(excerpt.trim(), currentLang, body, { title });
           return problem ? (
             <div style={{ fontSize: 12, color: "#b9770e", marginTop: 6 }}>
               ⚠ {problem}. Väljavõte peab olema kaks omas sõnades lauset kogu artikli kohta.

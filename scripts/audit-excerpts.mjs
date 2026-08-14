@@ -25,7 +25,7 @@ for (const f of fs.readdirSync(dir)) {
 
   const lang = String(g.data.lang || "").trim();
   const excerpt = String(g.data.excerpt ?? "").trim();
-  const reason = validateExcerpt(excerpt, LANG_NAMES[lang] ? lang : null, plainBody(g.content));
+  const reason = validateExcerpt(excerpt, LANG_NAMES[lang] ? lang : null, plainBody(g.content), { title: String(g.data.title ?? "") });
 
   if (!reason) { clean++; continue; }
   // Bucket by the rule that tripped, not the exact numbers in the message.
