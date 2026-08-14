@@ -1,4 +1,4 @@
-// Audit excerpt quality against the house rule (see scripts/lib/excerpt-rules.mjs):
+// Audit excerpt quality against the house rule (see lib/excerpt-rules.mjs):
 // an excerpt is ORIGINAL copy — exactly two sentences that catchily summarise the
 // whole article — never sentences lifted from the body, never cut mid-sentence.
 //
@@ -7,7 +7,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { LANG_NAMES, plainBody, validateExcerpt } from "./lib/excerpt-rules.mjs";
+import { LANG_NAMES, plainBody, validateExcerpt } from "../lib/excerpt-rules.mjs";
 
 const LIST = process.argv.includes("--list");
 const dir = "content/posts";

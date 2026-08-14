@@ -21,7 +21,7 @@ import matter from "gray-matter";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   LANG_NAMES as LANG, MIN_CHARS, MAX_CHARS, plainBody, validateExcerpt,
-} from "./lib/excerpt-rules.mjs";
+} from "../lib/excerpt-rules.mjs";
 
 const envPath = path.join(process.cwd(), ".env.local");
 if (fs.existsSync(envPath)) {

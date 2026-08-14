@@ -399,6 +399,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   const [focalPoint, setFocalPoint] = useState(getFmField(frontmatter, "imageFocalPoint") || "center center");
   const [pinned, setPinned] = useState(/^pinned:\s*(true|"true")\s*$/m.test(frontmatter));
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [generatingExcerpt, setGeneratingExcerpt] = useState(false);
   const [renamingImage, setRenamingImage] = useState(false);
   const [imageRenameInput, setImageRenameInput] = useState("");
   const [coverSeoName, setCoverSeoName] = useState(""); // optional pre-upload SEO name for cover photo
@@ -650,6 +651,28 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     } catch {
       // If validation API itself is unreachable, don't block saves — fall through
       return null;
+    }
+  }
+
+  // Write a fresh excerpt from the article body: 2 original sentences covering
+  // the whole piece. Rules live in lib/excerpt-rules.mjs, shared with the CLI.
+  async function generateExcerpt() {
+    if (generatingExcerpt) return;
+    if (!body.trim()) { alert("Kirjuta esmalt artikli tekst."); return; }
+    if (excerpt.trim() && !confirm("Asendan praeguse väljavõtte uuega. Jätkan?")) return;
+    setGeneratingExcerpt(true);
+    try {
+      const res = await fetch("/api/admin/generate-excerpt", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body, lang: currentLang }),
+      });
+      const d = await res.json() as { excerpt?: string; error?: string };
+      if (d.excerpt) setExcerpt(d.excerpt);
+      else alert("Väljavõtte loomine ebaõnnestus: " + (d.error ?? res.status));
+    } catch (err) {
+      alert("Võrguviga: " + (err as Error).message);
+    } finally {
+      setGeneratingExcerpt(false);
     }
   }
 
@@ -951,14 +974,29 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           <label style={{ fontSize: 13, fontWeight: 700, color: "#3f4a23" }}>
             Väljavõte <span style={{ fontWeight: 500, color: "#7a8a4e" }}>— kuvatakse blogikaardil ja eelvaates</span>
           </label>
-          <span style={{ fontSize: 12, color: excerpt.trim().length > 220 ? "#b9770e" : "#9aa77a", whiteSpace: "nowrap" }}>
-            {excerpt.trim().length} tähemärki
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
+            <span style={{ fontSize: 12, color: excerpt.trim().length > 230 ? "#b9770e" : "#9aa77a" }}>
+              {excerpt.trim().length} tähemärki
+            </span>
+            <button
+              type="button"
+              onClick={generateExcerpt}
+              disabled={generatingExcerpt}
+              title="Kirjutab uue väljavõtte: 2 lauset, oma sõnadega, kogu artikli kohta"
+              style={{
+                fontSize: 12, fontWeight: 600, padding: "5px 11px", borderRadius: 8,
+                border: "1.5px solid #d7e0c0", background: generatingExcerpt ? "#eef1e6" : "white",
+                color: "#5f7320", cursor: generatingExcerpt ? "default" : "pointer",
+              }}
+            >
+              {generatingExcerpt ? "Kirjutan…" : "✨ Genereeri"}
+            </button>
+          </div>
         </div>
         <textarea
           value={excerpt}
           onChange={e => setExcerpt(e.target.value)}
-          placeholder="Lühike, terviklik lause, mis tutvustab artiklit…"
+          placeholder="Kaks lauset, mis võtavad kogu artikli sisu kokku…"
           rows={3}
           style={{
             width: "100%", padding: "12px 14px", fontSize: 15, lineHeight: 1.5,

@@ -15,7 +15,9 @@
     "fill-translations": "tsx scripts/fill-translations.ts",
     "batch": "tsx scripts/batch-generate.ts",
     "ai-edit": "tsx scripts/ai-editor.ts",
-    "radar": "tsx scripts/blog-radar.ts"
+    "radar": "tsx scripts/blog-radar.ts",
+    "excerpts:audit": "node scripts/audit-excerpts.mjs",
+    "excerpts:fix": "node scripts/generate-excerpts.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",
