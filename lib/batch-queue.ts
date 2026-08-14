@@ -12,10 +12,15 @@
  */
 
 export type QueuedEdit = {
-  path: string;       // e.g. "content/posts/foo.mdx"
-  content: string;    // full MDX with frontmatter
-  title: string;      // for banner display
-  stagedAt: number;   // Date.now()
+  path: string;         // e.g. "content/posts/foo.mdx"
+  content: string;      // full MDX with frontmatter
+  title: string;        // for banner display
+  stagedAt: number;     // Date.now()
+  baseContent?: string; // content as read right before this edit was made —
+                         // used at flush time to detect if someone else
+                         // changed the file upstream since staging. Optional
+                         // for backward compat with edits queued before this
+                         // field existed (those just skip the staleness check).
 };
 
 const KEY = "ksa-blog-pending-batch";

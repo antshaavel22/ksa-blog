@@ -385,6 +385,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
   // Language switcher — tracks current lang and active file path (may change when lang moved)
   const [currentLang, setCurrentLang] = useState(draft.lang ?? "et");
   const [activePath, setActivePath] = useState(draft.path);
+  // Raw content as last loaded from GitHub — the baseline the batch queue
+  // compares against at flush time to detect upstream changes made while
+  // this edit sat staged (see flushAll in the batch-queue banner below).
+  const baseContentRef = useRef<string>("");
   const [movingLang, setMovingLang] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState("");
@@ -423,6 +427,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       .then((d: { content?: string; error?: string }) => {
         if (d.error) { setError(d.error); return; }
         const raw = d.content ?? "";
+        baseContentRef.current = raw;
         const parsed = parseMdx(raw);
         if (parsed) {
           setFrontmatter(parsed.frontmatter);
@@ -662,7 +667,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       if (isPublished) {
         // Published posts: stage into batch queue instead of immediate GitHub write.
         // Editor can Salvesta on many posts, then flush all in one commit via "Uuenda kõik".
-        enqueue({ path: activePath, content, title });
+        enqueue({ path: activePath, content, title, baseContent: baseContentRef.current });
         setSaved(true); setTimeout(() => setSaved(false), 3000);
       } else {
         // Drafts: save immediately (doesn't trigger a live rebuild anyway)
@@ -691,7 +696,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
       return;
     }
     try {
-      enqueue({ path: activePath, content, title });
+      enqueue({ path: activePath, content, title, baseContent: baseContentRef.current });
       setSaved(true); setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       alert("Viga järjekorda lisamisel: " + (err as Error).message);
@@ -2637,7 +2642,7 @@ function PublishedTab() {
       // Update date field in frontmatter
       const updated = content.replace(/^date:\s*.+$/m, `date: "${newDate}"`);
       // Stage into batch queue — flushed together via "Uuenda kõik"
-      enqueue({ path: post.path, content: updated, title: post.title });
+      enqueue({ path: post.path, content: updated, title: post.title, baseContent: content });
       // Update local state so card reflects new date immediately
       setPosts(prev => prev.map(p => p.path === post.path ? { ...p, date: newDate } : p));
     } catch (err) {
@@ -2716,7 +2721,7 @@ function PublishedTab() {
         // No excerpt field at all — inject after the title line.
         updated = content.replace(/^(title:.*)$/m, `$1\nexcerpt: ${yamlValue}`);
       }
-      enqueue({ path: post.path, content: updated, title: post.title });
+      enqueue({ path: post.path, content: updated, title: post.title, baseContent: content });
       setPosts((prev) =>
         prev.map((p) => (p.path === post.path ? { ...p, excerpt: trimmed } : p))
       );
@@ -4391,12 +4396,42 @@ function BatchQueueBanner() {
     if (!confirm(`Saadan ${queue.length} muudatust live'i ühe commitina. Vercel ehitab uuesti ~2 min. Jätkan?`)) return;
     setFlushing(true);
     try {
+      // Staleness guard: re-fetch each file's CURRENT content from GitHub and
+      // compare against the content it was staged from. If someone else (or
+      // another tab) changed the file after this edit was queued, flushing
+      // the stale queued version would silently clobber their newer change —
+      // this has already reverted a lang fix once and caused an earlier
+      // excerpt-revert incident. Edits queued before this guard existed have
+      // no baseContent to compare against, so they pass through unchecked.
+      const checked = await Promise.all(queue.map(async (q) => {
+        if (!q.baseContent) return { q, stale: false };
+        try {
+          const r = await fetch(`/api/admin/post?path=${encodeURIComponent(q.path)}`);
+          const d = await r.json() as { content?: string };
+          const stale = typeof d.content === "string" && d.content !== q.baseContent;
+          return { q, stale };
+        } catch {
+          return { q, stale: false }; // can't verify — don't block the flush on a network blip
+        }
+      }));
+      const stale = checked.filter(c => c.stale).map(c => c.q);
+      const fresh = checked.filter(c => !c.stale).map(c => c.q);
+
+      if (stale.length) {
+        alert(
+          `${stale.length} postitust on vahepeal mujal muudetud ja jäetakse järjekorda vahele, et vältida uuemate muudatuste ülekirjutamist:\n\n` +
+          stale.map(s => `• ${s.title}`).join("\n") +
+          `\n\nAva need postitused uuesti, vaata värsket sisu ja salvesta uuesti enne järgmist "Uuenda kõik".`
+        );
+      }
+      if (!fresh.length) return;
+
       const res = await fetch("/api/admin/batch-update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          files: queue.map(q => ({ path: q.path, content: q.content })),
-          message: `Batch edit: ${queue.length} post${queue.length === 1 ? "" : "s"}`,
+          files: fresh.map(q => ({ path: q.path, content: q.content })),
+          message: `Batch edit: ${fresh.length} post${fresh.length === 1 ? "" : "s"}`,
         }),
       });
       const data = await res.json() as { ok?: boolean; error?: string; commit?: string };
@@ -4404,8 +4439,10 @@ function BatchQueueBanner() {
         alert(`Uuendamine ebaõnnestus: ${data.error ?? res.status}`);
         return;
       }
-      clearQueue();
-      setLocalQueue([]);
+      // Only clear the files that were actually flushed — stale ones stay
+      // queued so the editor can reopen and re-stage them.
+      fresh.forEach(q => removeFromQueue(q.path));
+      setLocalQueue(getQueue());
       setOpen(false);
       setCountdown(120);
       const tick = setInterval(() => {
