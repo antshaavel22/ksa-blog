@@ -45,6 +45,10 @@ const nextConfig: NextConfig = {
         destination: "/100-paeva-sinu-elust-prillide-varjatud-ajamaks-2",
         permanent: true,
       },
+      // Common RSS discovery paths → the real feed route.
+      { source: "/feed", destination: "/rss.xml", permanent: true },
+      { source: "/feed/", destination: "/rss.xml", permanent: true },
+      { source: "/rss", destination: "/rss.xml", permanent: true },
     ];
   },
   // Security headers for the mounted blog zone.

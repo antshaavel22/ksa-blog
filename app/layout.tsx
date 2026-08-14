@@ -32,6 +32,16 @@ export const metadata: Metadata = {
     locale: "et_EE",
     type: "website",
   },
+  alternates: {
+    types: {
+      "application/rss+xml": [
+        { url: "/rss.xml", title: "KSA Silmakeskus Blogi — kõik keeled" },
+        { url: "/rss/et.xml", title: "KSA Silmakeskus Blogi — eesti" },
+        { url: "/rss/ru.xml", title: "Блог KSA Silmakeskus — русский" },
+        { url: "/rss/en.xml", title: "KSA Silmakeskus Blog — English" },
+      ],
+    },
+  },
 };
 
 async function detectLang(): Promise<"et" | "ru" | "en"> {
