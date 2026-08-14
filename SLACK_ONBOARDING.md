@@ -11,7 +11,7 @@ Tere Silvia,
 Olen blog.ksa.ee admini ettevalmistanud nii, et saaksid ise mustandeid läbi vaadata, parandada ja avaldada — minu kaudu enam ei pea käima.
 
 **Sisene:** https://blog.ksa.ee/admin
-**Parool:** ksa-blog-2026
+**Parool:** [küsi Antsult enne saatmist — ära jäta seda faili gitis nähtavaks]
 
 Esimese asjana ava **Juhend** vahekaart all paremal — seal on uus sektsioon **"Tekstipuhastus — mida AI mustandites parandada"**. Need on kolm-neli tüüpilist tellingut, mis AI sisse jätab (`## Sissejuhatus`, `## Kokkuvõte`, "Tere tulemast blogisse..." stiilis fraasid jne) ja mis tuleb iga uue mustandi puhul eemaldada.
 
