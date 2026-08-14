@@ -178,7 +178,7 @@ scripts/content-scout.ts   — daily RSS → trilingual drafts via Claude
 ```
 
 ## Admin UI (/admin)
-**Password:** `ksa-blog-2026` | **Login:** https://blog.ksa.ee/admin/login
+**Password:** see `ADMIN_PASSWORD` in Vercel env (not stored in this public repo) | **Login:** https://blog.ksa.ee/admin/login
 
 ### 5 Tabs
 1. **Mustandid** — browse/edit/publish drafts; full editor with image upload, category, YouTube, deadline
@@ -281,7 +281,7 @@ The `reviewedBy` value is written into frontmatter as `reviewedBy: "Dr. Ants Haa
 ```
 ANTHROPIC_API_KEY=...           # Claude API
 NEXT_PUBLIC_WEB3FORMS_KEY=...   # Contact form
-ADMIN_PASSWORD=ksa-blog-2026    # Admin panel
+ADMIN_PASSWORD=...              # Admin panel — set in Vercel env, never commit the value
 GITHUB_TOKEN=...                # PAT with contents:write
 GITHUB_REPO=antshaavel22/ksa-blog
 VERCEL_DEPLOY_HOOK=...          # Triggers rebuild on publish

@@ -1,6 +1,6 @@
 # KSA Blogi — Toimetaja juhend v4.0
 
-**Aadress:** blog.ksa.ee/admin · **Parool:** ksa-blog-2026
+**Aadress:** blog.ksa.ee/admin · **Parool:** küsi Antsult (ei hoita gitis)
 **Toimetajad:** Silvia Johanna Haavel (ET) · Jana (RU, EN)
 **Tehniline tugi:** Dr. Ants Haavel (claude.ai kaudu)
 **Uuendatud:** aprill 2026
