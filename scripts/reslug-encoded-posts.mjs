@@ -42,8 +42,20 @@ function slugify(decoded) {
     .replace(/-+$/g, "");
 }
 
-const files = fs.readdirSync(dir).filter((f) => f.includes("%") && f.endsWith(".mdx"));
-console.log(`Found ${files.length} percent-encoded filenames.\n`);
+// Broken posts come in two shapes: (a) the filename itself is still
+// percent-encoded, or (b) the filename was already native Cyrillic but the
+// `slug:` frontmatter field is a leftover percent-encoded string (invisible
+// to a filename-only scan — found live via a stale sitemap entry that still
+// 404'd after the first pass).
+const allMdx = fs.readdirSync(dir).filter((f) => f.endsWith(".mdx"));
+const files = allMdx.filter((f) => {
+  if (f.includes("%")) return true;
+  try {
+    const raw = fs.readFileSync(path.join(dir, f), "utf8");
+    return /^slug:\s*"?%[0-9a-fA-F]{2}/m.test(raw);
+  } catch { return false; }
+});
+console.log(`Found ${files.length} broken (percent-encoded filename or slug field).\n`);
 
 const existing = new Set(fs.readdirSync(dir));
 const plan = [];
