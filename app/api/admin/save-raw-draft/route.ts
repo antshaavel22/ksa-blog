@@ -143,6 +143,12 @@ export async function POST(req: NextRequest) {
     const cats = categories?.length ? categories : ["Elustiil"];
     const tagList = tags?.length ? tags : [];
 
+    // excerpt / seoExcerpt are left EMPTY on purpose. This used to be
+    // body.slice(0, 180), which hard-cut the article's opening mid-word — the
+    // source of every "...across your field of vision…" excerpt that reached
+    // production. An empty field is honest: the editor sees it is missing and
+    // fills it with the ✨ Genereeri button (or publish generates one), which
+    // writes an original two-sentence summary per content rule #6.
     // Build MDX with minimal frontmatter
     const mdx = `---
 title: ${escapeYaml(title)}
@@ -151,14 +157,14 @@ date: "${date}"
 author: "${authorName}"
 categories: [${cats.map((c) => `"${c.replace(/"/g, '\\"')}"`).join(", ")}]
 tags: [${tagList.map((t) => `"${t.replace(/"/g, '\\"')}"`).join(", ")}]
-excerpt: ${escapeYaml(body.slice(0, 180).replace(/^#+\s*/gm, "").replace(/\n/g, " "))}
+excerpt: ""
 featuredImage: ""
 lang: "${lang}"
 ctaType: "kiirtest-soft"
 medicalReview: false
 status: "draft"
 seoTitle: ${escapeYaml(title)}
-seoExcerpt: ${escapeYaml(body.slice(0, 155).replace(/^#+\s*/gm, "").replace(/\n/g, " "))}
+seoExcerpt: ""
 ---
 
 ${body.trim()}

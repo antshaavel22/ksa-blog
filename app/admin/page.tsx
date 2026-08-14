@@ -7,6 +7,7 @@ import type { CtaEntry, CtaLang, CtaLangOverrides } from "@/lib/cta-config";
 import type { Funnel } from "@/lib/posts";
 import { AUTHORS } from "@/lib/authors";
 import { enqueue, getQueue, clearQueue, removeFromQueue, type QueuedEdit } from "@/lib/batch-queue";
+import { validateExcerpt } from "@/lib/excerpt-rules.mjs";
 
 // Medical reviewers — only qualified clinicians appear in reviewedBy dropdown
 const REVIEWERS = AUTHORS.filter(a =>
@@ -656,10 +657,10 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
   // Write a fresh excerpt from the article body: 2 original sentences covering
   // the whole piece. Rules live in lib/excerpt-rules.mjs, shared with the CLI.
-  async function generateExcerpt() {
+  async function generateExcerpt({ force = false }: { force?: boolean } = {}) {
     if (generatingExcerpt) return;
     if (!body.trim()) { alert("Kirjuta esmalt artikli tekst."); return; }
-    if (excerpt.trim() && !confirm("Asendan praeguse väljavõtte uuega. Jätkan?")) return;
+    if (!force && excerpt.trim() && !confirm("Asendan praeguse väljavõtte uuega. Jätkan?")) return;
     setGeneratingExcerpt(true);
     try {
       const res = await fetch("/api/admin/generate-excerpt", {
@@ -743,6 +744,21 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         `Vajuta TÜHISTA, et keelt parandada (keelelipud pealkirja kohal), või OK, et siiski avaldada.`
       );
       if (!ok) return;
+    }
+    // Excerpt gate: an excerpt must be an original two-sentence summary (content
+    // rule #6). Bad ones used to ship silently — a raw 180-char slice of the body
+    // cut mid-word. Offer to write a proper one rather than just blocking.
+    const excerptProblem = validateExcerpt(excerpt.trim(), currentLang, body);
+    if (excerptProblem) {
+      const wantsFix = confirm(
+        `⚠ Väljavõte ei vasta reeglile\n\n${excerpt.trim() ? `Praegu: "${excerpt.trim().slice(0, 120)}${excerpt.trim().length > 120 ? "…" : ""}"\n\nProbleem: ${excerptProblem}` : "Väljavõte on tühi."}\n\n` +
+        `Väljavõte peab olema kaks omas sõnades lauset, mis võtavad kokku kogu artikli.\n\n` +
+        `Vajuta OK, et lasta see automaatselt kirjutada, või TÜHISTA, et ise parandada.`
+      );
+      if (!wantsFix) return;
+      await generateExcerpt({ force: true });
+      alert("Väljavõte on kirjutatud. Vaata see üle ja vajuta siis uuesti Avalda.");
+      return;
     }
     setPublishing(true); setError("");
     // Build the final content from current React state — this is the source of truth.
@@ -975,12 +991,12 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             Väljavõte <span style={{ fontWeight: 500, color: "#7a8a4e" }}>— kuvatakse blogikaardil ja eelvaates</span>
           </label>
           <div style={{ display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
-            <span style={{ fontSize: 12, color: excerpt.trim().length > 230 ? "#b9770e" : "#9aa77a" }}>
+            <span style={{ fontSize: 12, color: excerpt.trim().length > 280 ? "#b9770e" : "#9aa77a" }}>
               {excerpt.trim().length} tähemärki
             </span>
             <button
               type="button"
-              onClick={generateExcerpt}
+              onClick={() => generateExcerpt()}
               disabled={generatingExcerpt}
               title="Kirjutab uue väljavõtte: 2 lauset, oma sõnadega, kogu artikli kohta"
               style={{
@@ -1007,11 +1023,20 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
           onFocus={e => { e.target.style.borderColor = "#87be23"; }}
           onBlur={e => { e.target.style.borderColor = "#d7e0c0"; }}
         />
-        {excerpt.trim() && !/[.!?…]["']?$/u.test(excerpt.trim()) && (
-          <div style={{ fontSize: 12, color: "#b9770e", marginTop: 6 }}>
-            ⚠ Väljavõte peaks lõppema tervikliku lausega (. ! ? …) — praegu lõpeb poolikult.
-          </div>
-        )}
+        {/* Live check against the same rules the publish gate and the CLI use, so
+            the editor sees the problem while writing rather than at publish time. */}
+        {excerpt.trim() && (() => {
+          const problem = validateExcerpt(excerpt.trim(), currentLang, body);
+          return problem ? (
+            <div style={{ fontSize: 12, color: "#b9770e", marginTop: 6 }}>
+              ⚠ {problem}. Väljavõte peab olema kaks omas sõnades lauset kogu artikli kohta.
+            </div>
+          ) : (
+            <div style={{ fontSize: 12, color: "#5f7320", marginTop: 6 }}>
+              ✓ Vastab reeglile: kaks lauset, oma sõnadega, terviklik.
+            </div>
+          );
+        })()}
 
         {/* SEO description — optional, secondary (Google meta) */}
         <details style={{ marginTop: 12 }}>
