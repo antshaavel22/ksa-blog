@@ -667,9 +667,22 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, body, lang: currentLang }),
       });
-      const d = await res.json() as { excerpt?: string; error?: string };
-      if (d.excerpt) setExcerpt(d.excerpt);
-      else alert("Väljavõtte loomine ebaõnnestus: " + (d.error ?? res.status));
+      const d = await res.json() as { excerpt?: string; error?: string; draft?: string };
+      if (d.excerpt) {
+        setExcerpt(d.excerpt);
+      } else if (d.draft) {
+        // Near-miss: drop the best draft into the field anyway. Trimming a
+        // slightly-too-long excerpt takes seconds; starting from an empty box
+        // after a failed generation does not.
+        setExcerpt(d.draft);
+        alert(
+          `${d.error ?? "Väljavõte ei vasta täielikult reeglile"}\n\n` +
+          `Panin parima variandi siiski välja — vaata üle ja kohenda veidi. ` +
+          `Väli näitab all, mis veel puudu on.`
+        );
+      } else {
+        alert("Väljavõtte loomine ebaõnnestus: " + (d.error ?? res.status));
+      }
     } catch (err) {
       alert("Võrguviga: " + (err as Error).message);
     } finally {
