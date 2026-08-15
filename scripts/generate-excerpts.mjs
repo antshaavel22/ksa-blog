@@ -33,6 +33,9 @@ if (fs.existsSync(envPath)) {
 
 const DRY = process.argv.includes("--dry-run");
 const ALL = process.argv.includes("--all");
+// --lang et  → work on one language only (Estonian needed its own passes).
+const langArg = process.argv.indexOf("--lang");
+const ONLY_LANG = langArg > -1 ? process.argv[langArg + 1] : null;
 const limitArg = process.argv.indexOf("--limit");
 const LIMIT = limitArg > -1 ? parseInt(process.argv[limitArg + 1], 10) : Infinity;
 const MODEL = process.env.EXCERPT_MODEL || "claude-sonnet-5";
@@ -56,8 +59,11 @@ const EXAMPLES = {
 
 BAD — "Discover everything you need to know about eye floaters. Learn how KSA Silmakeskus can help you today."
    Why: tells the reader to read instead of telling them anything, and ends on a plug.`,
-  et: `GOOD — "Laserkorrektsiooni sobivuse otsustab sarvkesta kuju ja paksus, mitte dioptrite arv. Just seepärast ei anna ükski veebitest vastust, mille saab põhjalikust sobivusuuringust."
-   Miks: esimene lause ütleb sisu, teine annab järelduse. Ei käsi lugeda, ei reklaami.
+  et: `HEA — "Kuiv kollatähni kahjustus areneb aastatega, märg vorm võib nägemise rikkuda mõne päevaga. Kõverad jooned uksepiidal või tekstiread lainetamas on esimene märk, mis nõuab kiiret silmaarsti vastuvõttu."
+   Miks: esimene lause ütleb sisu, teine annab järelduse ja konkreetse märgi. Ei käsi lugeda, ei reklaami.
+
+HEA — "Silmade vesisus ei tule liigsest niiskusest, vaid pisarakile kehvast koostisest. Ummistunud meibomi näärmed jätavad pisarad kaitsva õlikihita, mistõttu need aurustuvad kiiresti ja silm hakkab refleksiivselt vett jooksma."
+   Miks: parandab levinud väärarusaama ja selgitab põhjuse. Terve, loomulik eesti keel.
 
 HALB — "Loe, kuidas laserkorrektsioon toimib. Avasta, kuidas KSA Silmakeskus sind aidata saab."
    Miks: käsib lugeda, aga ei ütle midagi; lõpeb reklaamiga.`,
@@ -143,6 +149,57 @@ Requirements it must still meet:
 Output ONLY the revised excerpt in ${L}. No quotes, no label, no explanation.`;
 }
 
+// Estonian is where the model's grammar slips: case endings, government of
+// verbs, and invented compounds ("hädapisar") pass every structural rule while
+// reading wrong to a native speaker. Validation cannot see this, so a native
+// editor pass runs over the finished text. Meaning is held fixed — this only
+// repairs language.
+const POLISH_LANGS = new Set((process.env.EXCERPT_POLISH_LANGS ?? "et,ru").split(",").map((s) => s.trim()));
+const POLISH_MODEL = process.env.EXCERPT_POLISH_MODEL || "claude-opus-5";
+
+const POLISH_GUIDE = {
+  et: `Oled eesti keele toimetaja. Paranda allolev tekst korrektseks, loomulikuks eesti keeleks.
+
+Jälgi eriti:
+- käändeid ja rektsiooni ("vihjeid tähelepanu kohta", mitte "vihjeid tähelepanust")
+- sõnajärge — vältimatult selget, mitte inglise keelest kopeeritud
+- väljamõeldud liitsõnu (nt "hädapisar") — kasuta tavakeelset sõna
+- kohmakaid konstruktsioone ("mitte ei peata" → "ei peata seda")
+- meditsiiniterminid jäävad alles, aga peavad olema õiges käändes`,
+  ru: `Ты — редактор русского языка. Исправь текст, чтобы он звучал естественно и грамотно.
+
+Обрати внимание на:
+- падежи и управление глаголов
+- порядок слов — русский, не калька с английского
+- канцелярит и неестественные обороты
+- медицинские термины сохраняются, но в правильной форме`,
+};
+
+async function polish(text, lang) {
+  if (!POLISH_LANGS.has(lang) || !POLISH_GUIDE[lang]) return text;
+  const res = await client.messages.create({
+    model: POLISH_MODEL,
+    // Generous ceiling: a tight one occasionally returned an empty block for
+    // longer Estonian text, which silently fell back to the unpolished draft.
+    max_tokens: 1200,
+    messages: [{
+      role: "user",
+      content: `${POLISH_GUIDE[lang]}
+
+ÄRA MUUDA sisu, fakte, numbreid ega mõtet. ÄRA muuda lausete arvu (jääb täpselt kaks).
+Kui tekst on juba korrektne, tagasta see muutmata kujul.
+Väljasta AINULT parandatud tekst, ilma jutumärkide, selgituste või kommentaarideta.
+
+TEKST:
+${text}`,
+    }],
+  });
+  const out = (res.content ?? [])
+    .filter((b) => b.type === "text").map((b) => b.text).join(" ")
+    .trim().replace(/^["'«»]+|["'«»]+$/g, "").replace(/\s+/g, " ").trim();
+  return out || text;
+}
+
 async function genExcerpt(title, body, lang, problem, draft) {
   const content = draft
     ? buildRevisePrompt(draft, lang, problem)
@@ -213,6 +270,7 @@ for (const f of fs.readdirSync(dir)) {
   try { g = matter(fs.readFileSync(path.join(dir, f), "utf8")); } catch { continue; }
   const lang = String(g.data.lang || "").trim();
   if (!LANG[lang]) continue;
+  if (ONLY_LANG && lang !== ONLY_LANG) continue;
   const title = String(g.data.title || "").trim();
   const old = String(g.data.excerpt || "").trim();
   const body = plainBody(g.content);
@@ -250,6 +308,13 @@ async function run(t) {
       // hold — an over-long draft that keeps its specifics is a better base to
       // tighten than a vague short one.
       if (score(next, nextProblem) <= score(ex, problem)) { ex = next; problem = nextProblem; }
+    }
+
+    // Native-editor pass on the accepted text. Only kept if it still validates,
+    // so a polish that breaks the two-sentence shape can never make things worse.
+    if (!problem) {
+      const polished = await polish(ex, t.lang);
+      if (polished !== ex && !validate(polished, t.lang, t.body, t.title)) ex = polished;
     }
     if (problem) {
       failed++;
