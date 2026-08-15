@@ -112,8 +112,12 @@ function fixExcerpt(raw: string): string {
     if (before && /[\p{L}\d"»“”')]/u.test(before)) cut = m.index + 1;
   }
   if (cut >= 40) return s.slice(0, cut).trim();
-  // No complete sentence to fall back to — keep cleaned text + a single ellipsis.
-  return s.replace(/[\s.…]+$/u, "") + "…";
+  // No complete sentence to fall back to. This used to append an ellipsis, but
+  // under the current rule (excerpt = two complete sentences, lib/excerpt-rules.mjs)
+  // a trailing "…" is itself a failure, so that "repair" only swapped one broken
+  // state for another. Leave the text alone instead — the editor's live check and
+  // the publish gate both flag it, and ✨ Genereeri rewrites it properly.
+  return s;
 }
 
 // ─── Word-count tolerance check ──────────────────────────────────────────────

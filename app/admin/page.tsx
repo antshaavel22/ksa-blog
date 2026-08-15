@@ -1456,8 +1456,15 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               body,
-              excerpt: getFmField(frontmatter, "excerpt"),
-              seoExcerpt: getFmField(frontmatter, "seoExcerpt"),
+              // Send the LIVE field values, not what's in the frontmatter string.
+              // The frontmatter is only reassembled at save time, so a freshly
+              // generated excerpt (✨ Genereeri sets state, not frontmatter) was
+              // invisible here: Vorminda sent the old/empty text, got it back,
+              // and setExcerpt below overwrote the new one — the excerpt appeared
+              // to cancel itself. State is seeded from frontmatter on open, so it
+              // is always the current value.
+              excerpt,
+              seoExcerpt,
               title,
               lang: currentLang,
             }),
