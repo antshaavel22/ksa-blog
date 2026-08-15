@@ -47,3 +47,11 @@ next-env.d.ts
 # script state files
 .fill-translations-progress.json
 .scout-seen.json
+
+# macOS/iCloud sync conflict copies. This repo lives under ~/Desktop, which is
+# synced, so rapid batch writes (e.g. regenerating hundreds of excerpts) make
+# iCloud drop "<name> 2.mdx" duplicates beside the originals. 95 of these
+# appeared during one excerpt run and a few had previously been committed by a
+# careless `git add`. Never commit them — the originals are the real files.
+* 2.*
+* 3.*
