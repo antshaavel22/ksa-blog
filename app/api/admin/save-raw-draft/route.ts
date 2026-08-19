@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { requireGitHubConfig } from "@/lib/admin-env";
+import { toSlug } from "@/lib/slug.mjs";
 
 export const runtime = "nodejs";
 
@@ -90,24 +91,6 @@ async function uniqueDraftFilename(langDir: string, date: string, slug: string):
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function toSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[äöüõ]/g, (c) => ({ ä: "a", ö: "o", ü: "u", õ: "o" })[c] ?? c)
-    .replace(/[а-яё]/g, (c) => {
-      const map: Record<string, string> = {
-        а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh",
-        з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o",
-        п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "kh", ц: "ts",
-        ч: "ch", ш: "sh", щ: "shch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
-      };
-      return map[c] ?? c;
-    })
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
 
 function escapeYaml(s: string): string {
   return `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ").trim()}"`;
