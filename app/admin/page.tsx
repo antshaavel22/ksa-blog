@@ -4664,6 +4664,24 @@ function BatchQueueBanner() {
             }}>
               <span style={{ flex: 1, color: "#1a1a1a" }}>{q.title || q.path}</span>
               <span style={{ color: "#9a9a9a", fontSize: 11 }}>{q.path.replace("content/posts/", "")}</span>
+              {/* An edit that cannot be flushed (post renamed, or changed since
+                  staging) used to leave deletion as the only exit, losing the
+                  text — it exists nowhere but this browser. Copy it out first. */}
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(q.content).then(
+                    () => alert(`"${q.title || q.path}" sisu on kopeeritud.\n\nKleebi see postituse redaktorisse (Avaldatud → ava postitus).`),
+                    () => alert("Kopeerimine ebaõnnestus — ava postitus ja tee muudatus käsitsi."),
+                  );
+                }}
+                title="Kopeeri selle muudatuse tekst lõikelauale"
+                style={{
+                  padding: "3px 8px", border: "1px solid #e6c568", borderRadius: 6,
+                  background: "white", color: "#7a5800", fontSize: 11, cursor: "pointer",
+                }}
+              >
+                Kopeeri
+              </button>
               <button
                 onClick={() => { removeFromQueue(q.path); setLocalQueue(getQueue()); }}
                 style={{
