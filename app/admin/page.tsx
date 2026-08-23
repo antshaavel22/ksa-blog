@@ -4487,19 +4487,36 @@ function BatchQueueBanner() {
       // excerpt-revert incident. Edits queued before this guard existed have
       // no baseContent to compare against, so they pass through unchecked.
       const checked = await Promise.all(queue.map(async (q) => {
-        if (!q.baseContent) return { q, stale: false };
+        if (!q.baseContent) return { q, stale: false, gone: false };
         try {
           const r = await fetch(`/api/admin/post?path=${encodeURIComponent(q.path)}`);
+          // The file is GONE at that path — it was renamed (a slug fix) or
+          // deleted. Writing the queued copy here does not update the post, it
+          // resurrects a second file at the dead path: the blog then lists the
+          // article twice and the resurrected copy holds whatever stale text
+          // was staged. That is exactly how three duplicates reached
+          // production on 2026-08-23, one of them undoing an editorial fix.
+          // Treat missing as stale — never write.
+          if (r.status === 404) return { q, stale: true, gone: true };
           const d = await r.json() as { content?: string };
-          const stale = typeof d.content === "string" && d.content !== q.baseContent;
-          return { q, stale };
+          if (typeof d.content !== "string") return { q, stale: true, gone: true };
+          return { q, stale: d.content !== q.baseContent, gone: false };
         } catch {
-          return { q, stale: false }; // can't verify — don't block the flush on a network blip
+          return { q, stale: false, gone: false }; // network blip — don't block the flush
         }
       }));
       const stale = checked.filter(c => c.stale).map(c => c.q);
       const fresh = checked.filter(c => !c.stale).map(c => c.q);
 
+      const gone = checked.filter(c => c.gone).map(c => c.q);
+      if (gone.length) {
+        alert(
+          `${gone.length} postitust ei leitud enam sellelt teelt — need on vahepeal ümber nimetatud või kustutatud:\n\n` +
+          gone.map(g => `• ${g.title}`).join("\n") +
+          `\n\nNeid EI saadetud, sest see tekitaks blogisse artikli teise koopia. ` +
+          `Ava need postitused uuesti Avaldatud vaatest ja tee muudatus seal.`
+        );
+      }
       if (stale.length) {
         alert(
           `${stale.length} postitust on vahepeal mujal muudetud ja jäetakse järjekorda vahele, et vältida uuemate muudatuste ülekirjutamist:\n\n` +
