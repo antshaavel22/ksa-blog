@@ -4486,10 +4486,43 @@ function BatchQueueBanner() {
       // this has already reverted a lang fix once and caused an earlier
       // excerpt-revert incident. Edits queued before this guard existed have
       // no baseContent to compare against, so they pass through unchecked.
+      // A queued path can go missing because the post was RENAMED (the slug
+      // repair renamed 158 of them). Refusing outright leaves the edit stuck in
+      // the queue with no way to land, so first try to find where the post moved
+      // to, by title, and re-point the queued edit at its current path.
+      const relocate = async (q: QueuedEdit): Promise<string | null> => {
+        try {
+          const r = await fetch("/api/admin/posts");
+          const d = await r.json() as { posts?: Array<{ path: string; title: string }> };
+          const hits = (d.posts ?? []).filter(
+            (x) => x.title && q.title && x.title.trim() === q.title.trim(),
+          );
+          return hits.length === 1 ? hits[0].path : null; // only when unambiguous
+        } catch { return null; }
+      };
+
       const checked = await Promise.all(queue.map(async (q) => {
         if (!q.baseContent) return { q, stale: false, gone: false };
         try {
           const r = await fetch(`/api/admin/post?path=${encodeURIComponent(q.path)}`);
+          // Unreadable at this path. NOTE: a missing post comes back 500, not
+          // 404, because the read route surfaces the GitHub error — so this
+          // must test !r.ok, never just the status code.
+          if (!r.ok) {
+            const moved = await relocate(q);
+            if (moved) {
+              const r2 = await fetch(`/api/admin/post?path=${encodeURIComponent(moved)}`);
+              if (r2.ok) {
+                const d2 = await r2.json() as { content?: string };
+                // Same staleness rule at the new location: only apply the queued
+                // edit if the post has not changed since it was staged.
+                if (typeof d2.content === "string" && d2.content === q.baseContent) {
+                  return { q: { ...q, path: moved }, stale: false, gone: false };
+                }
+                return { q, stale: true, gone: false };
+              }
+            }
+          }
           // The file is GONE at that path — it was renamed (a slug fix) or
           // deleted. Writing the queued copy here does not update the post, it
           // resurrects a second file at the dead path: the blog then lists the
@@ -4497,7 +4530,7 @@ function BatchQueueBanner() {
           // was staged. That is exactly how three duplicates reached
           // production on 2026-08-23, one of them undoing an editorial fix.
           // Treat missing as stale — never write.
-          if (r.status === 404) return { q, stale: true, gone: true };
+          if (!r.ok) return { q, stale: true, gone: true };
           const d = await r.json() as { content?: string };
           if (typeof d.content !== "string") return { q, stale: true, gone: true };
           return { q, stale: d.content !== q.baseContent, gone: false };
