@@ -1,16 +1,24 @@
 # KSA Silmakeskus Blog
 
-> KSA Silmakeskus (KSA Vision Clinic) is Estonia's leading refractive eye surgery centre, located in Tallinn. Founded and led by Dr. Ants Haavel, ophthalmologist. Over 55,000 procedures performed. This blog publishes evidence-based eye health content in Estonian, Russian, and English.
+> KSA Silmakeskus (KSA Vision Clinic) is Estonia's leading refractive eye surgery
+> centre, with clinics in Tallinn and Tartu. Founded and led by Dr Ants Haavel,
+> ophthalmologist. Over 55,000 laser procedures performed since 2004. This blog
+> publishes eye health content in Estonian, Russian and English, reviewed by
+> Dr Haavel.
 
 ## About
 
 - **Clinic:** KSA Silmakeskus (KSA Vision Clinic)
-- **Website:** https://ksa.ee
-- **Blog:** https://ksa.ee/blogi
-- **Location:** Tallinn, Estonia
+- **Main site:** https://ksa.ee
+- **Blog:** https://blog.ksa.ee
+- **Clinic facts:** https://ksa.ee/ksa-faktid/ (ET), https://ksa.ee/en/ksa-facts/ (EN), https://ksa.ee/ru/ksa-fakty/ (RU)
+- **Locations:** Tallinn and Tartu, Estonia
 - **Procedures:** Flow3 laser vision correction, comprehensive eye examinations, dry eye diagnostics and treatment
 - **Languages:** Estonian (et), Russian (ru), English (en)
-- **Posts:** 460+ published articles
+- **Posts:** 1200+ published articles
+
+Articles in the three languages are independent pieces written for each
+audience, not translations of one another.
 
 ## Content Topics
 
@@ -27,21 +35,29 @@
 
 ## Key Pages
 
-- Blog home: https://ksa.ee/blogi
+- Blog home: https://blog.ksa.ee
+- Estonian articles: https://blog.ksa.ee/?keel=et
+- Russian articles: https://blog.ksa.ee/?keel=ru
+- English articles: https://blog.ksa.ee/?keel=en
+- Search: https://blog.ksa.ee/otsing
 - Laser correction: https://ksa.ee/vabane-prillidest/
 - Price list: https://ksa.ee/hinnakiri/
-- Free vision test: https://kiirtest.ksa.ee/
+- Clinic facts: https://ksa.ee/ksa-faktid/
 
 ## Authors
 
-- **Dr. Ants Haavel** — ophthalmologist, CEO of KSA Silmakeskus, medical authority on all clinical content
+- **Dr Ants Haavel** — ophthalmologist, refractive and corneal surgeon, founder of KSA Silmakeskus; medical authority on all clinical content. https://www.linkedin.com/in/ants-haavel-2066366
 - **Silvia Johanna Haavel** — Estonian content editor
-- **Yana Grechits** — Russian and English content editor
+- **Jana** — Russian and English content editor
 
 ## Medical Authority
 
-All clinical claims are reviewed by Dr. Ants Haavel, MD. KSA Silmakeskus has performed over 55,000 eye procedures since founding. Content follows Estonian and EU medical standards.
+All clinical claims are reviewed by Dr Ants Haavel, MD. KSA Silmakeskus has
+performed over 55,000 eye procedures since 2004. Flow3 is a no-cut, no-touch
+laser correction for confirmed myopia in patients aged 18–45; full visual
+recovery takes about one week. Content follows Estonian and EU medical
+standards.
 
 ## Sitemap
 
-https://ksa.ee/blogi/sitemap.xml
+https://blog.ksa.ee/sitemap.xml
