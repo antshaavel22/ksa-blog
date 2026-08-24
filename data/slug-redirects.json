@@ -788,5 +788,35 @@
     "source": "/milia-mitte-koik-naonahal-esinevad-valged-punnid-pole-akne",
     "destination": "/milia-mitte-koik-naonahal-esinevad-valged-punnid-pole",
     "permanent": true
+  },
+  {
+    "source": "/lastearst-paul-thomas-gripivaktsiinist",
+    "destination": "/",
+    "permanent": true
+  },
+  {
+    "source": "/probiootikumid-voivad-ravida-kuni-80-l-lastel-pahkliallergiaid",
+    "destination": "/10-produktov-dlya-zdorovya-glaz",
+    "permanent": true
+  },
+  {
+    "source": "/hea-tervise-suur-saladus-c-vitamiin",
+    "destination": "/11-toitu-mis-voivad-alandada-glaukoomi-riski",
+    "permanent": true
+  },
+  {
+    "source": "/miks-80-inimestest-kannatab-magneesiumipuuduse-all",
+    "destination": "/miks-mu-silm-tombleb",
+    "permanent": true
+  },
+  {
+    "source": "/15-1-pohjust-miks-krobistada-sellerit",
+    "destination": "/11-toitu-mis-voivad-alandada-glaukoomi-riski",
+    "permanent": true
+  },
+  {
+    "source": "/10-supertoitu-mida-saate-oma-retseptides-ja-menuudes-kasutada",
+    "destination": "/11-toitu-mis-voivad-alandada-glaukoomi-riski",
+    "permanent": true
   }
 ]
