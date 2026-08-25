@@ -820,7 +820,7 @@
     "permanent": true
   },
   {
-    "source": "/pervichное-obsledovanie-pered-lazer-proceduroj",
+    "source": "/pervich%D0%BD%D0%BE%D0%B5-obsledovanie-pered-lazer-proceduroj",
     "destination": "/pervichnoe-obsledovanie-glaz",
     "permanent": true
   },
@@ -830,7 +830,7 @@
     "permanent": true
   },
   {
-    "source": "/zachem-my-plachем-funkciya-slez",
+    "source": "/zachem-my-plach%D0%B5%D0%BC-funkciya-slez",
     "destination": "/zachem-my-plachem",
     "permanent": true
   },
@@ -840,7 +840,7 @@
     "permanent": true
   },
   {
-    "source": "/pervyj-осмотр-глaz-чego-ozhidat",
+    "source": "/pervyj-%D0%BE%D1%81%D0%BC%D0%BE%D1%82%D1%80-%D0%B3%D0%BBaz-%D1%87ego-ozhidat",
     "destination": "/pervyj-osmotr-glaz",
     "permanent": true
   },
@@ -850,7 +850,7 @@
     "permanent": true
   },
   {
-    "source": "/zabota-o-glazakh-sovety-pri-vozvrате-k-uchebe-i-rabote",
+    "source": "/zabota-o-glazakh-sovety-pri-vozvr%D0%B0%D1%82%D0%B5-k-uchebe-i-rabote",
     "destination": "/zabota-o-glazakh-pri-vozvrate-k-uchebe",
     "permanent": true
   },
@@ -860,7 +860,7 @@
     "permanent": true
   },
   {
-    "source": "/liis-tumijoе-flow3-patient-story",
+    "source": "/liis-tumijo%D0%B5-flow3-patient-story",
     "destination": "/liis-tumijoe-flow3-istoriya",
     "permanent": true
   },
