@@ -818,5 +818,55 @@
     "source": "/10-supertoitu-mida-saate-oma-retseptides-ja-menuudes-kasutada",
     "destination": "/11-toitu-mis-voivad-alandada-glaukoomi-riski",
     "permanent": true
+  },
+  {
+    "source": "/pervichное-obsledovanie-pered-lazer-proceduroj",
+    "destination": "/pervichnoe-obsledovanie-glaz",
+    "permanent": true
+  },
+  {
+    "source": "/2025-11-17-pervich----obsledovanie-pered-lazer-proceduroj",
+    "destination": "/pervichnoe-obsledovanie-glaz",
+    "permanent": true
+  },
+  {
+    "source": "/zachem-my-plachем-funkciya-slez",
+    "destination": "/zachem-my-plachem",
+    "permanent": true
+  },
+  {
+    "source": "/2026-04-01-zachem-my-plach---funkciya-slez",
+    "destination": "/zachem-my-plachem",
+    "permanent": true
+  },
+  {
+    "source": "/pervyj-осмотр-глaz-чego-ozhidat",
+    "destination": "/pervyj-osmotr-glaz",
+    "permanent": true
+  },
+  {
+    "source": "/2025-11-21-pervyj----------az--ego-ozhidat",
+    "destination": "/pervyj-osmotr-glaz",
+    "permanent": true
+  },
+  {
+    "source": "/zabota-o-glazakh-sovety-pri-vozvrате-k-uchebe-i-rabote",
+    "destination": "/zabota-o-glazakh-pri-vozvrate-k-uchebe",
+    "permanent": true
+  },
+  {
+    "source": "/2026-03-12-zabota-o-glazakh-sovety-pri-vozvr----k-uchebe-i-rabote",
+    "destination": "/zabota-o-glazakh-pri-vozvrate-k-uchebe",
+    "permanent": true
+  },
+  {
+    "source": "/liis-tumijoе-flow3-patient-story",
+    "destination": "/liis-tumijoe-flow3-istoriya",
+    "permanent": true
+  },
+  {
+    "source": "/2025-09-16-liis-tumijo--flow3-patient-story",
+    "destination": "/liis-tumijoe-flow3-istoriya",
+    "permanent": true
   }
 ]
