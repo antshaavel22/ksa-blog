@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
+import { publicBlogUrl, BLOG_PUBLIC_BASE_URL } from "@/lib/url";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
 import SmartCTA from "@/components/SmartCTA";
 import type { CtaEntry, CtaLang, CtaLangOverrides } from "@/lib/cta-config";
@@ -856,7 +857,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     await sendEmail(
       "haavelants@me.com",
       `Arsti kontroll vajalik: ${title}`,
-      `Tere, Dr. Haavel!\n\nPostitus vajab arsti ülevaadet enne avaldamist.\n\nPealkiri: ${title}\nKeel: ${draft.lang.toUpperCase()}\nLink: https://ksa.ee/blogi/admin\n\n— KSA Blog Admin`
+      `Tere, Dr. Haavel!\n\nPostitus vajab arsti ülevaadet enne avaldamist.\n\nPealkiri: ${title}\nKeel: ${draft.lang.toUpperCase()}\nLink: ${publicBlogUrl("admin")}\n\n— KSA Blog Admin`
     );
     setSendingMedical(false);
     setMedicalSent(true);
@@ -870,7 +871,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
     await sendEmail(
       email,
       `KSA Blogi ülesanne: ${title}`,
-      `Tere, ${name}!\n\nSulle on määratud ülesanne KSA blogis.\n\nPostitus: ${title}\nKeel: ${draft.lang.toUpperCase()}${deadline ? `\nTähtaeg: ${deadline}` : ""}\nLink: https://ksa.ee/blogi/admin\n\n— KSA Blog Admin`
+      `Tere, ${name}!\n\nSulle on määratud ülesanne KSA blogis.\n\nPostitus: ${title}\nKeel: ${draft.lang.toUpperCase()}${deadline ? `\nTähtaeg: ${deadline}` : ""}\nLink: ${publicBlogUrl("admin")}\n\n— KSA Blog Admin`
     );
     setNotifying(false);
     setNotified(true);
@@ -941,7 +942,7 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
         </span>
         {isPublished && postSlug && (
           <a
-            href={`https://ksa.ee/blogi/${postSlug}`}
+            href={publicBlogUrl(postSlug)}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -2496,7 +2497,7 @@ function PostPreview({
 // ─── Publish Success Screen ───────────────────────────────────────────────────
 
 function PublishSuccessScreen({ slug, onBack }: { slug: string; onBack: () => void }) {
-  const blogUrl = `https://ksa.ee/blogi/${slug}`;
+  const blogUrl = publicBlogUrl(slug);
 
   return (
     <div style={{ maxWidth: 520, margin: "60px auto", padding: "0 24px", textAlign: "center" }}>
@@ -3042,7 +3043,7 @@ function PublishedTab() {
           {filtered.map(post => {
             const isDup = duplicatePaths.has(post.path);
             const isHovered = hoveredPath === post.path;
-            const liveUrl = `https://ksa.ee/blogi/${post.slug ?? post.path.replace(/^content\/posts\//, "").replace(/\.mdx?$/, "")}`;
+            const liveUrl = publicBlogUrl(post.slug ?? post.path.replace(/^content\/posts\//, "").replace(/\.mdx?$/, ""));
             const excerptOrCat = post.excerpt || post.category || "";
             return (
               <article key={post.path} style={{
@@ -3192,7 +3193,7 @@ function PublishedTab() {
         </div>
       )}
 
-      {/* LIVE PREVIEW — iframe of ksa.ee/blogi */}
+      {/* LIVE PREVIEW — iframe of the public blog */}
       {viewMode === "preview" && (
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
@@ -3200,7 +3201,7 @@ function PublishedTab() {
               Live blogi — muudatused ilmuvad peale järgmist deploy&apos;i (~2 min pärast salvestamist)
             </p>
             <a
-              href="https://ksa.ee/blogi"
+              href={BLOG_PUBLIC_BASE_URL}
               target="_blank"
               rel="noopener noreferrer"
               style={{ fontSize: 12, color: "#87be23", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}
@@ -3214,13 +3215,13 @@ function PublishedTab() {
                 {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />)}
               </div>
               <div style={{ flex: 1, background: "white", borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#9a9a9a", border: "1px solid #e6e6e6" }}>
-                ksa.ee/blogi
+                blog.ksa.ee
               </div>
-              <a href="https://ksa.ee/blogi" target="_blank" rel="noopener noreferrer"
+              <a href={BLOG_PUBLIC_BASE_URL} target="_blank" rel="noopener noreferrer"
                 style={{ fontSize: 11, color: "#5a6b6c", textDecoration: "none", fontWeight: 600 }}>↗</a>
             </div>
             <iframe
-              src="https://ksa.ee/blogi"
+              src={BLOG_PUBLIC_BASE_URL}
               title="KSA Blog live preview"
               style={{ width: "100%", height: "calc(100vh - 240px)", minHeight: 600, border: "none", display: "block" }}
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
@@ -4021,7 +4022,7 @@ function HelpTab() {
       <div style={{ background: "linear-gradient(135deg,#f4fae8,#edf7f0)", borderRadius: 16, padding: "20px 24px", margin: "24px 0 0" }}>
         <p style={{ margin: 0, fontSize: 15, color: "#3a5a10", lineHeight: 1.6 }}>
           <strong>KSA Blogi toimetajad:</strong> Silvia Johanna Haavel (ET) · Jana (RU, EN)<br />
-          <strong>Aadress:</strong> ksa.ee/blogi/admin &nbsp;·&nbsp; <strong>Parool:</strong> küsi Antsult
+          <strong>Aadress:</strong> blog.ksa.ee/admin &nbsp;·&nbsp; <strong>Parool:</strong> küsi Antsult
         </p>
       </div>
 
@@ -4117,7 +4118,7 @@ function HelpTab() {
       <h3 style={s.h3}>Rendia video</h3>
       <p style={s.p}>Lisa Rendia patsiendiharidusvideo artiklisse MDX komponendiga: <span style={s.code}>{"<RendiaEmbed id=\"UUID\" />"}</span>. UUID leiad Rendia Embed Managerist (<strong>{"</>"}  nupust</strong>). Eelvaates näed tumedat kohahoidjat — päris video ilmub avaldatud lehel.</p>
       <h3 style={s.h3}>Otsing blogis</h3>
-      <p style={s.p}>Blogi otsinguikoon (🔍) on igas lehe päises — viib <span style={s.code}>ksa.ee/blogi/otsing</span> lehele, kus saab otsida kõigist 930+ artiklist pealkirja, väljavõtte, kategooria ja märksõnade järgi. Keelefilter (ET / RU / EN) on samuti olemas.</p>
+      <p style={s.p}>Blogi otsinguikoon (🔍) on igas lehe päises — viib <span style={s.code}>blog.ksa.ee/otsing</span> lehele, kus saab otsida kõigist 930+ artiklist pealkirja, väljavõtte, kategooria ja märksõnade järgi. Keelefilter (ET / RU / EN) on samuti olemas.</p>
 
       {/* Section 3.6 — Quick excerpt edit */}
       <h2 style={s.h2}>4. Väljavõtte kiirmuutmine (ei pea avama redaktorit)</h2>
@@ -4167,7 +4168,7 @@ function HelpTab() {
 
       {/* Section 3.5 — Delete */}
       <h2 style={s.h2}>5. Artikli kustutamine</h2>
-      <p style={s.p}>Blogis on kaks seisundit: <strong>mustand</strong> (ei ole avalikus blogis) ja <strong>avaldatud</strong> (nähtav ksa.ee/blogi-s). Kustutamise loogika erineb vastavalt.</p>
+      <p style={s.p}>Blogis on kaks seisundit: <strong>mustand</strong> (ei ole avalikus blogis) ja <strong>avaldatud</strong> (nähtav blog.ksa.ee-s). Kustutamise loogika erineb vastavalt.</p>
 
       <h3 style={s.h3}>A) Mustandi kustutamine</h3>
       <table style={s.table}>
@@ -4210,7 +4211,7 @@ function HelpTab() {
         💡 <strong>Millal ainult eemaldada (mitte kustutada)?</strong> Kui artikkel on ajutiselt ebatäpne või vajab ümbertöötamist — jätab see mustanditesse, et saad hiljem uuesti avaldada. Täielik kustutamine on pöördumatu.
       </div>
       <div style={s.tip}>
-        ⚠️ <strong>Ettevaatust:</strong> kustutatud artikli URL (ksa.ee/blogi/slug) annab edaspidi 404. Kui artikkel on olnud avalikus blogis kaua, võib sellele olla väliseid linke — kaalu enne kustutamist, kas eemaldamine (mustandiks) on ohutum.
+        ⚠️ <strong>Ettevaatust:</strong> kustutatud artikli URL (blog.ksa.ee/slug) annab edaspidi 404. Kui artikkel on olnud avalikus blogis kaua, võib sellele olla väliseid linke — kaalu enne kustutamist, kas eemaldamine (mustandiks) on ohutum.
       </div>
 
       {/* Section 5 */}
@@ -4232,10 +4233,10 @@ function HelpTab() {
         </tbody>
       </table>
 
-      {/* Section 6 — Keyboard shortcuts on ksa.ee/blogi */}
+      {/* Section 6 — Keyboard shortcuts on blog.ksa.ee */}
       <h2 style={s.h2}>6. Klaviatuuri otseteed artiklilehel</h2>
       <p style={s.p}>
-        Kui loed artiklit ksa.ee/blogi-s, liiguvad nooleklahvid lehel nii:
+        Kui loed artiklit blog.ksa.ee-s, liiguvad nooleklahvid lehel nii:
       </p>
       <table style={s.table}>
         <tbody>
@@ -4436,7 +4437,7 @@ export default function AdminPage() {
 
         {/* Right */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <a href="https://ksa.ee/blogi" style={{ fontSize: 13, color: "#9a9a9a", textDecoration: "none" }}>← Blog</a>
+          <a href={BLOG_PUBLIC_BASE_URL} style={{ fontSize: 13, color: "#9a9a9a", textDecoration: "none" }}>← Blog</a>
           <button onClick={logout} style={{
             padding: "6px 14px", border: "1px solid #e6e6e6", borderRadius: 8,
             background: "white", color: "#9a9a9a", fontSize: 13, cursor: "pointer",
