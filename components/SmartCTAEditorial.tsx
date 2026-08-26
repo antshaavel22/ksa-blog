@@ -307,14 +307,22 @@ interface Props {
 }
 
 // ── Offer deadline ───────────────────────────────────────────────────────────
-// The Flow3 offer runs to the END OF THE CURRENT MONTH and is computed on every
-// render, so on the 1st it rolls forward to that month's last day on its own.
-// No cron job and no scheduled task: this is a client component, so the date is
-// evaluated in the reader's browser each time the CTA is shown.
+// The Flow3 offer runs to the end of a month, computed on every render. No cron
+// and no scheduled task: this is a client component, so the date is evaluated in
+// the reader's browser each time the CTA is shown.
 //
-// Estonia's calendar decides the roll-over, not the server's clock — on the 1st
-// between 00:00 and 03:00 local time UTC is still in the previous month, which
-// would show a deadline that has already passed.
+// It rolls forward on the 25th, not the 1st (Ants, 2026-08-26): showing
+// "until 31 August" to someone reading on the 28th leaves three days to book an
+// eye exam, which is not a real offer. From the 25th the CTA points at the END
+// OF THE NEXT MONTH instead, so a reader always has at least ~5 weeks.
+//
+//   1-24 Aug  -> 31 August
+//   25-31 Aug -> 30 September
+//   1-24 Sep  -> 30 September
+//
+// Estonia's calendar decides the roll-over, not the server's clock — just after
+// midnight local time UTC is still on the previous day, which would delay the
+// switch by up to three hours.
 const DEADLINE_MONTHS: Record<CtaLang, string[]> = {
   // Estonian: "kuni" governs the terminative case, hence the -ni endings.
   et: ["jaanuarini", "veebruarini", "märtsini", "aprillini", "maini", "juunini",
@@ -334,6 +342,9 @@ const DEADLINE_FALLBACK: Record<CtaLang, string> = {
   en: "the end of this month",
 };
 
+// Day of month from which the CTA advertises the NEXT month's end date.
+const ROLL_FORWARD_DAY = 25;
+
 function offerValidUntil(lang: CtaLang): string {
   try {
     // Intl.formatToParts, NOT new Date(d.toLocaleString(...)). That older trick
@@ -349,18 +360,30 @@ function offerValidUntil(lang: CtaLang): string {
     const num = (type: string) => Number(parts.find((p) => p.type === type)?.value);
     const year = num("year");
     const month = num("month"); // 1-12 in Estonian local time
+    const day = num("day");
 
-    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+    if (![year, month, day].every(Number.isFinite) || month < 1 || month > 12) {
       return DEADLINE_FALLBACK[lang];
     }
-    // Day 0 of the NEXT month is the last day of this one — 28/29/30/31 and
-    // leap years all fall out of the calendar rather than a lookup table.
+
+    // From the 25th, advertise the end of the FOLLOWING month.
+    let targetYear = year;
+    let targetMonth = month;
+    if (day >= ROLL_FORWARD_DAY) {
+      targetMonth += 1;
+      if (targetMonth > 12) { targetMonth = 1; targetYear += 1; }
+    }
+
+    // Day 0 of the month AFTER the target is the target's last day — 28/29/30/31
+    // and leap years fall out of the calendar rather than a lookup table.
     // UTC arithmetic so the host timezone cannot shift the result.
-    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
-    const name = DEADLINE_MONTHS[lang][month - 1];
+    const lastDay = new Date(Date.UTC(targetYear, targetMonth, 0)).getUTCDate();
+    const name = DEADLINE_MONTHS[lang][targetMonth - 1];
     if (!name || !Number.isFinite(lastDay)) return DEADLINE_FALLBACK[lang];
 
-    return lang === "et" ? `${lastDay}. ${name} ${year}` : `${lastDay} ${name} ${year}`;
+    return lang === "et"
+      ? `${lastDay}. ${name} ${targetYear}`
+      : `${lastDay} ${name} ${targetYear}`;
   } catch {
     return DEADLINE_FALLBACK[lang];
   }
