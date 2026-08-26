@@ -326,14 +326,44 @@ const DEADLINE_MONTHS: Record<CtaLang, string[]> = {
        "July", "August", "September", "October", "November", "December"],
 };
 
+// If the date cannot be determined we still say something TRUE rather than
+// risk rendering a broken or wrong deadline in front of a customer.
+const DEADLINE_FALLBACK: Record<CtaLang, string> = {
+  et: "selle kuu lõpuni",
+  ru: "до конца этого месяца",
+  en: "the end of this month",
+};
+
 function offerValidUntil(lang: CtaLang): string {
-  const local = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Tallinn" }));
-  const year = local.getFullYear();
-  const month = local.getMonth();
-  // Day 0 of next month is the last day of this one — handles 28/29/30/31.
-  const lastDay = new Date(year, month + 1, 0).getDate();
-  const name = DEADLINE_MONTHS[lang][month];
-  return lang === "et" ? `${lastDay}. ${name} ${year}` : `${lastDay} ${name} ${year}`;
+  try {
+    // Intl.formatToParts, NOT new Date(d.toLocaleString(...)). That older trick
+    // re-parses a locale string like "8/24/2026, 3:45:12 PM", and parsing
+    // non-ISO strings is implementation-defined — Safari has returned Invalid
+    // Date for it, which would have rendered "NaN. undefined NaN" to a reader.
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Europe/Tallinn",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(new Date());
+    const num = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+    const year = num("year");
+    const month = num("month"); // 1-12 in Estonian local time
+
+    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+      return DEADLINE_FALLBACK[lang];
+    }
+    // Day 0 of the NEXT month is the last day of this one — 28/29/30/31 and
+    // leap years all fall out of the calendar rather than a lookup table.
+    // UTC arithmetic so the host timezone cannot shift the result.
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const name = DEADLINE_MONTHS[lang][month - 1];
+    if (!name || !Number.isFinite(lastDay)) return DEADLINE_FALLBACK[lang];
+
+    return lang === "et" ? `${lastDay}. ${name} ${year}` : `${lastDay} ${name} ${year}`;
+  } catch {
+    return DEADLINE_FALLBACK[lang];
+  }
 }
 
 export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Props) {
