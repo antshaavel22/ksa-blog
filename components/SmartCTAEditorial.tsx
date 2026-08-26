@@ -48,7 +48,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     flow3: {
       eyebrow: "FLOW3 · VABANE PRILLIDEST",
       headline: "Tahad teada, kas Flow3 sinu silmadele sobib?",
-      body: "Flow3 uuring kliinikus — 39 € (tavahind 69 €) kuni 30. septembrini 2026. Kestus 60 minutit, Tallinn või Tartu.",
+      body: "Flow3 uuring kliinikus — 39 € (tavahind 69 €) kuni {{validUntil}}. Kestus 60 minutit, Tallinn või Tartu.",
       primaryButtonLabel: "Broneeri Flow3 uuring · 39 € sooduskoodiga",
       callbackPromptLabel: "Mul on veel küsimusi ja soovin, et helistate tagasi",
       callbackHelpText: "Jäta nimi + telefon",
@@ -120,7 +120,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     flow3: {
       eyebrow: "FLOW3 · СВОБОДА ОТ ОЧКОВ",
       headline: "Хотите узнать, подходит ли Flow3 вашим глазам?",
-      body: "Обследование Flow3 в клинике — 39 € (вместо 69 €) до 30 сентября 2026. Продолжительность — 60 минут, Таллинн или Тарту.",
+      body: "Обследование Flow3 в клинике — 39 € (вместо 69 €) до {{validUntil}}. Продолжительность — 60 минут, Таллинн или Тарту.",
       primaryButtonLabel: "Записаться на Flow3 · промокод 39 €",
       callbackPromptLabel: "У меня ещё есть вопросы — перезвоните мне",
       callbackHelpText: "Оставьте имя и телефон",
@@ -192,7 +192,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     flow3: {
       eyebrow: "FLOW3 · FREEDOM FROM GLASSES",
       headline: "Want to know if Flow3 is right for your eyes?",
-      body: "Flow3 exam at the clinic — €39 (regular €69) until 30 September 2026. 60 minutes, Tallinn or Tartu.",
+      body: "Flow3 exam at the clinic — €39 (regular €69) until {{validUntil}}. 60 minutes, Tallinn or Tartu.",
       primaryButtonLabel: "Book Flow3 exam · €39 with promo",
       callbackPromptLabel: "I have more questions — please call me back",
       callbackHelpText: "Leave your name and phone",
@@ -306,11 +306,46 @@ interface Props {
   lang?: string;
 }
 
+// ── Offer deadline ───────────────────────────────────────────────────────────
+// The Flow3 offer runs to the END OF THE CURRENT MONTH and is computed on every
+// render, so on the 1st it rolls forward to that month's last day on its own.
+// No cron job and no scheduled task: this is a client component, so the date is
+// evaluated in the reader's browser each time the CTA is shown.
+//
+// Estonia's calendar decides the roll-over, not the server's clock — on the 1st
+// between 00:00 and 03:00 local time UTC is still in the previous month, which
+// would show a deadline that has already passed.
+const DEADLINE_MONTHS: Record<CtaLang, string[]> = {
+  // Estonian: "kuni" governs the terminative case, hence the -ni endings.
+  et: ["jaanuarini", "veebruarini", "märtsini", "aprillini", "maini", "juunini",
+       "juulini", "augustini", "septembrini", "oktoobrini", "novembrini", "detsembrini"],
+  // Russian: "до" governs the genitive.
+  ru: ["января", "февраля", "марта", "апреля", "мая", "июня",
+       "июля", "августа", "сентября", "октября", "ноября", "декабря"],
+  en: ["January", "February", "March", "April", "May", "June",
+       "July", "August", "September", "October", "November", "December"],
+};
+
+function offerValidUntil(lang: CtaLang): string {
+  const local = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Tallinn" }));
+  const year = local.getFullYear();
+  const month = local.getMonth();
+  // Day 0 of next month is the last day of this one — handles 28/29/30/31.
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const name = DEADLINE_MONTHS[lang][month];
+  return lang === "et" ? `${lastDay}. ${name} ${year}` : `${lastDay} ${name} ${year}`;
+}
+
 export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Props) {
   const normalizedLang = normalizeLang(lang);
   const raw = RAW_CONFIG[funnel] ?? RAW_CONFIG.general;
   const c = resolveCtaEntry(raw, normalizedLang);
   const copy = COPY[normalizedLang][funnel];
+  // Recomputed after mount as well, so a page served from the ISR cache that was
+  // generated last month still shows the current month's deadline.
+  const [validUntil, setValidUntil] = useState(() => offerValidUntil(normalizedLang));
+  useEffect(() => { setValidUntil(offerValidUntil(normalizedLang)); }, [normalizedLang]);
+  const bodyText = copy.body.replace("{{validUntil}}", validUntil);
   const primaryUrl = buildPrimaryUrl(funnel, normalizedLang, slug);
 
   const [firstName, setFirstName] = useState("");
@@ -410,7 +445,7 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
           >
             {copy.headline}
           </h2>
-          <p className="text-[16px] text-[#1a1a1a] leading-relaxed mb-8">{copy.body}</p>
+          <p className="text-[16px] text-[#1a1a1a] leading-relaxed mb-8" suppressHydrationWarning>{bodyText}</p>
 
           {/* PRIMARY PATH — direct booking. Ideal outcome: zero staff time. */}
           <div className="mb-10">
