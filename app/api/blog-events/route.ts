@@ -8,6 +8,23 @@ export const runtime = "nodejs";
 
 const RATE_LIMIT_PER_MIN = 60;
 
+// CORS: ksa-web's ported BlogAnalytics (ksa.ee/blogi/[slug]) sends events
+// here cross-origin via sendBeacon, keeping all analytics in this one
+// Supabase pipeline instead of a duplicate. The Blob content-type
+// ("application/json") is not CORS-safelisted, so the browser preflights
+// with OPTIONS before the real POST — this must return 2xx with the right
+// headers or the POST never fires. Same-origin (blog.ksa.ee) is unaffected.
+const ALLOWED_ORIGIN = "https://ksa.ee";
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 /**
  * Ingest blog analytics events. No PII: IP is dropped, admin sessions skipped,
  * bots filtered by UA, hard-capped at 60 req/min per visitor_id.
