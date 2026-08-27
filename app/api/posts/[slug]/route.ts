@@ -14,6 +14,16 @@ import { publicAssetUrl, publicBlogUrl } from "@/lib/url";
  * copy of that logic/data — no new data layer, no admin/write paths.
  */
 
+/**
+ * Body content uses root-relative image paths (`/uploads/...`) that resolve
+ * fine on blog.ksa.ee itself but 404 when the same markdown renders on
+ * another origin (ksa-web). Rewrite to absolute blog.ksa.ee URLs. wp-content
+ * paths are untouched — ksa-web mirrors /wp-content/uploads/ itself.
+ */
+function absolutizeBodyImages(content: string): string {
+  return content.replace(/\]\(\/uploads\//g, "](https://blog.ksa.ee/uploads/");
+}
+
 function toPublicSummary(p: PostMeta, lang: "et" | "ru" | "en") {
   return {
     slug: p.slug,
@@ -65,7 +75,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
       seoExcerpt: post.seoExcerpt ?? post.excerpt,
       date: post.date,
       lang,
-      content: post.content,
+      content: absolutizeBodyImages(post.content),
       categories: post.categories,
       categoryLabel: primaryCategoryRaw ? getCategoryLabel(toSlug(primaryCategoryRaw), lang) : "",
       categorySlug: primaryCategoryRaw ? toSlug(primaryCategoryRaw) : "",
