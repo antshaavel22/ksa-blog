@@ -37,7 +37,13 @@ export async function GET(req: NextRequest) {
     : categoryFiltered;
 
   const hasFilter = !!(category || query);
-  const filtered = page === 1 && !hasFilter ? getHomeFeed(queryFiltered) : queryFiltered;
+  // Apply the pin/shuffle reorder unconditionally (not just on page 1) so
+  // every page slices from the SAME ordering — computing it only for page 1
+  // let a pinned/shuffled-to-the-front post also appear at its original
+  // chronological position on a later page (found via testing 2026-08-27;
+  // same latent bug exists on blog.ksa.ee's own homepage, which has this
+  // same page===1-only condition).
+  const filtered = !hasFilter ? getHomeFeed(queryFiltered) : queryFiltered;
 
   const total = filtered.length;
   const totalPages = hasFilter
