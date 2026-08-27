@@ -19,6 +19,10 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
+  // navigator.sendBeacon always sends credentials (cookies) cross-origin —
+  // unlike fetch, there's no way to opt it out. Without this, the browser
+  // silently blocks the beacon at the CORS preflight and no event is sent.
+  "Access-Control-Allow-Credentials": "true",
 };
 
 export async function OPTIONS() {
