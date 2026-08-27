@@ -12,8 +12,10 @@ const RATE_LIMIT_PER_MIN = 60;
 // here cross-origin via sendBeacon, keeping all analytics in this one
 // Supabase pipeline instead of a duplicate. The Blob content-type
 // ("application/json") is not CORS-safelisted, so the browser preflights
-// with OPTIONS before the real POST — this must return 2xx with the right
-// headers or the POST never fires. Same-origin (blog.ksa.ee) is unaffected.
+// with OPTIONS before the real POST — both the preflight AND the actual
+// POST response need these headers, or the browser logs a CORS failure
+// even though the request itself completed (found via live testing
+// 2026-08-27 — only the OPTIONS handler had them at first).
 const ALLOWED_ORIGIN = "https://ksa.ee";
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
@@ -24,6 +26,10 @@ const CORS_HEADERS = {
   // silently blocks the beacon at the CORS preflight and no event is sent.
   "Access-Control-Allow-Credentials": "true",
 };
+
+function respond(body: Record<string, unknown>, status: number) {
+  return NextResponse.json(body, { status, headers: CORS_HEADERS });
+}
 
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
@@ -37,35 +43,35 @@ export async function POST(req: Request) {
   // Skip admin traffic so editors don't pollute reader stats.
   const cookieHeader = req.headers.get("cookie") ?? "";
   if (cookieHeader.includes("admin_session=ksa-admin-authenticated")) {
-    return NextResponse.json({ skipped: "admin" }, { status: 202 });
+    return respond({ skipped: "admin" }, 202);
   }
 
   const userAgent = req.headers.get("user-agent");
   if (isBot(userAgent)) {
-    return NextResponse.json({ skipped: "bot" }, { status: 202 });
+    return respond({ skipped: "bot" }, 202);
   }
 
   let payload: Record<string, unknown>;
   try {
     payload = await req.json();
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return respond({ error: "invalid_json" }, 400);
   }
 
   const eventName = String(payload.event_name ?? "");
   const visitorId = String(payload.visitor_id ?? "");
   const sessionId = String(payload.session_id ?? "");
   if (!eventName || !visitorId || !sessionId) {
-    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+    return respond({ error: "missing_fields" }, 400);
   }
   if (eventName.length > 64 || visitorId.length > 64 || sessionId.length > 64) {
-    return NextResponse.json({ error: "field_too_long" }, { status: 400 });
+    return respond({ error: "field_too_long" }, 400);
   }
 
   const supabase = getSupabaseAdmin();
   if (!supabase) {
     // Analytics not configured — accept silently so the client doesn't retry.
-    return NextResponse.json({ skipped: "not_configured" }, { status: 202 });
+    return respond({ skipped: "not_configured" }, 202);
   }
 
   // Rate-limit: 60 events/min per visitor, hard cap. Atomic upsert-with-check.
@@ -83,7 +89,7 @@ export async function POST(req: Request) {
     const ageMs = now.getTime() - ws.getTime();
     if (ageMs < 60_000) {
       if (rateRow.count >= RATE_LIMIT_PER_MIN) {
-        return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+        return respond({ error: "rate_limited" }, 429);
       }
       windowStart = ws;
       count = rateRow.count + 1;
@@ -118,7 +124,7 @@ export async function POST(req: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "write_failed" }, { status: 500 });
+    return respond({ error: "write_failed" }, 500);
   }
-  return NextResponse.json({ ok: true }, { status: 202 });
+  return respond({ ok: true }, 202);
 }
