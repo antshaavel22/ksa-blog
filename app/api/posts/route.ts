@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllPosts, getAllCategories, getHomeFeed, PostLang } from "@/lib/posts";
-import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { getCategoryLabel, toSlug, canonicalCategorySlug } from "@/lib/categories";
 import { publicAssetUrl } from "@/lib/url";
 
 /**
@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
   const langFiltered = allPosts.filter((p) => p.lang === lang);
 
   const categoryFiltered = category
-    ? langFiltered.filter((p) => p.categories.some((c) => toSlug(c) === category))
+    ? langFiltered.filter((p) =>
+        p.categories.some((c) => canonicalCategorySlug(toSlug(c)) === canonicalCategorySlug(category))
+      )
     : langFiltered;
 
   const queryFiltered = query
@@ -80,7 +82,7 @@ export async function GET(req: NextRequest) {
     .map((c) => ({
       slug: c.slug,
       name: getCategoryLabel(c.slug, lang),
-      count: langFiltered.filter((p) => p.categories.some((pc) => toSlug(pc) === c.slug)).length,
+      count: langFiltered.filter((p) => p.categories.some((pc) => canonicalCategorySlug(toSlug(pc)) === c.slug)).length,
     }))
     .filter((c) => c.count > 0)
     .sort((a, b) => b.count - a.count);

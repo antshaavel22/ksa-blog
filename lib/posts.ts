@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { toSlug } from "@/lib/categories";
+import { toSlug, canonicalCategorySlug } from "@/lib/categories";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
 
@@ -158,7 +158,7 @@ export function getAllCategories(): { slug: string; name: string; count: number 
 
   for (const post of posts) {
     for (const cat of post.categories) {
-      const slug = toSlug(cat);
+      const slug = canonicalCategorySlug(toSlug(cat));
       const existing = map.get(slug);
       if (existing) {
         existing.count++;

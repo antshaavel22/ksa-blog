@@ -44,6 +44,34 @@ export const CATEGORY_LABELS: Record<string, { et: string; ru: string; en: strin
   "tehnoloogia-laserprotseduur": { et: "Tehnoloogia & laserprotseduur", ru: "Технология & лазер", en: "Technology & Laser" },
 };
 
+// Slug variants that share an identical trilingual label above (language-variant
+// duplicates, e.g. an EN post's "Flow Procedure" vs. an ET post's "Flow Protseduur")
+// collapse onto one canonical slug for pill listing + filtering. This does NOT
+// reclassify any post's actual category value — it only merges display/filter,
+// so no post frontmatter needs editing and nothing can crash a build.
+export const CATEGORY_ALIASES: Record<string, string> = {
+  lifestyle: "elustiil",
+  "success-stories": "edulood",
+  "patient-stories": "kogemuslood",
+  "flow-procedure": "flow-protseduur",
+  "interesting-facts": "huvitavad-faktid",
+  "ksa-vision-center": "ksa-silmakeskus",
+  "vision-correction": "nagemise-korrigeerimine",
+  "eyes-health": "silmad-ja-tervis",
+  "eye-health-tips": "silmade-tervis-nipid",
+  "eye-health--tips": "silmade-tervis-nipid",
+  "eye-health": "silmade-tervis-nipid",
+  technology: "tehnoloogia",
+  // Diacritic-damaged slug: toSlug() strips ä/ö/õ/ü rather than transliterating,
+  // so a category typed "Nägemise korrigeerimine" that doesn't already match an
+  // entry mints "ngemise-korrigeerimine". Same category, not a separate one.
+  "ngemise-korrigeerimine": "nagemise-korrigeerimine",
+};
+
+export function canonicalCategorySlug(slug: string): string {
+  return CATEGORY_ALIASES[slug] ?? slug;
+}
+
 export function getCategoryLabel(slug: string, lang: "et" | "ru" | "en" = "et"): string {
   const entry = CATEGORY_LABELS[slug];
   if (entry) return entry[lang];
