@@ -49,20 +49,24 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
             {back}
           </Link>
 
-          <Link
-            href={homeHref}
-            className="flex items-center gap-3"
-            aria-label="KSA Silmakeskus blogi"
-          >
-            <Image
-              src="/ksa-mark.svg"
-              alt="KSA Silmakeskus"
-              width={64}
-              height={40}
-              priority
-              style={{ height: 36, width: "auto" }}
-            />
-            <span
+          {/* Logo -> ksa.ee, "Blogi" -> the blog. Previously both were one link
+              to the blog home, and the only route back to ksa.ee was the
+              "← ksa.ee" link above, which is hidden below sm — so on a phone
+              there was no way out of the blog at all. */}
+          <div className="flex items-center gap-3">
+            <Link href="https://ksa.ee" aria-label="KSA Silmakeskus" className="inline-flex items-center">
+              <Image
+                src="/ksa-mark.svg"
+                alt="KSA Silmakeskus"
+                width={64}
+                height={40}
+                priority
+                style={{ height: 36, width: "auto" }}
+              />
+            </Link>
+            <Link
+              href={homeHref}
+              className="transition-colors hover:text-black"
               style={{
                 fontWeight: 400,
                 fontSize: 14,
@@ -72,8 +76,8 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
               }}
             >
               {blogLabel}
-            </span>
-          </Link>
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center gap-5">
