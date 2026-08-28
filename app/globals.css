@@ -541,3 +541,8 @@ body {
 /* ─── Utilities ──────────────────────────────────────────────────── */
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Language menu in BlogNav — <details> keeps the nav free of client JS, but
+   Safari draws its own disclosure triangle that list-style alone won't remove. */
+.blog-lang > summary::-webkit-details-marker { display: none; }
+.blog-lang > summary::marker { content: ""; }

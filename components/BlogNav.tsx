@@ -10,11 +10,18 @@ import Image from "next/image";
 
 const BLOG_LABEL: Record<string, string> = { et: "Blogi", en: "Blog", ru: "Блог" };
 const BACK_LABEL: Record<string, string> = { et: "ksa.ee", en: "ksa.ee", ru: "ksa.ee" };
+const LANG_LABEL: Record<string, string> = {
+  et: "Vali keel",
+  en: "Choose language",
+  ru: "Выбрать язык",
+};
+const NAV_LANGS = ["et", "en", "ru"] as const;
 
 export default function BlogNav({ lang = "et" }: { lang?: string }) {
   const blogLabel = BLOG_LABEL[lang] ?? BLOG_LABEL.et;
   const back = BACK_LABEL[lang] ?? BACK_LABEL.et;
   const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
+  const langLabel = LANG_LABEL[lang] ?? LANG_LABEL.et;
 
   return (
     <nav
@@ -70,6 +77,59 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
         </div>
 
         <div className="flex items-center gap-5">
+          {/* Language switcher. Previously it lived only in the homepage body,
+              so article pages offered no way to change language at all.
+              Collapsed to the current language to stay compact in the header.
+              Uses <details> so it needs no client JS on an otherwise static nav.
+              Blog languages are independent article sets (not translations —
+              see CLAUDE.md), so each entry goes to that language's index. */}
+          <details className="blog-lang relative">
+            <summary
+              aria-label={langLabel}
+              className="flex cursor-pointer list-none items-center gap-1 transition-colors hover:text-black"
+              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink-60)" }}
+            >
+              {lang.toUpperCase()}
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </summary>
+            <div
+              className="absolute right-0"
+              style={{
+                top: "calc(100% + 6px)",
+                minWidth: 88,
+                background: "#fff",
+                border: "1px solid var(--line)",
+                borderRadius: 12,
+                padding: 4,
+                boxShadow: "0 14px 34px rgba(0,0,0,0.14)",
+              }}
+            >
+              {NAV_LANGS.map((code) => {
+                const active = code === lang;
+                return (
+                  <Link
+                    key={code}
+                    href={code === "et" ? "/" : `/?keel=${code}`}
+                    aria-current={active ? "true" : undefined}
+                    className="block transition-colors"
+                    style={{
+                      padding: "9px 12px",
+                      borderRadius: 9,
+                      fontSize: 13,
+                      fontWeight: active ? 500 : 400,
+                      background: active ? "var(--ink-05)" : "transparent",
+                      color: active ? "var(--ink)" : "var(--ink-60)",
+                    }}
+                  >
+                    {code.toUpperCase()}
+                  </Link>
+                );
+              })}
+            </div>
+          </details>
+
           <Link
             href={`/otsing?lang=${lang}`}
             aria-label="Otsi"
