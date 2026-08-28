@@ -1,5 +1,5 @@
 import { PostMeta } from "@/lib/posts";
-import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { getCategoryLabel, toSlug, resolveCategorySlug } from "@/lib/categories";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -71,7 +71,7 @@ export default function RelatedPosts({ posts, lang = "et" }: RelatedPostsProps) 
 function RelatedCard({ post, lang }: { post: PostMeta; lang: string }) {
   const primaryCategoryRaw = post.categories?.[0] ?? "";
   const categoryLabel = primaryCategoryRaw
-    ? getCategoryLabel(toSlug(primaryCategoryRaw), lang as "et" | "ru" | "en")
+    ? getCategoryLabel(resolveCategorySlug(primaryCategoryRaw), lang as "et" | "ru" | "en")
     : null;
   const dateLocale = lang === "ru" ? ru : lang === "en" ? enUS : et;
   const dateFormatted = post.date

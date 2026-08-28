@@ -1,5 +1,5 @@
 import { getAllPosts, getAllCategories, getHomeFeed } from "@/lib/posts";
-import { getCategoryLabel, CATEGORY_LABELS, toSlug } from "@/lib/categories";
+import { getCategoryLabel, CATEGORY_LABELS, toSlug, resolveCategorySlug } from "@/lib/categories";
 import PostCard from "@/components/PostCard";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
@@ -79,7 +79,7 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
 
   const langFiltered = allPosts.filter((p) => p.lang === lang);
   const categoryFiltered = kategooria
-    ? langFiltered.filter((p) => p.categories.some((c) => toSlug(c) === kategooria))
+    ? langFiltered.filter((p) => p.categories.some((c) => resolveCategorySlug(c) === resolveCategorySlug(kategooria)))
     : langFiltered;
   const queryFiltered = query
     ? categoryFiltered.filter(
@@ -239,12 +239,12 @@ export default async function BlogIndexPage({ searchParams }: PageProps) {
                     (cat) =>
                       cat.slug !== "uncategorized" &&
                       cat.slug in CATEGORY_LABELS &&
-                      langFiltered.some((p) => p.categories.some((c) => toSlug(c) === cat.slug))
+                      langFiltered.some((p) => p.categories.some((c) => resolveCategorySlug(c) === cat.slug))
                   )
                   .slice(0, 10)
                   .map((cat) => {
                     const count = langFiltered.filter((p) =>
-                      p.categories.some((c) => toSlug(c) === cat.slug)
+                      p.categories.some((c) => resolveCategorySlug(c) === cat.slug)
                     ).length;
                     return (
                       <CategoryPill

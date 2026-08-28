@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllPosts, getAllCategories, getHomeFeed, PostLang } from "@/lib/posts";
-import { getCategoryLabel, toSlug, canonicalCategorySlug } from "@/lib/categories";
+import { getCategoryLabel, resolveCategorySlug } from "@/lib/categories";
 import { publicAssetUrl } from "@/lib/url";
 
 /**
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   const categoryFiltered = category
     ? langFiltered.filter((p) =>
-        p.categories.some((c) => canonicalCategorySlug(toSlug(c)) === canonicalCategorySlug(category))
+        p.categories.some((c) => resolveCategorySlug(c) === resolveCategorySlug(category))
       )
     : langFiltered;
 
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     date: p.date,
     categories: p.categories,
     categoryLabel: p.categories[0]
-      ? getCategoryLabel(toSlug(p.categories[0]), lang)
+      ? getCategoryLabel(resolveCategorySlug(p.categories[0]), lang)
       : "",
     featuredImage: p.featuredImage ? publicAssetUrl(p.featuredImage) : "",
     url: `https://blog.ksa.ee/${p.slug}`,
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
     .map((c) => ({
       slug: c.slug,
       name: getCategoryLabel(c.slug, lang),
-      count: langFiltered.filter((p) => p.categories.some((pc) => canonicalCategorySlug(toSlug(pc)) === c.slug)).length,
+      count: langFiltered.filter((p) => p.categories.some((pc) => resolveCategorySlug(pc) === c.slug)).length,
     }))
     .filter((c) => c.count > 0)
     .sort((a, b) => b.count - a.count);

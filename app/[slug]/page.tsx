@@ -13,7 +13,7 @@ import ShareButton from "@/components/ShareButton";
 import PageLang from "@/components/PageLang";
 import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
-import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { getCategoryLabel, toSlug, resolveCategorySlug } from "@/lib/categories";
 import { resolveFunnel } from "@/lib/funnel-classifier";
 import { publicAssetUrl, publicBlogUrl } from "@/lib/url";
 import Image from "next/image";
@@ -142,7 +142,7 @@ export default async function PostPage({ params }: PageProps) {
   const authorUrl = authorProfile ? `/autor/${authorProfile.slug}` : null;
   const primaryCategoryRaw = post.categories[0] ?? "";
   const primaryCategoryLabel = primaryCategoryRaw
-    ? getCategoryLabel(toSlug(primaryCategoryRaw), lang)
+    ? getCategoryLabel(resolveCategorySlug(primaryCategoryRaw), lang)
     : "";
   const readMin = readMinutes(post.content);
   // Auto-classifier: keyword-driven funnel routing, bulletproof default.
@@ -225,7 +225,7 @@ export default async function PostPage({ params }: PageProps) {
         { "@type": "ListItem", position: 1, name: "KSA Blog", item: publicBlogUrl() },
         ...(primaryCategoryRaw
           ? [
-              { "@type": "ListItem", position: 2, name: primaryCategoryRaw, item: publicBlogUrl(`kategooria/${toSlug(primaryCategoryRaw)}`) },
+              { "@type": "ListItem", position: 2, name: primaryCategoryRaw, item: publicBlogUrl(`kategooria/${resolveCategorySlug(primaryCategoryRaw)}`) },
               { "@type": "ListItem", position: 3, name: post.title },
             ]
           : [{ "@type": "ListItem", position: 2, name: post.title }]),
@@ -269,7 +269,7 @@ export default async function PostPage({ params }: PageProps) {
                 <>
                   <span>›</span>
                   <Link
-                    href={`/kategooria/${toSlug(primaryCategoryRaw)}`}
+                    href={`/kategooria/${resolveCategorySlug(primaryCategoryRaw)}`}
                     style={{
                       color: "var(--lime-dark)",
                       fontWeight: 600,

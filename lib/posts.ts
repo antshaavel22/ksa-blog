@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { toSlug, canonicalCategorySlug } from "@/lib/categories";
+import { toSlug, resolveCategorySlug } from "@/lib/categories";
 
 const postsDirectory = path.join(process.cwd(), "content/posts");
 
@@ -148,7 +148,7 @@ export function getPostBySlug(slug: string): Post | null {
 
 export function getPostsByCategory(category: string, lang?: PostLang): PostMeta[] {
   return getAllPosts(lang).filter((p) =>
-    p.categories.some((c) => toSlug(c) === toSlug(category))
+    p.categories.some((c) => resolveCategorySlug(c) === resolveCategorySlug(category))
   );
 }
 
@@ -158,7 +158,8 @@ export function getAllCategories(): { slug: string; name: string; count: number 
 
   for (const post of posts) {
     for (const cat of post.categories) {
-      const slug = canonicalCategorySlug(toSlug(cat));
+      const slug = resolveCategorySlug(cat);
+      if (!slug) continue;
       const existing = map.get(slug);
       if (existing) {
         existing.count++;

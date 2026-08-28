@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { PostMeta } from "@/lib/posts";
-import { getCategoryLabel, toSlug } from "@/lib/categories";
+import { getCategoryLabel, toSlug, resolveCategorySlug } from "@/lib/categories";
 import { BLOG_CONFIG } from "@/lib/config";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
@@ -19,7 +19,7 @@ export default function PostCard({ post, large = false }: PostCardProps) {
     : "";
   const primaryCategoryRaw = post.categories?.[0] ?? "";
   const primaryCategory = primaryCategoryRaw
-    ? getCategoryLabel(toSlug(primaryCategoryRaw), (post.lang as "et" | "ru" | "en") ?? "et")
+    ? getCategoryLabel(resolveCategorySlug(primaryCategoryRaw), (post.lang as "et" | "ru" | "en") ?? "et")
     : "";
 
   return (
