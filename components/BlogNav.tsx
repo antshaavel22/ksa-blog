@@ -16,12 +16,20 @@ const LANG_LABEL: Record<string, string> = {
   ru: "Выбрать язык",
 };
 const NAV_LANGS = ["et", "en", "ru"] as const;
+// Leaving the blog must not also change the reader's language: an RU reader
+// tapping the logo belongs on ksa.ee/ru/, not the Estonian home page.
+const KSA_HOME: Record<string, string> = {
+  et: "https://ksa.ee",
+  en: "https://ksa.ee/en/",
+  ru: "https://ksa.ee/ru/",
+};
 
 export default function BlogNav({ lang = "et" }: { lang?: string }) {
   const blogLabel = BLOG_LABEL[lang] ?? BLOG_LABEL.et;
   const back = BACK_LABEL[lang] ?? BACK_LABEL.et;
   const homeHref = lang === "et" ? "/" : `/?keel=${lang}`;
   const langLabel = LANG_LABEL[lang] ?? LANG_LABEL.et;
+  const ksaHref = KSA_HOME[lang] ?? KSA_HOME.et;
 
   return (
     <nav
@@ -39,7 +47,7 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
       >
         <div className="flex items-center gap-5">
           <Link
-            href="https://ksa.ee"
+            href={ksaHref}
             className="hidden sm:inline-flex items-center gap-1.5 transition-colors hover:text-black"
             style={{ fontSize: 13, color: "var(--ink-40)" }}
           >
@@ -54,7 +62,7 @@ export default function BlogNav({ lang = "et" }: { lang?: string }) {
               "← ksa.ee" link above, which is hidden below sm — so on a phone
               there was no way out of the blog at all. */}
           <div className="flex items-center gap-3">
-            <Link href="https://ksa.ee" aria-label="KSA Silmakeskus" className="inline-flex items-center">
+            <Link href={ksaHref} aria-label="KSA Silmakeskus" className="inline-flex items-center">
               <Image
                 src="/ksa-mark.svg"
                 alt="KSA Silmakeskus"
