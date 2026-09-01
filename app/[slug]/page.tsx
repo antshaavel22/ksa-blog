@@ -15,7 +15,7 @@ import { BLOG_CONFIG } from "@/lib/config";
 import { getAuthorByKey } from "@/lib/authors";
 import { getCategoryLabel, toSlug, resolveCategorySlug } from "@/lib/categories";
 import { resolveFunnel } from "@/lib/funnel-classifier";
-import { publicAssetUrl, publicBlogUrl } from "@/lib/url";
+import { publicAssetUrl, publicBlogUrl, canonicalPostUrl } from "@/lib/url";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -49,7 +49,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = post.seoTitle ?? post.title;
   const description = post.seoExcerpt ?? post.excerpt;
 
-  const currentUrl = publicBlogUrl(slug);
+  // Canonical + og:url point to the blog's new home on the main site (ksa.ee/blogi).
+  const currentUrl = canonicalPostUrl(slug);
 
   return {
     title,
@@ -132,7 +133,7 @@ export default async function PostPage({ params }: PageProps) {
     ? format(new Date(post.date), "d. MMMM yyyy", { locale: dateLocale })
     : "";
   const lang = (post.lang ?? "et") as "et" | "ru" | "en";
-  const canonicalUrl = publicBlogUrl(slug);
+  const canonicalUrl = canonicalPostUrl(slug);
   const articleImageUrl = post.featuredImage ? publicAssetUrl(post.featuredImage) : undefined;
   const authorProfile = post.author ? getAuthorByKey(post.author) : undefined;
   const authorName = authorProfile?.displayName ?? post.author ?? "KSA Silmakeskus";
