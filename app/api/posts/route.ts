@@ -76,6 +76,7 @@ export async function GET(req: NextRequest) {
       : "",
     featuredImage: p.featuredImage ? publicAssetUrl(p.featuredImage) : "",
     url: `https://blog.ksa.ee/${p.slug}`,
+    pinned: p.pinned === true,
   });
 
   const categoryCounts = getAllCategories()
