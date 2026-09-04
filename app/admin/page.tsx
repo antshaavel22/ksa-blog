@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback, useRef, FormEvent } from "react";
 import { publicBlogUrl, BLOG_PUBLIC_BASE_URL } from "@/lib/url";
 import { getCategoryLabel, toSlug } from "@/lib/categories";
+// Post URLs use their own generator (transliterates, cuts on word boundaries) —
+// NOT the category toSlug above, which strips non-ASCII by design.
+import { toSlug as toPostSlug } from "@/lib/slug.mjs";
 import SmartCTA from "@/components/SmartCTA";
 import type { CtaEntry, CtaLang, CtaLangOverrides } from "@/lib/cta-config";
 import type { Funnel } from "@/lib/posts";
@@ -3241,11 +3244,16 @@ function WriteTab() {
 
   // ── Direct save state ─────────────────────────────────────────────────────
   const [title, setTitle] = useState("");
+  const [customSlug, setCustomSlug] = useState("");
   const [body, setBody] = useState("");
   const [lang, setLang] = useState("et");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [savedFile, setSavedFile] = useState<{ filename: string; title: string; lang: string } | null>(null);
+  // Live preview of the URL the post will get — same generator the server uses.
+  const slugPreview = customSlug.trim()
+    ? toPostSlug(customSlug, { max: 120, maxWords: 20 })
+    : toPostSlug(title);
 
   // ── AI generation state ───────────────────────────────────────────────────
   const [brief, setBrief] = useState("");
@@ -3262,7 +3270,7 @@ function WriteTab() {
   }
 
   function resetAll() {
-    setMode("choose"); setTitle(""); setBody(""); setLang("et");
+    setMode("choose"); setTitle(""); setCustomSlug(""); setBody(""); setLang("et");
     setSaving(false); setSaveError(""); setSavedFile(null);
     setBrief(""); setUrlInput(""); setUrlError(""); setLanguages(["et", "ru", "en"]);
     setGenerating(false); setResults([]); setGenError("");
@@ -3277,7 +3285,7 @@ function WriteTab() {
       const res = await fetch("/api/admin/save-raw-draft", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), body: body.trim(), lang }),
+        body: JSON.stringify({ title: title.trim(), body: body.trim(), lang, slug: customSlug.trim() }),
       });
       let d: { ok?: boolean; filename?: string; title?: string; lang?: string; error?: string };
       try { d = await res.json(); } catch { throw new Error(`Server viga (${res.status})`); }
@@ -3469,6 +3477,26 @@ function WriteTab() {
               onFocus={e => { e.target.style.borderColor = "#87be23"; }}
               onBlur={e => { e.target.style.borderColor = "#e6e4df"; }}
             />
+          </div>
+
+          {/* URL ending — optional, falls back to the title (Silvia, 03.09.2026) */}
+          <div style={{ marginBottom: 18 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#9a9a9a", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+              URL-i lõpp
+            </label>
+            <input type="text" value={customSlug} onChange={e => setCustomSlug(e.target.value)}
+              placeholder="jäta tühjaks — teeme pealkirjast"
+              style={{
+                width: "100%", padding: "12px 16px", fontSize: 15,
+                border: "2px solid #e6e4df", borderRadius: 14, background: "white",
+                outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+              }}
+              onFocus={e => { e.target.style.borderColor = "#87be23"; }}
+              onBlur={e => { e.target.style.borderColor = "#e6e4df"; }}
+            />
+            <p style={{ fontSize: 13, color: "#9a9a9a", marginTop: 6, fontWeight: 300 }}>
+              blog.ksa.ee/<strong style={{ color: "#5a6b6c", fontWeight: 600 }}>{slugPreview || "…"}</strong>
+            </p>
           </div>
 
           {/* Language */}

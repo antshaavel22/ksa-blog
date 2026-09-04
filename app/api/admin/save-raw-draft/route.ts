@@ -98,13 +98,15 @@ function escapeYaml(s: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { title, body, lang, author, categories, tags } = (await req.json()) as {
+    const { title, body, lang, author, categories, tags, slug: customSlug } = (await req.json()) as {
       title: string;
       body: string;
       lang: string;
       author?: string;
       categories?: string[];
       tags?: string[];
+      /** Editor-supplied URL ending. Empty = derive it from the title. */
+      slug?: string;
     };
 
     if (!title?.trim()) {
@@ -118,7 +120,10 @@ export async function POST(req: NextRequest) {
     }
 
     const date = new Date().toISOString().split("T")[0];
-    const slug = toSlug(title);
+    // Silvia asked to be able to set the URL ending herself (03.09.2026): the
+    // generated one drops filler words and truncates, so it can read oddly next
+    // to the title. Her slug still goes through toSlug so it stays URL-safe.
+    const slug = customSlug?.trim() ? toSlug(customSlug, { max: 120, maxWords: 20 }) : toSlug(title);
     if (!slug) {
       return NextResponse.json({ error: "Pealkirjast ei saanud turvalist URL-i luua. Lisa pealkirja mõni täht või number." }, { status: 400 });
     }
