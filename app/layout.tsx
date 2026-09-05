@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import SiteAnalytics from "@/components/SiteAnalytics";
 import { Geist, Fraunces } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -85,6 +86,9 @@ export default async function RootLayout({
           src="/_vercel/insights/script.js"
           data-cookieconsent="ignore"
         />
+        {/* First-party counting, shared with ksa.ee so blog traffic appears in
+            the same dashboard. Cookieless — see ksa-web app/api/track. */}
+        <SiteAnalytics />
       </body>
     </html>
   );
