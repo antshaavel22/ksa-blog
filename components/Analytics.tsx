@@ -39,9 +39,30 @@ function loadAnalytics() {
   ga.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`;
   document.head.appendChild(ga);
 
-  const w = window as unknown as { dataLayer: unknown[] };
+  const w = window as unknown as {
+    dataLayer: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  };
   w.dataLayer = w.dataLayer || [];
-  function gtag(...args: unknown[]) { w.dataLayer.push(args); }
+
+  // MUST push the `arguments` object, not a rest-parameter array.
+  //
+  // This previously read `function gtag(...args) { dataLayer.push(args) }`,
+  // which pushes a real Array. gtag.js only interprets dataLayer entries that
+  // are Arguments objects and silently ignores arrays — so "config" never
+  // registered, no page_view was ever sent, and GA4 recorded ZERO traffic for
+  // blog.ksa.ee while GTM, the scripts and consent all looked perfectly
+  // healthy. Verified in the browser: our own pushes were `isArray: true`
+  // while GTM's internal push was `isArguments: true`.
+  //
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const gtag: (...args: any[]) => void = function () {
+    // eslint-disable-next-line prefer-rest-params
+    w.dataLayer.push(arguments);
+  };
+  // Expose it so anything else on the page can send events too.
+  w.gtag = gtag;
+
   gtag("js", new Date());
   gtag("config", GA4_ID);
 }
