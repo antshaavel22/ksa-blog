@@ -17,7 +17,8 @@
     "ai-edit": "tsx scripts/ai-editor.ts",
     "radar": "tsx scripts/blog-radar.ts",
     "excerpts:audit": "node scripts/audit-excerpts.mjs",
-    "excerpts:fix": "node scripts/generate-excerpts.mjs"
+    "excerpts:fix": "node scripts/generate-excerpts.mjs",
+    "digest": "tsx scripts/editor-digest.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.81.0",

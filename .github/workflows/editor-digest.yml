@@ -1,0 +1,38 @@
+name: Editor Digest (Friday 10:00 Tallinn)
+
+on:
+  # GitHub cron is UTC only and Estonia shifts EET <-> EEST, so we fire at BOTH
+  # 07:00 and 08:00 UTC every Friday. The script keeps only the run that is
+  # actually 10:00 in Tallinn and exits immediately on the other one — that
+  # gives a true 10:00 local all year without maintaining two workflows.
+  schedule:
+    - cron: "0 7 * * 5"
+    - cron: "0 8 * * 5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print the messages without sending to Slack"
+        type: boolean
+        default: true
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+
+      - name: Send editor digest
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            npx tsx scripts/editor-digest.ts --dry-run --force
+          else
+            npx tsx scripts/editor-digest.ts
+          fi
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
