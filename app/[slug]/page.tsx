@@ -3,6 +3,7 @@ import KeyboardNav from "@/components/KeyboardNav";
 import BlogNav from "@/components/BlogNav";
 import BlogFooter from "@/components/BlogFooter";
 import SmartCTAEditorial from "@/components/SmartCTAEditorial";
+import ArticleQuiz from "@/components/ArticleQuiz";
 import RelatedPathLinks from "@/components/RelatedPathLinks";
 import BlogAnalytics from "@/components/BlogAnalytics";
 import RelatedPosts from "@/components/RelatedPosts";
@@ -481,6 +482,10 @@ export default async function PostPage({ params }: PageProps) {
             after the reader finishes the piece, before related-links and
             author-bio trail off. Two paths: direct booking to
             booking.ksa.ee with promokood OR callback form → KAISA. ── */}
+        {/* One draw question per post — renders nothing unless loos.ksa.ee
+            has a question for this slug (September 2026 ticket mechanic). */}
+        <ArticleQuiz slug={slug} lang={lang} />
+
         <SmartCTAEditorial funnel={resolvedFunnel} slug={slug} lang={lang} />
 
         {/* ── Author card ── */}

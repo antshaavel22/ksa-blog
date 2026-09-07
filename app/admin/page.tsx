@@ -4395,11 +4395,43 @@ const ADMIN_BUILD = "2026-04-23-1";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "excerpts" | "reading" | "prompt" | "help">("drafts");
+  const [sessionExpired, setSessionExpired] = useState(false);
+  // Mirrored in a ref so the build-check interval below reads it without
+  // re-subscribing (its closure would otherwise capture the initial `false`).
+  const sessionExpiredRef = useRef(false);
+
+  // Session-expiry net. There are ~39 admin fetch call sites and only two ever
+  // checked for 401, so an expired cookie surfaced as an opaque "save failed"
+  // — the editor keeps typing into a page that can no longer write anything
+  // back. Intercepting fetch once here covers every call site without touching
+  // them. The banner deliberately does NOT reload or redirect: the unsaved
+  // work only exists in this tab, so the recovery is log in elsewhere, come
+  // back, save again.
+  useEffect(() => {
+    const orig = window.fetch;
+    window.fetch = async (...args: Parameters<typeof fetch>) => {
+      const res = await orig(...args);
+      try {
+        const url = typeof args[0] === "string" ? args[0] : (args[0] as Request).url ?? "";
+        if (res.status === 401 && url.includes("/api/admin/")) {
+          sessionExpiredRef.current = true;
+          setSessionExpired(true);
+        }
+      } catch { /* never let the check break a request */ }
+      return res;
+    };
+    return () => { window.fetch = orig; };
+  }, []);
 
   // Force-reload when the deployed admin build is newer than the one loaded.
   // Runs once on mount + every 5 min — picks up mid-session deploys too.
   useEffect(() => {
     function check() {
+      // Never hard-reload on top of an expired session: the editor's unsaved
+      // text lives only in this tab, and a reload would send them to the login
+      // screen having silently discarded it. They get the banner instead, and
+      // pick the new build up on their next deliberate load.
+      if (sessionExpiredRef.current) return;
       const stored = localStorage.getItem("ksa_admin_build");
       if (stored && stored !== ADMIN_BUILD) {
         localStorage.setItem("ksa_admin_build", ADMIN_BUILD);
@@ -4421,6 +4453,35 @@ export default function AdminPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f9f9f7", fontFamily: "inherit" }}>
+      {sessionExpired && (
+        <div style={{
+          position: "sticky", top: 0, zIndex: 9999, background: "#8a2a2a", color: "white",
+          padding: "12px 24px", fontSize: 14, lineHeight: 1.5,
+        }}>
+          <strong>Sessioon aegus — salvestamine ei tööta.</strong>{" "}
+          Ava <a
+            href="/admin/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "white", textDecoration: "underline", fontWeight: 600 }}
+          >/admin/login</a>{" "}
+          <strong>uues vahekaardis</strong>, logi sisse ja tule siia tagasi — siis vajuta uuesti Salvesta.
+          <br />
+          <span style={{ opacity: 0.9 }}>
+            Ära lae seda lehte uuesti ega sulge seda: salvestamata tekst on ainult siin.
+            {" · "}
+            Сессия истекла. Откройте /admin/login в новой вкладке, войдите, вернитесь сюда и снова нажмите
+            «Сохранить». Не перезагружайте эту страницу — несохранённый текст есть только здесь.
+          </span>
+          <button
+            onClick={() => setSessionExpired(false)}
+            style={{
+              marginLeft: 12, background: "transparent", color: "white", border: "1px solid rgba(255,255,255,.5)",
+              borderRadius: 6, padding: "3px 10px", cursor: "pointer", fontSize: 13,
+            }}
+          >Peida</button>
+        </div>
+      )}
       {/* Header */}
       <div style={{
         background: "white", borderBottom: "1px solid #e6e6e6",
@@ -4533,7 +4594,6 @@ function BatchQueueBanner() {
       };
 
       const checked = await Promise.all(queue.map(async (q) => {
-        if (!q.baseContent) return { q, stale: false, gone: false };
         try {
           const r = await fetch(`/api/admin/post?path=${encodeURIComponent(q.path)}`);
           // Unreadable at this path. NOTE: a missing post comes back 500, not
@@ -4545,6 +4605,12 @@ function BatchQueueBanner() {
               const r2 = await fetch(`/api/admin/post?path=${encodeURIComponent(moved)}`);
               if (r2.ok) {
                 const d2 = await r2.json() as { content?: string };
+                // Legacy entry (queued before this guard existed): staleness is
+                // uncheckable, but the post is real and we know where it lives,
+                // so re-point it rather than resurrecting the dead path.
+                if (!q.baseContent) {
+                  return { q: { ...q, path: moved }, stale: false, gone: false };
+                }
                 // Same staleness rule at the new location: only apply the queued
                 // edit if the post has not changed since it was staged.
                 if (typeof d2.content === "string" && d2.content === q.baseContent) {
@@ -4564,6 +4630,10 @@ function BatchQueueBanner() {
           if (!r.ok) return { q, stale: true, gone: true };
           const d = await r.json() as { content?: string };
           if (typeof d.content !== "string") return { q, stale: true, gone: true };
+          // Legacy entry with a live path: there is nothing to compare against,
+          // so let it through as before. The check that matters — that we are
+          // not writing to a dead path — already passed above.
+          if (!q.baseContent) return { q, stale: false, gone: false };
           return { q, stale: d.content !== q.baseContent, gone: false };
         } catch {
           return { q, stale: false, gone: false }; // network blip — don't block the flush
