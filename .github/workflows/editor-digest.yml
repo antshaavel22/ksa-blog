@@ -36,3 +36,9 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Falls back to a single channel post via SLACK_RADAR_WEBHOOK when the
+          # bot token is absent (an incoming webhook cannot DM).
+          SLACK_RADAR_WEBHOOK: ${{ secrets.SLACK_RADAR_WEBHOOK }}
+          # Editors not in Slack (Mia) are emailed instead.
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          DIGEST_FROM_EMAIL: ${{ vars.DIGEST_FROM_EMAIL }}

@@ -86,17 +86,61 @@ function block(name: string, items: Post[]): string {
   return `*${name}* — ${items.length} lugemata:\n${lines.join("\n")}`;
 }
 
-async function slackDm(userId: string, text: string) {
+async function slackDm(userId: string, text: string): Promise<boolean> {
   const token = process.env.SLACK_BOT_TOKEN;
-  if (!token) { console.log("(no SLACK_BOT_TOKEN — not sending)"); return; }
+  if (!token) return false; // caller falls back to the channel webhook
   const r = await fetch("https://slack.com/api/chat.postMessage", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ channel: userId, text, unfurl_links: false, unfurl_media: false }),
   });
   const d = (await r.json()) as { ok: boolean; error?: string };
-  if (!d.ok) console.error(`  Slack error for ${userId}: ${d.error}`);
-  else console.log(`  sent → ${userId}`);
+  if (!d.ok) { console.error(`  Slack error for ${userId}: ${d.error}`); return false; }
+  console.log(`  DM sent → ${userId}`);
+  return true;
+}
+
+/**
+ * Editors who are not in Slack (Mia) get the same list by email.
+ * Brevo because KSA already sends through it — no new provider to manage.
+ */
+async function sendEmail(to: string, name: string, subject: string, body: string): Promise<boolean> {
+  const key = process.env.BREVO_API_KEY;
+  if (!key) { console.log(`  (no BREVO_API_KEY — ${name} not emailed)`); return false; }
+  const html = body
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/\*([^*]+)\*/g, "<strong>$1</strong>")
+    .replace(/<(https?:\/\/[^|]+)\|([^>]+)>/g, '<a href="$1">$2</a>')
+    .replace(/\n/g, "<br>");
+  const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "api-key": key, accept: "application/json" },
+    body: JSON.stringify({
+      sender: { name: "KSA Blogi", email: process.env.DIGEST_FROM_EMAIL || "info@ksa.ee" },
+      to: [{ email: to, name }],
+      subject,
+      htmlContent: `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1a1a1a">${html}</div>`,
+    }),
+  });
+  if (!r.ok) { console.error(`  email to ${to} failed: ${r.status} ${(await r.text()).slice(0, 120)}`); return false; }
+  console.log(`  email sent → ${to}`);
+  return true;
+}
+
+/**
+ * Fallback when SLACK_BOT_TOKEN is not configured: an incoming webhook can only
+ * post to its own channel, never a DM. So instead of per-editor DMs we post one
+ * combined message everyone can read. Less personal, but it ships.
+ */
+async function slackWebhook(text: string): Promise<boolean> {
+  const url = process.env.SLACK_RADAR_WEBHOOK;
+  if (!url) { console.log("(no SLACK_BOT_TOKEN and no SLACK_RADAR_WEBHOOK — nothing sent)"); return false; }
+  const r = await fetch(url, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  console.log(r.ok ? "  posted to channel via webhook" : `  webhook failed: ${r.status}`);
+  return r.ok;
 }
 
 async function main() {
@@ -110,25 +154,47 @@ async function main() {
 
   if (!posts.length) { console.log("Nothing published — no digest sent."); return; }
 
+  const combined: string[] = [];
   const note = dbOk ? "" : "\n\n_(Linnukeste seis pole hetkel saadaval — nimekiri sisaldab kõiki selle nädala postitusi.)_";
 
   for (const ed of EDITORS) {
     const mine = listFor(ed.code, posts, ticks);
-    if (!ed.slackId) continue; // Mia — folded into Ants's message below
+
+    // Not in Slack (Mia) → same list by email. Ants asked for this on
+    // 2026-09-07: "send in the future over email, so it is easier".
+    if (!ed.slackId) {
+      if (!ed.email) continue;
+      const body =
+        `Tere, ${ed.name}!\n\n` +
+        `Viimase 7 päeva postitused, mis ootavad sinu keelekontrolli.\n\n` +
+        block(ed.name, mine) +
+        `\n\nMärgi loetuks: <${BLOG}/admin|blog.ksa.ee/admin → ✓ Lugemine>` + note;
+      console.log(`\n──── ${ed.name} (${mine.length} unread, email) ────\n${body}`);
+      if (!DRY) await sendEmail(ed.email, ed.name, `Nädala lugemine — ${mine.length} postitust ootab`, body);
+      continue;
+    }
     let text =
       `:eyes: *Nädala lugemine — blogi*\n` +
       `Viimase 7 päeva postitused, mis ootavad sinu keelekontrolli.\n\n` +
       block(ed.name, mine) +
       `\n\nMärgi loetuks: <${BLOG}/admin|admin → ✓ Lugemine>`;
 
-    if (ed.code === "A") {
-      const mia = listFor("M", posts, ticks);
-      text += `\n\n---\n:information_source: *Mia nimekiri* (pole Slackis — palun edasta):\n${block("Mia", mia)}`;
-    }
     text += note;
 
     console.log(`\n──── ${ed.name} (${mine.length} unread) ────\n${text}`);
-    if (!DRY) await slackDm(ed.slackId, text);
+    if (!DRY) {
+      const sent = await slackDm(ed.slackId, text);
+      if (!sent) combined.push(text);
+    }
+  }
+
+  // No bot token → one combined channel post instead of individual DMs.
+  if (!DRY && combined.length) {
+    await slackWebhook(
+      `:eyes: *Nädala lugemine — blogi*\n` +
+      `_(DM-e ei saa saata — SLACK_BOT_TOKEN puudub, seega kõik ühes sõnumis.)_\n\n` +
+      combined.join("\n\n———\n\n"),
+    );
   }
   if (DRY) console.log("\n(dry run — nothing sent)");
 }
