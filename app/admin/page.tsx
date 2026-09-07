@@ -12,6 +12,7 @@ import type { Funnel } from "@/lib/posts";
 import { AUTHORS } from "@/lib/authors";
 import { enqueue, getQueue, clearQueue, removeFromQueue, type QueuedEdit } from "@/lib/batch-queue";
 import { validateExcerpt } from "@/lib/excerpt-rules.mjs";
+import { EDITORS, EDITOR_BY_CODE, editorsForLang, isEditorCode, type EditorCode } from "@/lib/editors";
 
 // Medical reviewers — only qualified clinicians appear in reviewedBy dropdown
 const REVIEWERS = AUTHORS.filter(a =>
@@ -4393,7 +4394,7 @@ function CTATab() {
 const ADMIN_BUILD = "2026-04-23-1";
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "excerpts" | "prompt" | "help">("drafts");
+  const [tab, setTab] = useState<"drafts" | "published" | "write" | "cta" | "excerpts" | "reading" | "prompt" | "help">("drafts");
 
   // Force-reload when the deployed admin build is newer than the one loaded.
   // Runs once on mount + every 5 min — picks up mid-session deploys too.
@@ -4449,6 +4450,7 @@ export default function AdminPage() {
             { id: "write", label: "Kirjuta uus" },
             { id: "cta", label: "CTA-d" },
             { id: "excerpts", label: "✎ Väljavõtted" },
+            { id: "reading", label: "✓ Lugemine" },
             { id: "prompt", label: "Sisureeglid" },
             { id: "help", label: "Juhend" },
           ] as const).map(t => (
@@ -4477,7 +4479,7 @@ export default function AdminPage() {
 
       <DailyGreeting />
 
-      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "excerpts" ? <ExcerptsTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
+      {tab === "drafts" ? <DraftsTab /> : tab === "published" ? <PublishedTab /> : tab === "write" ? <WriteTab /> : tab === "cta" ? <CTATab /> : tab === "excerpts" ? <ExcerptsTab /> : tab === "reading" ? <ReadingTab /> : tab === "prompt" ? <PromptTab /> : <HelpTab />}
     </div>
   );
 }
@@ -5097,6 +5099,225 @@ function CTATabInner() {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Lugemine (editor read-through dashboard) ────────────────────────────────
+//
+// Ants, 2026-09-05: "they read, they just tick, and we see that they have done
+// it." So: one row per post, one chip per editor who is expected to read that
+// LANGUAGE. Filled chip = read. Nothing else to learn.
+//
+// The admin login is a single shared password, so there is no per-user identity
+// to attach a tick to. The editor picks who they are once; it is remembered in
+// this browser and decides which chip they can toggle.
+
+const WHO_KEY = "ksa-blog-editor-code";
+
+function ReadingTab() {
+  const [posts, setPosts] = useState<DraftMeta[]>([]);
+  const [reviews, setReviews] = useState<Record<string, Record<string, string>>>({});
+  const [me, setMe] = useState<EditorCode | "">("");
+  const [loading, setLoading] = useState(true);
+  const [days, setDays] = useState(30);
+  const [onlyMine, setOnlyMine] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [unavailable, setUnavailable] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(WHO_KEY);
+    if (stored && isEditorCode(stored)) setMe(stored);
+  }, []);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [p, r] = await Promise.all([
+        fetch("/api/admin/posts").then((x) => x.json()),
+        fetch("/api/admin/reviews").then((x) => x.json()),
+      ]);
+      setPosts((p.posts ?? []) as DraftMeta[]);
+      setReviews(r.reviews ?? {});
+      setUnavailable(!!r.unavailable);
+    } finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  function chooseMe(code: EditorCode) {
+    setMe(code);
+    localStorage.setItem(WHO_KEY, code);
+  }
+
+  async function toggle(slug: string, editor: EditorCode, next: boolean) {
+    setSaving(slug + editor);
+    // optimistic — a tick must feel instant
+    setReviews((prev) => {
+      const copy = { ...prev, [slug]: { ...(prev[slug] ?? {}) } };
+      if (next) copy[slug][editor] = new Date().toISOString();
+      else delete copy[slug][editor];
+      return copy;
+    });
+    try {
+      const res = await fetch("/api/admin/reviews", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, editor, read: next }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        alert("Salvestamine ebaõnnestus: " + (d.error ?? res.status));
+        load(); // resync from the server
+      }
+    } catch (e) {
+      alert("Võrguviga: " + (e as Error).message);
+      load();
+    } finally { setSaving(null); }
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const cutoff = new Date(Date.now() - days * 864e5).toISOString().slice(0, 10);
+
+  const rows = posts
+    .filter((p) => (p.date ?? "") >= cutoff && (p.date ?? "") <= today)
+    .sort((a, b) => (a.date! < b.date! ? 1 : -1))
+    .map((p) => {
+      const slug = p.slug || p.path.replace("content/posts/", "").replace(/\.mdx$/, "");
+      const expected = editorsForLang(String(p.lang ?? "et"));
+      const done = reviews[slug] ?? {};
+      return { p, slug, expected, done, pending: expected.filter((e) => !done[e.code]) };
+    })
+    .filter((r) => (onlyMine && me ? r.expected.some((e) => e.code === me) && !r.done[me] : true));
+
+  const myPending = me
+    ? rows.filter((r) => r.expected.some((e) => e.code === me) && !r.done[me]).length
+    : 0;
+
+  return (
+    <div style={{ maxWidth: 1080, margin: "0 auto", padding: "28px 24px 80px" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+        <div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", margin: 0 }}>Lugemine</h2>
+          <p style={{ fontSize: 13, color: "#7a8a4e", margin: "4px 0 0" }}>
+            Loe postitus üle ja tee linnuke. Näidatakse ainult neid toimetajaid, kes selle keele eest vastutavad.
+          </p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 12, color: "#9a9a9a" }}>Mina olen:</span>
+          {EDITORS.map((e) => (
+            <button key={e.code} onClick={() => chooseMe(e.code)} title={e.name}
+              style={{
+                width: 34, height: 34, borderRadius: 999, cursor: "pointer",
+                border: me === e.code ? `2px solid ${e.colour}` : "1.5px solid #e6e6e6",
+                background: me === e.code ? e.colour : "white",
+                color: me === e.code ? "white" : "#9a9a9a",
+                fontSize: 13, fontWeight: 800,
+              }}>{e.code}</button>
+          ))}
+        </div>
+      </div>
+
+      {unavailable && (
+        <div style={{ marginTop: 16, padding: "10px 14px", borderRadius: 10, background: "#fdf3e3", color: "#7a5800", fontSize: 13 }}>
+          Andmebaas pole seadistatud — linnukesi ei saa salvestada.
+        </div>
+      )}
+
+      {/* summary */}
+      <div style={{ display: "flex", gap: 10, marginTop: 20, flexWrap: "wrap" }}>
+        {[
+          { n: rows.length, l: `postitust viimase ${days} päeva jooksul` },
+          { n: rows.filter((r) => r.pending.length === 0).length, l: "täielikult loetud", good: true },
+          { n: rows.filter((r) => r.pending.length > 0).length, l: "ootab lugemist", warn: true },
+          ...(me ? [{ n: myPending, l: `ootab sind (${EDITOR_BY_CODE[me].name})`, mine: true }] : []),
+        ].map((t, i) => (
+          <div key={i} style={{
+            flex: "1 1 170px", background: "white", border: "1px solid #e6e6e6",
+            borderLeft: `4px solid ${t.mine ? "#87be23" : t.good ? "#3d6b00" : t.warn ? "#b9770e" : "#e6e6e6"}`,
+            borderRadius: 12, padding: "12px 14px",
+          }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a" }}>{t.n}</div>
+            <div style={{ fontSize: 12, color: "#7a8a4e", marginTop: 2 }}>{t.l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", gap: 8, alignItems: "center", margin: "20px 0 10px", flexWrap: "wrap" }}>
+        {[7, 30, 90].map((d) => (
+          <button key={d} onClick={() => setDays(d)} style={{
+            padding: "5px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: "pointer",
+            border: days === d ? "1.5px solid #87be23" : "1.5px solid #e6e6e6",
+            background: days === d ? "#87be23" : "white", color: days === d ? "white" : "#7a8a4e",
+          }}>{d} päeva</button>
+        ))}
+        {me && (
+          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#7a8a4e", cursor: "pointer", marginLeft: 6 }}>
+            <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
+            Näita ainult neid, mida mina pole lugenud
+          </label>
+        )}
+      </div>
+
+      {loading ? (
+        <div style={{ padding: 40, textAlign: "center", color: "#9a9a9a" }}>Laen…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ padding: 40, textAlign: "center", color: "#9a9a9a" }}>
+          {onlyMine ? "Kõik loetud — sul pole midagi ootel. 🎉" : "Selles ajavahemikus postitusi pole."}
+        </div>
+      ) : (
+        <div style={{ border: "1px solid #e6e6e6", borderRadius: 14, overflow: "hidden", background: "white" }}>
+          {rows.map(({ p, slug, expected, done, pending }) => (
+            <div key={slug} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "11px 16px",
+              borderBottom: "1px solid #f2f2ee",
+              background: pending.length === 0 ? "#fbfcf8" : "white",
+            }}>
+              <span style={{
+                fontSize: 10, fontWeight: 800, letterSpacing: ".06em", padding: "3px 7px",
+                borderRadius: 6, background: "#f2f4ec", color: "#5f7320", flexShrink: 0,
+              }}>{String(p.lang ?? "et").toUpperCase()}</span>
+
+              <a href={`${BLOG_PUBLIC_BASE_URL}/${slug}`} target="_blank" rel="noreferrer"
+                style={{ flex: 1, minWidth: 0, fontSize: 14, color: "#1a1a1a", textDecoration: "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                title={p.title}>{p.title}</a>
+
+              <span style={{ fontSize: 11, color: "#9a9a9a", flexShrink: 0, width: 74 }}>{p.date}</span>
+
+              <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+                {expected.map((e) => {
+                  const isDone = !!done[e.code];
+                  const mine = me === e.code;
+                  const busy = saving === slug + e.code;
+                  return (
+                    <button
+                      key={e.code}
+                      onClick={() => mine && toggle(slug, e.code, !isDone)}
+                      disabled={!mine || busy}
+                      title={
+                        isDone
+                          ? `${e.name} luges ${new Date(done[e.code]).toLocaleDateString("et-EE")}`
+                          : mine ? `Märgi loetuks (${e.name})` : `Ootab: ${e.name}`
+                      }
+                      style={{
+                        width: 30, height: 30, borderRadius: 999,
+                        border: isDone ? `1.5px solid ${e.colour}` : "1.5px dashed #d8d8d8",
+                        background: isDone ? e.colour : "white",
+                        color: isDone ? "white" : "#c2c2c2",
+                        fontSize: 12, fontWeight: 800,
+                        cursor: mine ? (busy ? "wait" : "pointer") : "default",
+                        opacity: busy ? 0.5 : 1,
+                        boxShadow: mine && !isDone ? "0 0 0 3px rgba(135,190,35,.15)" : "none",
+                      }}>{isDone ? "✓" : e.code}</button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p style={{ fontSize: 12, color: "#9a9a9a", marginTop: 14 }}>
+        Rohelise rõngaga nupp on sinu oma — ainult seda saad vajutada. Teiste omad näitavad, kes on juba lugenud.
+      </p>
     </div>
   );
 }
