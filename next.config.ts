@@ -60,6 +60,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Uploaded images carry a unique timestamp suffix in the filename, so
+        // they never change under the same URL — let browsers, mail clients
+        // and Apple's mail privacy proxy keep them for a year (kuukiri opens
+        // instantly on repeat views). Re-encoding a file in place would need
+        // a new filename to bust this cache.
+        source: "/uploads/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
