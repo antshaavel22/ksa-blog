@@ -207,7 +207,7 @@ scripts/content-scout.ts   — daily RSS → trilingual drafts via Claude
 `publish()` builds `finalContent = buildMdx(buildFm(), body)` from current React state and sends it to `POST /api/admin/publish`. `publishProd()` uses this directly — never reads filesystem. This ensures `featuredImage` and all state is current.
 
 ### Image Upload
-`POST /api/admin/upload-image`: client compresses via Canvas (max 1400px, WebP 0.82) → ~150-300KB payload → stores at `public/uploads/YYYY/MM/slug-timestamp.webp` via GitHub API. Returns `url` (production path, saved to frontmatter) + `previewUrl` (raw.githubusercontent.com, editor-only). `compressImageClient()` is module-level in `app/admin/page.tsx` — shared by cover photo upload and inline body image toolbar button.
+`POST /api/admin/upload-image`: client compresses via Canvas (max 1400px, WebP 0.82) → ~150-300KB payload; **the server then re-encodes with `sharp` to a real WebP (max 1400px, q82) unless it already is a WebP ≤400KB** — Safari's canvas cannot encode WebP and silently returns PNG, which until 2026-09-08 produced 1.5–2.4 MB PNGs named `.webp` (26 files fixed in place that day). Stores at `public/uploads/YYYY/MM/slug-timestamp.webp` via GitHub API. Returns `url` (production path, saved to frontmatter) + `previewUrl` (raw.githubusercontent.com, editor-only). `compressImageClient()` is module-level in `app/admin/page.tsx` — shared by cover photo upload and inline body image toolbar button.
 
 ## Draft Frontmatter Fields
 ```yaml
