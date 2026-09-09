@@ -30,9 +30,32 @@ export default function SiteAnalytics({
     // it would inflate every figure on the dashboard it feeds.
     if (pathname?.startsWith("/admin")) return;
 
+    // Campaign attribution. Mail apps and most ad clicks arrive with no
+    // referrer, so without this every newsletter reader counted as "otse".
+    // The landing URL's utm_* tags are kept for the rest of the tab session so
+    // the second and third story views still know where the visit came from.
+    let utm: Record<string, string> | undefined;
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const fresh: Record<string, string> = {};
+      for (const k of ["source", "medium", "campaign"]) {
+        const v = q.get(`utm_${k}`);
+        if (v) fresh[k] = v.slice(0, 60);
+      }
+      if (fresh.source) {
+        sessionStorage.setItem("ksa_utm", JSON.stringify(fresh));
+        utm = fresh;
+      } else {
+        const stored = sessionStorage.getItem("ksa_utm");
+        if (stored) utm = JSON.parse(stored) as Record<string, string>;
+      }
+    } catch {
+      /* private mode etc. — attribution is best-effort */
+    }
     const send = (kind: string, meta?: unknown) => {
       try {
-        const payload = JSON.stringify({ kind, path: pathname, lang, meta });
+        const merged = utm ? { ...(meta as object | undefined), utm } : meta;
+        const payload = JSON.stringify({ kind, path: pathname, lang, meta: merged });
         // text/plain keeps this a "simple" request, so the identical component
         // works from blog.ksa.ee without a CORS preflight on every event.
         if (navigator.sendBeacon) {
