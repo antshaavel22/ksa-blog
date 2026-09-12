@@ -8,7 +8,11 @@ export async function GET() {
   const supabase = getSupabaseAdmin();
   if (!supabase) return NextResponse.json({ rows: [] });
   const { data, error } = await supabase
-    .from("blog_events_7d_by_slug")
+    // Cookieless site tracker (same counter as ksa.ee/admin Statistika).
+    // blog_events only fires after analytics consent and saw ~1 reader in 8
+    // (47 vs 337 views on the same story, 2026-09-12), which made the card
+    // and its CTR misleading. cta_clicks here = clicks onto booking.ksa.ee.
+    .from("blog_7d_by_slug_cookieless")
     .select("slug,views,cta_views,cta_clicks,ctr_pct")
     // All slugs, most-read first. The old top-50-by-CTR cut made the admin's
     // 7-day total undercount (243 shown vs 385 real on 2026-09-09) and hid the
