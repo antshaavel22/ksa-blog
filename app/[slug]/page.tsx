@@ -21,6 +21,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import remarkTable from "@/lib/remark-table.mjs";
 import { format } from "date-fns";
 import { et, ru, enUS } from "date-fns/locale";
 import type { Metadata } from "next";
@@ -28,6 +29,24 @@ import type { Metadata } from "next";
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
+
+// Tables need the GFM table extension (see lib/remark-table.mjs) and a
+// wrapper that can scroll on phones — 70% of readers are on mobile and a
+// 5-column comparison table cannot fit 375px without one.
+const MDX_OPTIONS = {
+  mdxOptions: { remarkPlugins: [remarkTable] },
+};
+
+const MDX_COMPONENTS = {
+  YouTubeEmbed,
+  VimeoEmbed,
+  RendiaEmbed,
+  table: (props: React.ComponentProps<"table">) => (
+    <div className="md-table-wrap">
+      <table {...props} />
+    </div>
+  ),
+};
 
 export const dynamicParams = true;
 export const revalidate = 120;
@@ -427,17 +446,20 @@ export default async function PostPage({ params }: PageProps) {
               <>
                 <MDXRemote
                   source={contentSplit.intro}
-                  components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+                  components={MDX_COMPONENTS}
+                  options={MDX_OPTIONS}
                 />
                 <MDXRemote
                   source={contentSplit.rest}
-                  components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+                  components={MDX_COMPONENTS}
+                  options={MDX_OPTIONS}
                 />
               </>
             ) : (
               <MDXRemote
                 source={post.content}
-                components={{ YouTubeEmbed, VimeoEmbed, RendiaEmbed }}
+                components={MDX_COMPONENTS}
+                  options={MDX_OPTIONS}
               />
             )}
 

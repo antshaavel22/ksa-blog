@@ -434,6 +434,17 @@ body {
   display: block;
   margin: 2em 0;
 }
+/* Comparison tables are wide and most readers are on a phone, so the table
+   scrolls inside its own box instead of forcing the whole article sideways. */
+.prose-v2 .md-table-wrap {
+  overflow-x: auto;
+  margin: 2em 0;
+  -webkit-overflow-scrolling: touch;
+}
+.prose-v2 .md-table-wrap > table {
+  margin: 0;
+  min-width: 480px;
+}
 .prose-v2 table {
   width: 100%;
   border-collapse: collapse;
