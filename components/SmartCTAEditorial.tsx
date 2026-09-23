@@ -25,6 +25,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { Funnel } from "@/lib/posts";
 import { RAW_CONFIG, resolveCtaEntry, normalizeLang, type CtaLang } from "@/lib/cta-config";
+import { applyNewCopy, ctaGoesToKiirtest } from "@/lib/pricing";
 import { sendEvent } from "@/lib/analytics";
 import { BLOG_PUBLIC_BASE_URL } from "@/lib/url";
 
@@ -270,6 +271,23 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
  * `general` funnel routes to kiirtest (it's a qualifier test, not a booking).
  */
 function buildPrimaryUrl(funnel: Funnel, lang: CtaLang, slug: string): string {
+  // From 12.10, flow3 and audit join `general` at the kiirtest: the test is
+  // what decides the price, so the blog stops quoting one. Children and dry
+  // eye still book directly. (Ants, "option A", 23.09 — see lib/pricing.ts.)
+  if (ctaGoesToKiirtest(funnel)) {
+    const path = lang === "et" ? "" : lang;
+    const qs = new URLSearchParams({
+      source: "blog",
+      funnel,
+      utm_source: "blog",
+      utm_medium: "cta",
+      utm_campaign: `kiirtest-${lang}`,
+      utm_content: slug,
+    });
+    return `https://kiirtest.ksa.ee/${path}?${qs.toString()}`;
+  }
+  // Unreachable — ctaGoesToKiirtest is always true for `general` — but it is
+  // what narrows Funnel for the service/promo maps below.
   if (funnel === "general") {
     return `https://kiirtest.ksa.ee/${lang === "et" ? "" : lang}?source=blog&funnel=qualifier`;
   }
@@ -393,7 +411,9 @@ export default function SmartCTAEditorial({ funnel = "flow3", slug, lang }: Prop
   const normalizedLang = normalizeLang(lang);
   const raw = RAW_CONFIG[funnel] ?? RAW_CONFIG.general;
   const c = resolveCtaEntry(raw, normalizedLang);
-  const copy = COPY[normalizedLang][funnel];
+  // From 12.10 the price-bearing lines come from lib/pricing.ts; before that
+  // this is a no-op and the block below is unchanged. See that file for why.
+  const copy = applyNewCopy(COPY[normalizedLang][funnel], normalizedLang, funnel);
   // Recomputed after mount as well, so a page served from the ISR cache that was
   // generated last month still shows the current month's deadline.
   const [validUntil, setValidUntil] = useState(() => offerValidUntil(normalizedLang));
