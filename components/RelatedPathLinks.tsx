@@ -3,6 +3,7 @@
 import type { Funnel } from "@/lib/posts";
 import { buildCtaUrl, sendEvent } from "@/lib/analytics";
 import { normalizeLang, type CtaLang } from "@/lib/cta-config";
+import { NEW_PRICING_LIVE } from "@/lib/pricing";
 
 type LinkItem = {
   label: Record<CtaLang, string>;
@@ -30,11 +31,23 @@ const HEADINGS: Record<CtaLang, { title: string; sub: string }> = {
 // goes to the kuivsilm/dryeye landing page (not a bookable wizard service).
 // Internal /kategooria article links stay (blog navigation, not landing pages).
 // Old pricelist / contact / homepage CTAs removed — they were dead-ends.
-const BOOKING = (svc: string, code: string, f: string) => ({
-  et: `https://booking.ksa.ee/?service=${svc}&lang=et&promokood=${code}&source=blog&funnel=${f}`,
-  ru: `https://booking.ksa.ee/?service=${svc}&lang=ru&promokood=${code}&source=blog&funnel=${f}`,
-  en: `https://booking.ksa.ee/?service=${svc}&lang=en&promokood=${code}&source=blog&funnel=${f}`,
-});
+/**
+ * From 12.10 these direct-booking links drop the promo code. The discount
+ * lives behind the kiirtest now — "they can book the regular way and get the
+ * exam for 149 €" (Ants, 23.09) — and BLOG39 / BLOG139 / BLOGKIDS stop
+ * existing that day, so carrying them would send readers to a dead code.
+ * The kiirtest link in the same list is the one that still carries an offer.
+ */
+const BOOKING = (svc: string, code: string, f: string) => {
+  const q = (lang: CtaLang) => {
+    const p = new URLSearchParams({ service: svc, lang });
+    if (!NEW_PRICING_LIVE) p.set("promokood", code);
+    p.set("source", "blog");
+    p.set("funnel", f);
+    return `https://booking.ksa.ee/?${p.toString()}`;
+  };
+  return { et: q("et"), ru: q("ru"), en: q("en") };
+};
 const KIIRTEST = {
   et: "https://kiirtest.ksa.ee/?source=blog&funnel=qualifier",
   ru: "https://kiirtest.ksa.ee/ru?source=blog&funnel=qualifier",
@@ -190,8 +203,10 @@ export default function RelatedPathLinks({ funnel, slug, lang }: RelatedPathLink
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                minHeight: 38,
-                padding: "9px 13px",
+                // 44px minimum tap target — these pills measured 38px, and
+                // roughly three readers in four are on a phone.
+                minHeight: 44,
+                padding: "12px 15px",
                 borderRadius: 999,
                 border: "1px solid var(--line)",
                 color: "var(--ink)",
