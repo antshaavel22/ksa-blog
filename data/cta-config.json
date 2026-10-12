@@ -18,13 +18,12 @@
         "tagasi sportima"
       ]
     ],
-    "primaryLabel": "Flow3 uuring — 39 €",
-    "primaryStrike": "149 €",
-    "primarySub": "60 min · Tallinn või Tartu · sooduskood BLOG39",
-    "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=et&promokood=BLOG39&source=blog&funnel=flow3",
-    "secondaryLabel": "Flow3 Kiirtest — 0 € täna",
-    "secondarySub": "Tasuta sobivustest → 19 € Flow3 uuring kliinikus (tavahinna 149 € asemel).",
-    "secondaryHref": "https://kiirtest.ksa.ee/?source=blog",
+    "primaryLabel": "Tee Kiirtest — 2 minutit",
+    "primarySub": "Sobivad 18–45 müoobid saavad uuringu 39 € (tavahind 149 €). Teistele −10 € uuringu hinnast.",
+    "primaryHref": "https://kiirtest.ksa.ee/?source=blog&funnel=flow3",
+    "secondaryLabel": "Broneerin uuringu kohe",
+    "secondarySub": "Ilma testi tegemata, täishinnaga 149 €.",
+    "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=et&source=blog&funnel=flow3",
     "accent": "#86BC25",
     "ladder": true,
     "campaign": "blog-flow3",
@@ -47,12 +46,12 @@
           "восстановление"
         ]
       ],
-      "primaryLabel": "Исследование Flow3 — 39 €",
-      "primarySub": "60 мин · Таллинн или Тарту · промокод BLOG39",
-      "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=ru&promokood=BLOG39&source=blog&funnel=flow3",
-      "secondaryLabel": "Онлайн-тест Flow3 — 0 € сегодня",
-      "secondarySub": "Бесплатный тест совместимости → обследование Flow3 в клинике за 19 € (вместо 149 €).",
-      "secondaryHref": "https://kiirtest.ksa.ee/ru?source=blog"
+      "primaryLabel": "Пройти быстрый тест — 2 минуты",
+      "primarySub": "Подходящие близорукие 18–45 лет получают обследование за 39 € (обычная цена 149 €). Остальным −10 € от цены обследования.",
+      "primaryHref": "https://kiirtest.ksa.ee/ru?source=blog&funnel=flow3",
+      "secondaryLabel": "Записаться сразу",
+      "secondarySub": "Без теста, по полной цене 149 €.",
+      "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=ru&source=blog&funnel=flow3"
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
@@ -72,12 +71,12 @@
           "back to the gym"
         ]
       ],
-      "primaryLabel": "Flow3 consultation — €39",
-      "primarySub": "60 min · Tallinn or Tartu · code BLOG39",
-      "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=en&promokood=BLOG39&source=blog&funnel=flow3",
-      "secondaryLabel": "Flow3 online test — €0 today",
-      "secondarySub": "Free pre-check → €19 Flow3 clinic exam (instead of €149).",
-      "secondaryHref": "https://kiirtest.ksa.ee/en?source=blog"
+      "primaryLabel": "Take the 2-minute pre-check",
+      "primarySub": "Suitable myopes aged 18–45 get the examination for €39 (list price €149). Everyone else gets €10 off their examination.",
+      "primaryHref": "https://kiirtest.ksa.ee/en?source=blog&funnel=flow3",
+      "secondaryLabel": "Book the examination directly",
+      "secondarySub": "Without the pre-check, at the full price of €149.",
+      "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=en&source=blog&funnel=flow3"
     }
   },
   "audit": {
