@@ -1772,7 +1772,17 @@ function DraftEditor({ draft, onBack, onPublished, isPublished }: {
 
         {/* Right: preview / save / publish / unpublish */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {saved && <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>}
+          {/* On a published post Salvesta does NOT write anything — it stages
+              into the batch queue. Saying "Salvestatud" made three unpinned
+              posts look saved while they sat in the queue going stale, so the
+              change never reached the blog (Ants, 18.10). Say what happened. */}
+          {saved && (
+            isPublished
+              ? <span style={{ fontSize: 14, color: "#8a5a00", fontWeight: 600 }}>
+                  ✓ Järjekorras — vajuta üleval „Uuenda kõik&quot;, muidu ei jõua blogisse
+                </span>
+              : <span style={{ fontSize: 14, color: "#3d6b00", fontWeight: 600 }}>✓ Salvestatud</span>
+          )}
           <button onClick={() => setShowPreview(v => !v)} style={{
             padding: "11px 18px", border: "2px solid #e6e4df", borderRadius: 12,
             background: showPreview ? "#f0fdf4" : "white",
@@ -4652,11 +4662,24 @@ function BatchQueueBanner() {
         );
       }
       if (stale.length) {
-        alert(
-          `${stale.length} postitust on vahepeal mujal muudetud ja jäetakse järjekorda vahele, et vältida uuemate muudatuste ülekirjutamist:\n\n` +
-          stale.map(s => `• ${s.title}`).join("\n") +
-          `\n\nAva need postitused uuesti, vaata värsket sisu ja salvesta uuesti enne järgmist "Uuenda kõik".`
+        // A stale entry can never become fresh again: its baseContent is frozen
+        // at staging time while the post keeps changing. Left alone it is
+        // skipped on every flush, warns every time, and sits in the queue for
+        // months — two of them did (Ants, 18.10), and the edits they carried
+        // (three homepage unpins) never reached the blog. So offer to clear
+        // them here instead of leaving the editor to find the small × button.
+        const names = stale.map(s => `• ${s.title}`).join("\n");
+        const drop = confirm(
+          `${stale.length} muudatust ei saa saata — neid postitusi on vahepeal mujal muudetud:\n\n${names}\n\n` +
+          `Need jäid saatmata, et mitte üle kirjutada uuemat versiooni. Niisugune kirje ei parane ise ` +
+          `ega kao järjekorrast — ta jääb siia iga kord uuesti ette.\n\n` +
+          `OK — eemalda need järjekorrast (muudatus läheb kaotsi, tee see postituses uuesti).\n` +
+          `Tühista — jäta alles ja tegele hiljem.`
         );
+        if (drop) {
+          stale.forEach(s => removeFromQueue(s.path));
+          setLocalQueue(getQueue());
+        }
       }
       if (!fresh.length) return;
 
