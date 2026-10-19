@@ -91,7 +91,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     dryeye: {
       eyebrow: "KUIVASILMA KONSULTATSIOON + TERAAPIA",
       headline: "Põhjalik diagnoos ja efektiivne Rexon Eye teraapia.",
-      body: "Kuiva silma teraapia — 89 € sooduskoodiga (tavahind 150 €). Esimene konsultatsioon sisaldab tasuta Rexon Eye -raviseanssi.",
+      body: "Kuiva silma programm — 319 € sooduskoodiga (tavahind 349 €).",
       primaryButtonLabel: "Broneeri kuiva silma teraapia sooduskoodiga",
       callbackPromptLabel: "Mul on veel küsimusi ja soovin, et helistate tagasi",
       callbackHelpText: "Jäta nimi + telefon",
@@ -163,7 +163,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     dryeye: {
       eyebrow: "КОНСУЛЬТАЦИЯ ПО СУХОМУ ГЛАЗУ + ТЕРАПИЯ",
       headline: "Тщательная диагностика и эффективная терапия Rexon Eye.",
-      body: "Терапия сухого глаза — 89 € по промокоду (вместо 150 €). Первая консультация включает бесплатный сеанс Rexon Eye.",
+      body: "Программа при сухости глаз — 319 € по промокоду (вместо 349 €).",
       primaryButtonLabel: "Записаться на терапию по промокоду",
       callbackPromptLabel: "У меня ещё есть вопросы — перезвоните мне",
       callbackHelpText: "Оставьте имя и телефон",
@@ -235,7 +235,7 @@ const COPY: Record<CtaLang, Record<Funnel, EditorialCopy>> = {
     dryeye: {
       eyebrow: "DRY EYE CONSULTATION + THERAPY",
       headline: "Thorough diagnosis and effective Rexon Eye therapy.",
-      body: "Dry eye therapy — €89 with promo (regular €150). First consultation includes a complimentary Rexon Eye session.",
+      body: "Dry eye programme — €319 with promo (regular €349).",
       primaryButtonLabel: "Book dry-eye therapy with promo",
       callbackPromptLabel: "I have more questions — please call me back",
       callbackHelpText: "Leave your name and phone",
@@ -301,7 +301,7 @@ function buildPrimaryUrl(funnel: Funnel, lang: CtaLang, slug: string): string {
     flow3: "BLOG39",
     audit: "BLOG139",
     kids: "BLOGKIDS",
-    dryeye: "BLOGDRY",
+    dryeye: "BLOGDRY319",
   };
   const service = slugMap[funnel];
   const promo = codeMap[funnel];

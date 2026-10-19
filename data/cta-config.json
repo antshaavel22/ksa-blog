@@ -80,7 +80,7 @@
     "eyebrow": "LASTE SILMAUURING KSA-s",
     "headline": "Iga 5. laps näeb halvemini kui peaks — enamus ei tea seda veel.",
     "sub": "Põhjalikud laste nägemisuuringud alates 3. eluaastast. Hea nägemine kogu eluks kujuneb esimesel 6 eluaastal.",
-    "stats": [["3+", "aastat"], ["30 min", "kestvus"], ["Online", "kokkuvõte vanematele"]],
+    "stats": [["3+", "aastat"], ["60 min", "kestvus"], ["Online", "kokkuvõte vanematele"]],
     "primaryLabel": "Laste silmauuring — 79 €",
     "primarySub": "Sooduskood BLOGKIDS · sisaldab online kokkuvõtet ja arsti soovitusi",
     "primaryHref": "https://booking.ksa.ee/?service=kids&lang=et&promokood=BLOGKIDS&source=blog&funnel=kids",
@@ -100,7 +100,7 @@
       "eyebrow": "CHILDREN'S EYE EXAM AT KSA",
       "headline": "Every 5th child sees worse than they should — and most don't know it yet.",
       "sub": "Comprehensive children's vision exams from age 3. Good lifelong vision is shaped in the first 6 years.",
-      "stats": [["3+", "years"], ["30 min", "duration"], ["Online", "report for parents"]],
+      "stats": [["3+", "years"], ["60 min", "duration"], ["Online", "report for parents"]],
       "primaryLabel": "Book for your child — €79",
       "primarySub": "Code BLOGKIDS · includes online report and doctor's recommendations",
       "primaryHref": "https://booking.ksa.ee/?service=kids&lang=en&promokood=BLOGKIDS&source=blog&funnel=kids"
@@ -111,10 +111,10 @@
     "eyebrow": "KUIVA SILMA DIAGNOSTIKA JA RAVI",
     "headline": "Kui silmad põletavad juba pikka aega.",
     "sub": "Kuiva silma Sirius diagnostika, Rexon Eye OMR-ravi ja pisarakanali korgid. Üks põhjus, mitu tõhusat lahendust. Peale visiiti põhjalik online kokkuvõte ja silmaarsti soovitused.",
-    "stats": [["Sirius", "diagnostika"], ["OMR", "raviseanss"], ["30 min", "kestvus"]],
-    "primaryLabel": "Kuiva silma uuring + tasuta OMR raviseanss — 89 €",
-    "primarySub": "Sooduskood BLOGDRY",
-    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&promokood=BLOGDRY&source=blog&funnel=dryeye",
+    "stats": [["Sirius", "diagnostika"], ["OMR", "raviseanss"], ["60 min", "kestvus"]],
+    "primaryLabel": "Kuiva silma programm — 319 €",
+    "primarySub": "Sooduskood BLOGDRY319 · tavahind 349 €",
+    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&promokood=BLOGDRY319&source=blog&funnel=dryeye",
     "secondaryLabel": null,
     "accent": "#5B9AC9",
     "ladder": false,
@@ -123,18 +123,18 @@
       "headline": "Если глаза горят после часа перед экраном — это не норма.",
       "sub": "Углублённое обследование сухого глаза, терапия Rexon Eye OMR и пунктальные пробки. Одна причина — один план.",
       "stats": [["OMR", "Rexon Eye"], ["Пробки", "пунктальные"], ["60 мин", "диагностика"]],
-      "primaryLabel": "Записаться на обследование — 89 €",
-      "primarySub": "Промокод BLOGDRY · включает OMR-анализ",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "primaryLabel": "Программа при сухости глаз — 319 €",
+      "primarySub": "Промокод BLOGDRY319 · вместо 349 €",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&promokood=BLOGDRY319&source=blog&funnel=dryeye"
     },
     "en": {
       "eyebrow": "DRY EYE DIAGNOSTICS & TREATMENT",
       "headline": "If your eyes have burned for a long time — you don't have to live with it.",
       "sub": "Sirius dry eye diagnostics, Rexon Eye OMR therapy, or punctum plugs. One cause, several effective solutions. After the visit: a detailed online summary and ophthalmologist's recommendations.",
-      "stats": [["Sirius", "diagnostics"], ["OMR", "session"], ["30 min", "duration"]],
-      "primaryLabel": "Dry eye exam + complimentary OMR session — €89",
-      "primarySub": "Code BLOGDRY",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "stats": [["Sirius", "diagnostics"], ["OMR", "session"], ["60 min", "duration"]],
+      "primaryLabel": "Dry eye programme — €319",
+      "primarySub": "Code BLOGDRY319 · regular €349",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&promokood=BLOGDRY319&source=blog&funnel=dryeye"
     }
   },
   "general": {
