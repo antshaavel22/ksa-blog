@@ -23,7 +23,7 @@
     "primaryHref": "https://kiirtest.ksa.ee/?source=blog&funnel=flow3",
     "secondaryLabel": "Broneerin uuringu kohe",
     "secondarySub": "Ilma testi tegemata, täishinnaga 149 €.",
-    "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=et&source=blog&funnel=flow3",
+    "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=et&source=blog&funnel=flow3",
     "accent": "#86BC25",
     "ladder": true,
     "campaign": "blog-flow3",
@@ -51,7 +51,7 @@
       "primaryHref": "https://kiirtest.ksa.ee/ru?source=blog&funnel=flow3",
       "secondaryLabel": "Записаться сразу",
       "secondarySub": "Без теста, по полной цене 149 €.",
-      "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=ru&source=blog&funnel=flow3"
+      "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=ru&source=blog&funnel=flow3"
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
@@ -76,7 +76,7 @@
       "primaryHref": "https://kiirtest.ksa.ee/en?source=blog&funnel=flow3",
       "secondaryLabel": "Book the examination directly",
       "secondarySub": "Without the pre-check, at the full price of €149.",
-      "secondaryHref": "https://booking.ksa.ee/?service=flow3&lang=en&source=blog&funnel=flow3"
+      "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=en&source=blog&funnel=flow3"
     }
   },
   "audit": {
@@ -224,72 +224,72 @@
   },
   "dryeye": {
     "live": true,
-    "eyebrow": "KUIVA SILMA DIAGNOSTIKA JA RAVI",
-    "headline": "Kui silmad põletavad juba pikka aega.",
-    "sub": "Kuiva silma Sirius diagnostika, Rexon Eye OMR-ravi ja pisarakanali korgid. Üks põhjus, mitu tõhusat lahendust. Peale visiiti põhjalik online kokkuvõte ja silmaarsti soovitused.",
+    "eyebrow": "KUIVA SILMA PROGRAMM",
+    "headline": "Põhjalik diagnostika ja Rexon-Eye kuur ühes aastases programmis.",
+    "sub": "Kuiva silma programm — 349 € aastas. 5 visiiti: kuiva silma diagnostika Siriusega, Rexon-Eye kuur (4 seanssi) ja kontroll kuuri lõpus.",
     "stats": [
       [
         "Sirius",
         "diagnostika"
       ],
       [
-        "OMR",
-        "raviseanss"
+        "4",
+        "Rexon-Eye seanssi"
       ],
       [
-        "30 min",
-        "kestvus"
+        "5",
+        "visiiti aastas"
       ]
     ],
-    "primaryLabel": "Kuiva silma konsultatsioon + Rexon-Eye seanss — 150 €",
-    "primarySub": "Sooduskood BLOGDRY · −15%",
-    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&promokood=BLOGDRY&source=blog&funnel=dryeye",
+    "primaryLabel": "Broneerin kuiva silma programmi",
+    "primarySub": "349 € aastas",
+    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&source=blog&funnel=dryeye",
     "secondaryLabel": null,
     "accent": "#5B9AC9",
     "ladder": false,
     "ru": {
-      "eyebrow": "ДИАГНОСТИКА СУХОГО ГЛАЗА",
-      "headline": "Если глаза горят после часа перед экраном — это не норма.",
-      "sub": "Углублённое обследование сухого глаза, терапия Rexon Eye OMR и пунктальные пробки. Одна причина — один план.",
+      "eyebrow": "ПРОГРАММА ПРИ СУХОСТИ ГЛАЗ",
+      "headline": "Тщательная диагностика и курс Rexon-Eye в одной годовой программе.",
+      "sub": "Программа при сухости глаз — 349 € в год. 5 визитов: диагностика сухости глаз на Sirius, курс Rexon-Eye (4 сеанса) и контроль в конце курса.",
       "stats": [
         [
-          "OMR",
-          "Rexon Eye"
-        ],
-        [
-          "Пробки",
-          "пунктальные"
-        ],
-        [
-          "60 мин",
+          "Sirius",
           "диагностика"
+        ],
+        [
+          "4",
+          "сеанса Rexon-Eye"
+        ],
+        [
+          "5",
+          "визитов в год"
         ]
       ],
-      "primaryLabel": "Консультация при сухости глаз + сеанс Rexon-Eye — 150 €",
-      "primarySub": "Промокод BLOGDRY · −15%",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "primaryLabel": "Записаться на программу",
+      "primarySub": "349 € в год",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&source=blog&funnel=dryeye"
     },
     "en": {
-      "eyebrow": "DRY EYE DIAGNOSTICS & TREATMENT",
-      "headline": "If your eyes have burned for a long time — you don't have to live with it.",
-      "sub": "Sirius dry eye diagnostics, Rexon Eye OMR therapy, or punctum plugs. One cause, several effective solutions. After the visit: a detailed online summary and ophthalmologist's recommendations.",
+      "eyebrow": "DRY EYE PROGRAMME",
+      "headline": "Thorough diagnostics and a Rexon-Eye course in one year-long programme.",
+      "sub": "Dry eye programme — €349 a year. 5 visits: dry eye diagnostics with Sirius, a Rexon-Eye course (4 sessions) and a check at the end of the course.",
       "stats": [
         [
           "Sirius",
           "diagnostics"
         ],
         [
-          "OMR",
-          "session"
+          "4",
+          "Rexon-Eye sessions"
         ],
         [
-          "30 min",
-          "duration"
+          "5",
+          "visits a year"
         ]
       ],
-      "primaryLabel": "Dry eye consultation + Rexon-Eye session — €150",
-      "primarySub": "Code BLOGDRY · −15%",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "primaryLabel": "Book the dry eye programme",
+      "primarySub": "€349 a year",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&source=blog&funnel=dryeye"
     }
   },
   "general": {
