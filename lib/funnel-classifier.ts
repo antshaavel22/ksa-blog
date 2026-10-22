@@ -36,10 +36,13 @@ const DRYEYE_KEYWORDS = [
   // ET
   "kuiv silm", "kuivasilma", "kuivsilma", "pisarakile", "pisaranäärme",
   "bensalkoonium", "BAK", "OMR", "Rexon Eye", "pisarakanali kork", "punctum plug",
+  // Eyelid-margin inflammation is treated in the dry-eye programme, not with a
+  // laser: the blepharitis post had 224 visits a month and showed the Flow3 box.
+  "blefariit", "lauservapõletik", "lauserva põletik", "silmalau põletik", "meibomi",
   // RU
-  "сухой глаз", "сухость глаз", "BAK", "OMR",
+  "сухой глаз", "сухость глаз", "BAK", "OMR", "блефарит", "мейбоми",
   // EN
-  "dry eye", "tear film", "meibomian", "punctum plug", "Rexon",
+  "dry eye", "tear film", "meibomian", "punctum plug", "Rexon", "blepharitis",
 ];
 
 const KIDS_CATEGORIES = new Set(["laste-nagemiskontroll", "childrens-vision"]);
