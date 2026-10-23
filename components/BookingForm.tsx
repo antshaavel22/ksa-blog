@@ -38,7 +38,7 @@ export default function BookingForm({ funnel }: BookingFormProps) {
       const emailBody = [
         `Uuring: ${funnel.service}`,
         `Hind: ${funnel.priceLabel}${funnel.priceStrike ? ` (tavahind ${funnel.priceStrike})` : ""}`,
-        `Sooduskood: ${funnel.promoCode}`,
+        `Sooduskood: ${funnel.promoCode || "—"}`,
         "",
         `Nimi: ${payload.name}`,
         `Telefon: ${payload.phone}`,
@@ -170,6 +170,7 @@ export default function BookingForm({ funnel }: BookingFormProps) {
         />
       </div>
 
+      {funnel.promoCode && (
       <div style={promoBox}>
         <div style={{ fontSize: 12, color: "#5a6b6c", marginBottom: 4 }}>SOODUSKOOD</div>
         <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 18, fontWeight: 500, color: "#1a1a1a" }}>
@@ -179,6 +180,7 @@ export default function BookingForm({ funnel }: BookingFormProps) {
           {funnel.promoCodeLabel}
         </div>
       </div>
+      )}
 
       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", margin: "20px 0 24px", fontSize: 13, color: "#5a6b6c", lineHeight: 1.5 }}>
         <input type="checkbox" name="consent" required style={{ marginTop: 3 }} />

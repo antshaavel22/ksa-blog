@@ -291,24 +291,28 @@ function buildPrimaryUrl(funnel: Funnel, lang: CtaLang, slug: string): string {
   if (funnel === "general") {
     return `https://kiirtest.ksa.ee/${lang === "et" ? "" : lang}?source=blog&funnel=qualifier`;
   }
+  // Since the 12.10 price list `service=flow3` opens the Audit exam and drops
+  // the code; the Flow exam is `flow`.
   const slugMap: Record<Exclude<Funnel, "general">, string> = {
-    flow3: "flow3",
+    flow3: "flow",
     audit: "audit",
     kids: "kids",
     dryeye: "dryeye",
   };
-  const codeMap: Record<Exclude<Funnel, "general">, string> = {
+  // BLOGDRY no longer applies: the dry-eye booking is now the year programme
+  // (checked on booking.ksa.ee, 23.10.2026), so that link carries no code.
+  const codeMap: Record<Exclude<Funnel, "general">, string | null> = {
     flow3: "BLOG39",
     audit: "BLOG139",
     kids: "BLOGKIDS",
-    dryeye: "BLOGDRY",
+    dryeye: null,
   };
   const service = slugMap[funnel];
   const promo = codeMap[funnel];
   const params = new URLSearchParams({
     service,
     lang,
-    promokood: promo,
+    ...(promo ? { promokood: promo } : {}),
     source: "blog",
     utm_source: "blog",
     utm_medium: "cta",
