@@ -60,7 +60,7 @@ const LINKS: Record<Funnel, LinkItem[]> = {
   flow3: [
     {
       label: { et: "Broneeri Flow3 uuring", ru: "Записаться на Flow3", en: "Book a Flow3 exam" },
-      href: BOOKING("flow3", "BLOG39", "flow3"),
+      href: BOOKING("flow", "BLOG39", "flow3"),
       external: true,
     },
     {
