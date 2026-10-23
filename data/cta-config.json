@@ -4,14 +4,26 @@
     "eyebrow": "FLOW3 – VABANE PRILLIDEST",
     "headline": "Näed ilma prillideta — kohe laseriruumist väljumisel.",
     "sub": "Flow3 on Eesti kõige täpsem laserprotseduur lühinägelikele 18–45. 8 minutit / silm.",
-    "stats": [["18–45", "vanus"], ["8 min", "protseduur"], ["7 päeva", "tagasi sportima"]],
-    "primaryLabel": "Flow3 uuring — 39 €",
-    "primaryStrike": "69 €",
-    "primarySub": "60 min · Tallinn või Tartu · sooduskood BLOG39",
-    "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=et&promokood=BLOG39&source=blog&funnel=flow3",
-    "secondaryLabel": "Flow3 Kiirtest — 0 € täna",
-    "secondarySub": "Tasuta sobivustest → 19 € Flow3 uuring kliinikus (tavahinna 69 € asemel).",
-    "secondaryHref": "https://kiirtest.ksa.ee/?source=blog",
+    "stats": [
+      [
+        "18–45",
+        "vanus"
+      ],
+      [
+        "8 min",
+        "protseduur"
+      ],
+      [
+        "7 päeva",
+        "tagasi sportima"
+      ]
+    ],
+    "primaryLabel": "Tee Kiirtest — 2 minutit",
+    "primarySub": "Sobivad 18–45 müoobid saavad uuringu 39 € (tavahind 149 €). Teistele −10 € uuringu hinnast.",
+    "primaryHref": "https://kiirtest.ksa.ee/?source=blog&funnel=flow3",
+    "secondaryLabel": "Broneerin uuringu kohe",
+    "secondarySub": "Ilma testi tegemata, täishinnaga 149 €.",
+    "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=et&source=blog&funnel=flow3",
     "accent": "#86BC25",
     "ladder": true,
     "campaign": "blog-flow3",
@@ -20,25 +32,51 @@
       "eyebrow": "FLOW3 – СВОБОДА ОТ ОЧКОВ",
       "headline": "Вы видите без очков — уже завтра утром.",
       "sub": "Flow3 — самая точная лазерная процедура в Эстонии для близоруких 18–45 лет. 8 минут, один день.",
-      "stats": [["18–45", "возраст"], ["8 мин", "процедура"], ["1 неделя", "восстановление"]],
-      "primaryLabel": "Исследование Flow3 — 39 €",
-      "primarySub": "60 мин · Таллинн или Тарту · промокод BLOG39",
-      "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=ru&promokood=BLOG39&source=blog&funnel=flow3",
-      "secondaryLabel": "Онлайн-тест Flow3 — 0 € сегодня",
-      "secondarySub": "Бесплатный тест совместимости → обследование Flow3 в клинике за 19 € (вместо 69 €).",
-      "secondaryHref": "https://kiirtest.ksa.ee/ru?source=blog"
+      "stats": [
+        [
+          "18–45",
+          "возраст"
+        ],
+        [
+          "8 мин",
+          "процедура"
+        ],
+        [
+          "1 неделя",
+          "восстановление"
+        ]
+      ],
+      "primaryLabel": "Пройти быстрый тест — 2 минуты",
+      "primarySub": "Подходящие близорукие 18–45 лет получают обследование за 39 € (обычная цена 149 €). Остальным −10 € от цены обследования.",
+      "primaryHref": "https://kiirtest.ksa.ee/ru?source=blog&funnel=flow3",
+      "secondaryLabel": "Записаться сразу",
+      "secondarySub": "Без теста, по полной цене 149 €.",
+      "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=ru&source=blog&funnel=flow3"
     },
     "en": {
       "eyebrow": "FLOW3 – FREEDOM FROM GLASSES",
       "headline": "Walk out of the laser room seeing clearly — without glasses.",
       "sub": "Flow3 is Estonia's most precise laser procedure for near-sighted adults 18–45. 8 minutes per eye.",
-      "stats": [["18–45", "age"], ["8 min", "procedure"], ["1 week", "back to the gym"]],
-      "primaryLabel": "Flow3 consultation — €39",
-      "primarySub": "60 min · Tallinn or Tartu · code BLOG39",
-      "primaryHref": "https://booking.ksa.ee/?service=flow3&lang=en&promokood=BLOG39&source=blog&funnel=flow3",
-      "secondaryLabel": "Flow3 online test — €0 today",
-      "secondarySub": "Free pre-check → €19 Flow3 clinic exam (instead of €69).",
-      "secondaryHref": "https://kiirtest.ksa.ee/en?source=blog"
+      "stats": [
+        [
+          "18–45",
+          "age"
+        ],
+        [
+          "8 min",
+          "procedure"
+        ],
+        [
+          "1 week",
+          "back to the gym"
+        ]
+      ],
+      "primaryLabel": "Take the 2-minute pre-check",
+      "primarySub": "Suitable myopes aged 18–45 get the examination for €39 (list price €149). Everyone else gets €10 off their examination.",
+      "primaryHref": "https://kiirtest.ksa.ee/en?source=blog&funnel=flow3",
+      "secondaryLabel": "Book the examination directly",
+      "secondarySub": "Without the pre-check, at the full price of €149.",
+      "secondaryHref": "https://booking.ksa.ee/?service=flow&lang=en&source=blog&funnel=flow3"
     }
   },
   "audit": {
@@ -46,7 +84,20 @@
     "eyebrow": "NÄGEMISE AUDIT — PÕHJALIKUIM NÄGEMISUURING",
     "headline": "Säilita hea nägemine kogu eluks. Parim ennetus on hea diagnostika.",
     "sub": "Mõõdame 500+ erinevat parameetrit silmadest. 60 minutit, täielik diagnostika.",
-    "stats": [["149 €", "tavahind"], ["139 €", "lugejatele"], ["60 min", "kestvus"]],
+    "stats": [
+      [
+        "149 €",
+        "tavahind"
+      ],
+      [
+        "139 €",
+        "lugejatele"
+      ],
+      [
+        "60 min",
+        "kestvus"
+      ]
+    ],
     "primaryLabel": "Broneeri audit — 139 €",
     "primaryStrike": "149 €",
     "primarySub": "Sooduskood BLOG139 · Tallinn — Tartu",
@@ -60,7 +111,20 @@
       "eyebrow": "АУДИТ ЗРЕНИЯ — ПОЛНОЕ ОБСЛЕДОВАНИЕ",
       "headline": "Когда зрение меняется — пора увидеть полную картину.",
       "sub": "Обследование глазного дна, внутриглазного давления, катаракты и макулы. 120 минут полной диагностики.",
-      "stats": [["149 €", "обычно"], ["139 €", "читателям"], ["120 мин", "длительность"]],
+      "stats": [
+        [
+          "149 €",
+          "обычно"
+        ],
+        [
+          "139 €",
+          "читателям"
+        ],
+        [
+          "120 мин",
+          "длительность"
+        ]
+      ],
       "primaryLabel": "Записаться на аудит — 139 €",
       "primarySub": "Промокод BLOG139 · Таллинн или Тарту",
       "primaryHref": "https://booking.ksa.ee/?service=audit&lang=ru&promokood=BLOG139&source=blog&funnel=audit"
@@ -69,7 +133,20 @@
       "eyebrow": "AUDIT YOUR VISION",
       "headline": "Keep your good vision for life. The best vision diagnostics in town.",
       "sub": "We record 500+ parameters from your eyes. 60 minutes of complete diagnostics.",
-      "stats": [["€149", "regular"], ["€139", "for readers"], ["60 min", "duration"]],
+      "stats": [
+        [
+          "€149",
+          "regular"
+        ],
+        [
+          "€139",
+          "for readers"
+        ],
+        [
+          "60 min",
+          "duration"
+        ]
+      ],
       "primaryLabel": "Book the audit — €139",
       "primarySub": "Code BLOG139 · Tallinn — Tartu",
       "primaryHref": "https://booking.ksa.ee/?service=audit&lang=en&promokood=BLOG139&source=blog&funnel=audit"
@@ -80,7 +157,20 @@
     "eyebrow": "LASTE SILMAUURING KSA-s",
     "headline": "Iga 5. laps näeb halvemini kui peaks — enamus ei tea seda veel.",
     "sub": "Põhjalikud laste nägemisuuringud alates 3. eluaastast. Hea nägemine kogu eluks kujuneb esimesel 6 eluaastal.",
-    "stats": [["3+", "aastat"], ["30 min", "kestvus"], ["Online", "kokkuvõte vanematele"]],
+    "stats": [
+      [
+        "3+",
+        "aastat"
+      ],
+      [
+        "30 min",
+        "kestvus"
+      ],
+      [
+        "Online",
+        "kokkuvõte vanematele"
+      ]
+    ],
     "primaryLabel": "Laste silmauuring — 79 €",
     "primarySub": "Sooduskood BLOGKIDS · sisaldab online kokkuvõtet ja arsti soovitusi",
     "primaryHref": "https://booking.ksa.ee/?service=kids&lang=et&promokood=BLOGKIDS&source=blog&funnel=kids",
@@ -91,7 +181,20 @@
       "eyebrow": "ОБСЛЕДОВАНИЕ ЗРЕНИЯ У ДЕТЕЙ",
       "headline": "Каждый 6-й ребёнок видит хуже, чем должен — и большинство ещё об этом не знают.",
       "sub": "Детское обследование включает школьную справку, рецепт на очки и игровой тест зрения. Подходит с 3 лет.",
-      "stats": [["3+", "лет"], ["45 мин", "длительность"], ["Школьная", "справка"]],
+      "stats": [
+        [
+          "3+",
+          "лет"
+        ],
+        [
+          "45 мин",
+          "длительность"
+        ],
+        [
+          "Школьная",
+          "справка"
+        ]
+      ],
       "primaryLabel": "Записать ребёнка — 79 €",
       "primarySub": "Промокод BLOGKIDS · школьная справка и заключение офтальмолога",
       "primaryHref": "https://booking.ksa.ee/?service=kids&lang=ru&promokood=BLOGKIDS&source=blog&funnel=kids"
@@ -100,7 +203,20 @@
       "eyebrow": "CHILDREN'S EYE EXAM AT KSA",
       "headline": "Every 5th child sees worse than they should — and most don't know it yet.",
       "sub": "Comprehensive children's vision exams from age 3. Good lifelong vision is shaped in the first 6 years.",
-      "stats": [["3+", "years"], ["30 min", "duration"], ["Online", "report for parents"]],
+      "stats": [
+        [
+          "3+",
+          "years"
+        ],
+        [
+          "30 min",
+          "duration"
+        ],
+        [
+          "Online",
+          "report for parents"
+        ]
+      ],
       "primaryLabel": "Book for your child — €79",
       "primarySub": "Code BLOGKIDS · includes online report and doctor's recommendations",
       "primaryHref": "https://booking.ksa.ee/?service=kids&lang=en&promokood=BLOGKIDS&source=blog&funnel=kids"
@@ -108,33 +224,72 @@
   },
   "dryeye": {
     "live": true,
-    "eyebrow": "KUIVA SILMA DIAGNOSTIKA JA RAVI",
-    "headline": "Kui silmad põletavad juba pikka aega.",
-    "sub": "Kuiva silma Sirius diagnostika, Rexon Eye OMR-ravi ja pisarakanali korgid. Üks põhjus, mitu tõhusat lahendust. Peale visiiti põhjalik online kokkuvõte ja silmaarsti soovitused.",
-    "stats": [["Sirius", "diagnostika"], ["OMR", "raviseanss"], ["30 min", "kestvus"]],
-    "primaryLabel": "Kuiva silma uuring + tasuta OMR raviseanss — 89 €",
-    "primarySub": "Sooduskood BLOGDRY",
-    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&promokood=BLOGDRY&source=blog&funnel=dryeye",
+    "eyebrow": "KUIVA SILMA PROGRAMM",
+    "headline": "Põhjalik diagnostika ja Rexon-Eye kuur ühes aastases programmis.",
+    "sub": "Kuiva silma programm — 349 € aastas. 5 visiiti: kuiva silma diagnostika Siriusega, Rexon-Eye kuur (4 seanssi) ja kontroll kuuri lõpus.",
+    "stats": [
+      [
+        "Sirius",
+        "diagnostika"
+      ],
+      [
+        "4",
+        "Rexon-Eye seanssi"
+      ],
+      [
+        "5",
+        "visiiti aastas"
+      ]
+    ],
+    "primaryLabel": "Broneerin kuiva silma programmi",
+    "primarySub": "349 € aastas",
+    "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=et&source=blog&funnel=dryeye",
     "secondaryLabel": null,
     "accent": "#5B9AC9",
     "ladder": false,
     "ru": {
-      "eyebrow": "ДИАГНОСТИКА СУХОГО ГЛАЗА",
-      "headline": "Если глаза горят после часа перед экраном — это не норма.",
-      "sub": "Углублённое обследование сухого глаза, терапия Rexon Eye OMR и пунктальные пробки. Одна причина — один план.",
-      "stats": [["OMR", "Rexon Eye"], ["Пробки", "пунктальные"], ["60 мин", "диагностика"]],
-      "primaryLabel": "Записаться на обследование — 89 €",
-      "primarySub": "Промокод BLOGDRY · включает OMR-анализ",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "eyebrow": "ПРОГРАММА ПРИ СУХОСТИ ГЛАЗ",
+      "headline": "Тщательная диагностика и курс Rexon-Eye в одной годовой программе.",
+      "sub": "Программа при сухости глаз — 349 € в год. 5 визитов: диагностика сухости глаз на Sirius, курс Rexon-Eye (4 сеанса) и контроль в конце курса.",
+      "stats": [
+        [
+          "Sirius",
+          "диагностика"
+        ],
+        [
+          "4",
+          "сеанса Rexon-Eye"
+        ],
+        [
+          "5",
+          "визитов в год"
+        ]
+      ],
+      "primaryLabel": "Записаться на программу",
+      "primarySub": "349 € в год",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=ru&source=blog&funnel=dryeye"
     },
     "en": {
-      "eyebrow": "DRY EYE DIAGNOSTICS & TREATMENT",
-      "headline": "If your eyes have burned for a long time — you don't have to live with it.",
-      "sub": "Sirius dry eye diagnostics, Rexon Eye OMR therapy, or punctum plugs. One cause, several effective solutions. After the visit: a detailed online summary and ophthalmologist's recommendations.",
-      "stats": [["Sirius", "diagnostics"], ["OMR", "session"], ["30 min", "duration"]],
-      "primaryLabel": "Dry eye exam + complimentary OMR session — €89",
-      "primarySub": "Code BLOGDRY",
-      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&promokood=BLOGDRY&source=blog&funnel=dryeye"
+      "eyebrow": "DRY EYE PROGRAMME",
+      "headline": "Thorough diagnostics and a Rexon-Eye course in one year-long programme.",
+      "sub": "Dry eye programme — €349 a year. 5 visits: dry eye diagnostics with Sirius, a Rexon-Eye course (4 sessions) and a check at the end of the course.",
+      "stats": [
+        [
+          "Sirius",
+          "diagnostics"
+        ],
+        [
+          "4",
+          "Rexon-Eye sessions"
+        ],
+        [
+          "5",
+          "visits a year"
+        ]
+      ],
+      "primaryLabel": "Book the dry eye programme",
+      "primarySub": "€349 a year",
+      "primaryHref": "https://booking.ksa.ee/?service=dryeye&lang=en&source=blog&funnel=dryeye"
     }
   },
   "general": {
@@ -142,7 +297,20 @@
     "eyebrow": "PARIM NÄGEMISE KIIRTEST — VAID 2 MINUTIT",
     "headline": "Milline silmauuring on just sinu jaoks?",
     "sub": "2-minutiline Kiirtest annab vastuse, kas sulle sobib Flow3 uuring või Nägemise Audit. Tasuta, online, kohe.",
-    "stats": [["0 €", "tasuta"], ["2 min", "online"], ["Flow3 / Audit", "suunatakse"]],
+    "stats": [
+      [
+        "0 €",
+        "tasuta"
+      ],
+      [
+        "2 min",
+        "online"
+      ],
+      [
+        "Flow3 / Audit",
+        "suunatakse"
+      ]
+    ],
     "primaryLabel": "Tee Kiirtest — 0 €",
     "primarySub": "Online · kohene tulemus",
     "primaryHref": "https://kiirtest.ksa.ee/?source=blog&funnel=qualifier",
@@ -154,7 +322,20 @@
       "eyebrow": "БЫСТРЫЙ ТЕСТ ЗРЕНИЯ — 2 МИНУТЫ",
       "headline": "Какое обследование подходит именно вам?",
       "sub": "2-минутный тест определит, подходит ли вам исследование Flow3 или Аудит зрения. Бесплатно, онлайн, сразу.",
-      "stats": [["0 €", "бесплатно"], ["2 мин", "онлайн"], ["Flow3 / Audit", "маршрут"]],
+      "stats": [
+        [
+          "0 €",
+          "бесплатно"
+        ],
+        [
+          "2 мин",
+          "онлайн"
+        ],
+        [
+          "Flow3 / Audit",
+          "маршрут"
+        ]
+      ],
       "primaryLabel": "Пройти быстрый тест — 0 €",
       "primarySub": "Онлайн · мгновенный результат",
       "primaryHref": "https://kiirtest.ksa.ee/ru?source=blog&funnel=qualifier"
@@ -163,7 +344,20 @@
       "eyebrow": "VISION QUICK TEST — 2 MIN",
       "headline": "Which eye exam is right for you?",
       "sub": "A 2-minute online test tells you whether the Flow3 exam or the Vision Audit is the right next step. Free, online, instant result.",
-      "stats": [["€0", "free"], ["2 min", "online"], ["Flow3 / Audit", "routing"]],
+      "stats": [
+        [
+          "€0",
+          "free"
+        ],
+        [
+          "2 min",
+          "online"
+        ],
+        [
+          "Flow3 / Audit",
+          "routing"
+        ]
+      ],
       "primaryLabel": "Take the Vision Quick Test — €0",
       "primarySub": "Online · instant result",
       "primaryHref": "https://kiirtest.ksa.ee/en?source=blog&funnel=qualifier"

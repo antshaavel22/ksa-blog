@@ -11,7 +11,7 @@
  *     children 2,5–17. The booking form no longer asks which one you want;
  *     the exam decides what suits you.
  *   · The exam fee comes off the procedure price in full, within 60 days.
- *   · Through the kiirtest a qualified myope 18–45 pays 49 € up front and
+ *   · Through the kiirtest a qualified myope 18–45 pays 39 € up front and
  *     still gets the whole 149 € off the procedure. That hundred euros is
  *     the reason to act today, and it exists ONLY through the kiirtest.
  *
@@ -83,8 +83,8 @@ export const NEW_COPY: Record<CtaLang, Partial<Record<CtaFunnel, PricedCopy>>> =
     flow3: {
       headline: "Tahad teada, kas Flow3 sinu silmadele sobib?",
       body:
-        "Kolm küsimust ja näed oma hinda. Sobivatele 49 € silmauuring — ja protseduuri hinnast läheb maha kogu 149 €, 60 päeva jooksul.",
-      primaryButtonLabel: "Tee test · sobivatele 49 €",
+        "Kolm küsimust ja näed oma hinda. Sobivatele 39 € silmauuring — ja protseduuri hinnast läheb maha kogu 149 €, 60 päeva jooksul.",
+      primaryButtonLabel: "Tee test · sobivatele 39 €",
     },
     audit: {
       eyebrow: "SILMAUURING",
@@ -109,8 +109,8 @@ export const NEW_COPY: Record<CtaLang, Partial<Record<CtaFunnel, PricedCopy>>> =
     flow3: {
       headline: "Хотите узнать, подходит ли Flow3 вашим глазам?",
       body:
-        "Три вопроса — и вы увидите свою цену. Подходящим кандидатам обследование за 49 €, и вся сумма 149 € вычитается из стоимости процедуры в течение 60 дней.",
-      primaryButtonLabel: "Пройти тест · подходящим 49 €",
+        "Три вопроса — и вы увидите свою цену. Подходящим кандидатам обследование за 39 €, и вся сумма 149 € вычитается из стоимости процедуры в течение 60 дней.",
+      primaryButtonLabel: "Пройти тест · подходящим 39 €",
     },
     audit: {
       eyebrow: "ОБСЛЕДОВАНИЕ ЗРЕНИЯ",
@@ -135,8 +135,8 @@ export const NEW_COPY: Record<CtaLang, Partial<Record<CtaFunnel, PricedCopy>>> =
     flow3: {
       headline: "Want to know whether Flow3 suits your eyes?",
       body:
-        "Three questions and you'll see your price. If you're suitable the exam is €49 — and the full €149 comes off the procedure, within 60 days.",
-      primaryButtonLabel: "Take the test · €49 if suitable",
+        "Three questions and you'll see your price. If you're suitable the exam is €39 — and the full €149 comes off the procedure, within 60 days.",
+      primaryButtonLabel: "Take the test · €39 if suitable",
     },
     audit: {
       eyebrow: "EYE EXAM",
